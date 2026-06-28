@@ -1,0 +1,6 @@
+# Task History
+
+- task-20260601-1: liquid glass badge + undo delete for presets → DONE 2026-06-01 | type: feat | files: item_home_preset.xml, HomeAdapter.kt, FavoritesAdapter.kt, FavoritesFragment.kt, FavoritesUiIntent.kt, FavoritesUiEffect.kt, FavoritesViewModel.kt, PresetRepository.kt
+- task-20260601-2: glass bottom bar for preset cards + GlassToastHelper → DONE 2026-06-01 | type: feat | files: item_home_preset.xml, layout_glass_toast.xml, GlassToastHelper.kt, HomeAdapter.kt, FavoritesAdapter.kt, FavoritesFragment.kt | note: "glassBottomBar cornerRadius=0f (CardView clips); GlassToastHelper replaces Snackbar for undo-delete" | note: "2K/4K + heart wrap LiquidGlassView; delete: xóa ngay + Snackbar Hoàn tác thay dialog"
+- task-20260605-2: Đổi all version app thành 1.0.0 → DONE 2026-06-05 | type: chore | files: app/build.gradle.kts | review: 0 | note: "versionName 1.0→1.0.0; versionCode=1 giữ nguyên"
+- task-20260621-2: add bgWaterStrength + bgOpacity sliders to DIY config → DONE 2026-06-21 | type: feat | files: FluidConfig.kt, DiyConfigSection.kt, DiyPresetParam.kt, FluidRenderer.kt, UserPresetStore.kt, strings.xml | review: 1 | note: "bgWaterStrengthUi 0-100→raw/100*0.1; save/reload via UserPresetStore effects block"

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- PizzaTime Brand: Midnight Artisan Pizzeria -->
+
+    <!-- Background -->
+    <color name="pt_background">#161311</color>
+    <color name="pt_surface_dark">#211B17</color>
+    <color name="pt_surface_soft">#2A221D</color>
+    <color name="pt_surface_card">#FFF4E6</color>
+
+    <!-- Brand -->
+    <color name="pt_primary_tomato">#C2472D</color>
+    <color name="pt_primary_dark">#8F2F22</color>
+    <color name="pt_copper">#D99A3D</color>
+    <color name="pt_basil_green">#3F8F5F</color>
+    <color name="pt_cream">#FFF4E6</color>
+
+    <!-- Text -->
+    <color name="pt_text_primary_dark_bg">#F8EFE5</color>
+    <color name="pt_text_secondary_dark_bg">#AFA39A</color>
+    <color name="pt_text_primary_card">#211B17</color>
+    <color name="pt_text_secondary_card">#6F6258</color>
+    <color name="pt_text_disabled">#7D746E</color>
+
+    <!-- Order Status -->
+    <color name="pt_status_pending">#D99A3D</color>
+    <color name="pt_status_confirmed">#C2472D</color>
+    <color name="pt_status_preparing">#D9822B</color>
+    <color name="pt_status_baking">#E06A2D</color>
+    <color name="pt_status_ready">#3F8F5F</color>
+    <color name="pt_status_assigned">#5E7CE2</color>
+    <color name="pt_status_delivering">#3C8DBC</color>
+    <color name="pt_status_delivered">#2E7D50</color>
+    <color name="pt_status_cancelled">#8A8A8A</color>
+    <color name="pt_status_failed">#B23A3A</color>
+
+    <!-- Basic -->
+    <color name="white">#FFFFFFFF</color>
+    <color name="black">#FF000000</color>
+</resources>
