@@ -1,0 +1,159 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/staffDashboardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/headerStaff"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_top_bar_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp">
+
+        <ImageView
+            android:id="@+id/btnMenu"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="@string/staff_menu_content_description"
+            android:padding="5dp"
+            android:src="@drawable/ic_menu" />
+
+        <TextView
+            android:id="@+id/tvStaffTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="22dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:text="@string/staff_dashboard_title"
+            android:textColor="#F2A96B"
+            android:textSize="27sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvStaffAvatar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:text="@string/staff_avatar_initial"
+            android:textColor="#F2A96B"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <HorizontalScrollView
+        android:id="@+id/statusChipScroll"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:fillViewport="false"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/statusChipContainer"
+            android:layout_width="wrap_content"
+            android:layout_height="match_parent"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="24dp">
+
+            <TextView
+                android:id="@+id/chipNewOrders"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:background="@drawable/bg_chip_selected_gold"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:minWidth="150dp"
+                android:paddingHorizontal="22dp"
+                android:text="@string/staff_chip_new_orders"
+                android:textColor="#3A210D"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/chipConfirmed"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_chip_unselected_dark"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:minWidth="145dp"
+                android:paddingHorizontal="22dp"
+                android:text="@string/staff_chip_confirmed"
+                android:textColor="#E6D4C8"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/chipPreparing"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_chip_unselected_dark"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:minWidth="145dp"
+                android:paddingHorizontal="22dp"
+                android:text="@string/staff_chip_preparing"
+                android:textColor="#E6D4C8"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/chipReady"
+                android:layout_width="wrap_content"
+                android:layout_height="50dp"
+                android:layout_marginStart="12dp"
+                android:background="@drawable/bg_chip_unselected_dark"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:minWidth="115dp"
+                android:paddingHorizontal="22dp"
+                android:text="@string/staff_chip_ready"
+                android:textColor="#E6D4C8"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </HorizontalScrollView>
+
+    <TextView
+        android:id="@+id/tvEmptyOrders"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginHorizontal="24dp"
+        android:layout_marginTop="32dp"
+        android:gravity="center"
+        android:text="@string/staff_empty_orders"
+        android:textColor="#D8C8BC"
+        android:textSize="16sp"
+        android:visibility="gone" />
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvStaffOrders"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="8dp"
+        android:paddingBottom="24dp" />
+
+    <include
+        android:id="@+id/staffBottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="86dp" />
+
+</LinearLayout>

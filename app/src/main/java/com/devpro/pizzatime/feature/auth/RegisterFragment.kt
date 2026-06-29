@@ -40,10 +40,6 @@ class RegisterFragment : Fragment() {
             Toast.makeText(requireContext(), "Google sign up coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        binding.btnGoogle.setOnClickListener {
-            Toast.makeText(requireContext(), "Google sign up coming soon", Toast.LENGTH_SHORT).show()
-        }
-
         binding.btnFacebook.setOnClickListener {
             Toast.makeText(requireContext(), "Facebook sign up coming soon", Toast.LENGTH_SHORT).show()
         }

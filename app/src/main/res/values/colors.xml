@@ -53,4 +53,7 @@
 
     <color name="pt_stroke_gold">#8B6A4A</color>
     <color name="pt_stroke_dark">#2B2522</color>
+
+    <color name="staff_action_primary_text">#3A210D</color>
+    <color name="staff_action_outline_text">#CF843F</color>
 </resources>
