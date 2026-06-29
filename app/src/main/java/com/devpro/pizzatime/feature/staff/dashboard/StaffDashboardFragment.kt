@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStaffDashboardBinding
+import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailFragment
 
 class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
 
@@ -45,11 +46,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                 renderOrders()
             },
             onDetailClick = { order ->
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.staff_order_detail_message, order.orderId),
-                    Toast.LENGTH_SHORT,
-                ).show()
+                openOrderDetail(order.orderId)
             },
         )
 
@@ -139,6 +136,14 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             getString(R.string.staff_coming_soon_message, getString(titleRes)),
             Toast.LENGTH_SHORT,
         ).show()
+    }
+
+    private fun openOrderDetail(orderId: String) {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(R.id.fragmentContainer, StaffOrderDetailFragment.newInstance(orderId))
+            .addToBackStack(null)
+            .commit()
     }
 
     override fun onDestroyView() {

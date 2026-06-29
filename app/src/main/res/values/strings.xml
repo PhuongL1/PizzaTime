@@ -230,6 +230,26 @@
     <string name="staff_order_confirmed_message">%1$s confirmed</string>
     <string name="staff_order_detail_message">Open detail: %1$s</string>
     <string name="staff_coming_soon_message">%1$s - coming soon</string>
+    <!-- Staff Order Detail -->
+    <string name="staff_order_detail_live_order">LIVE ORDER</string>
+    <string name="staff_order_detail_received">RECEIVED %1$s</string>
+    <string name="staff_order_detail_current_item">CURRENT ITEM</string>
+    <string name="staff_order_detail_size">SIZE</string>
+    <string name="staff_order_detail_crust">CRUST</string>
+    <string name="staff_order_detail_toppings_build">TOPPINGS BUILD</string>
+    <string name="staff_order_detail_critical_alert">CRITICAL ALERT</string>
+    <string name="staff_order_detail_customer_request">CUSTOMER REQUEST</string>
+    <string name="staff_order_detail_start_preparing">Start Preparing</string>
+    <string name="staff_order_detail_start_baking">Start Baking</string>
+    <string name="staff_order_detail_mark_ready">Mark as Ready</string>
+    <string name="staff_order_detail_preparation_pending">PREPARATION PENDING</string>
+    <string name="staff_order_detail_order_confirmed">ORDER CONFIRMED</string>
+    <string name="staff_order_detail_preparing">PREPARING</string>
+    <string name="staff_order_detail_ready">READY FOR SHIPPER</string>
+    <string name="staff_order_detail_preparation_started_message">Preparation started</string>
+    <string name="staff_order_detail_baking_started_message">Baking started</string>
+    <string name="staff_order_detail_ready_message">Order marked as ready</string>
+    <string name="staff_order_detail_missing_order_message">Order not found</string>
 
     <!-- Auth -->
     <string name="auth_identifier_required">Email, phone, or staff ID is required</string>
