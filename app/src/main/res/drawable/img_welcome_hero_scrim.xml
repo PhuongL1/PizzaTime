@@ -1,0 +1,21 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <item>
+        <bitmap
+            android:src="@drawable/img_welcome_hero"
+            android:gravity="fill" />
+    </item>
+
+    <item>
+        <shape>
+            <gradient
+                android:type="linear"
+                android:angle="270"
+                android:startColor="#26151312"
+                android:centerColor="#80151312"
+                android:endColor="#FF151312" />
+        </shape>
+    </item>
+
+</layer-list>

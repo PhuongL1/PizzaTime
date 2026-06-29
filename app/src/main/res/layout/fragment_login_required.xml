@@ -1,0 +1,162 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/loginRequiredRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark">
+
+    <ImageView
+        android:id="@+id/imgLoginRequiredBackground"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:alpha="0.30"
+        android:contentDescription="@string/app_name"
+        android:scaleType="centerCrop"
+        android:src="@drawable/img_welcome_hero_scrim" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:background="#99151312" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="240dp"
+        android:layout_gravity="top"
+        android:background="@drawable/bg_login_top_fade" />
+
+    <View
+        android:layout_width="match_parent"
+        android:layout_height="340dp"
+        android:layout_gravity="bottom"
+        android:background="@drawable/bg_login_bottom_fade" />
+
+    <TextView
+        android:id="@+id/tvLoginRequiredBrand"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="32dp"
+        android:layout_marginTop="22dp"
+        android:alpha="0.16"
+        android:fontFamily="serif"
+        android:includeFontPadding="false"
+        android:text="@string/app_name"
+        android:textColor="#FDB879"
+        android:textSize="50sp" />
+
+    <com.google.android.material.card.MaterialCardView
+        android:id="@+id/cardLoginRequired"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_gravity="center"
+        android:layout_marginHorizontal="30dp"
+        app:cardBackgroundColor="@android:color/transparent"
+        app:cardCornerRadius="22dp"
+        app:cardElevation="8dp"
+        app:strokeWidth="0dp">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/img_background_login_scrim"
+            android:gravity="center"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="22dp"
+                android:paddingTop="34dp"
+                android:paddingBottom="30dp">
+
+                <FrameLayout
+                    android:id="@+id/boxLoginRequiredIcon"
+                    android:layout_width="78dp"
+                    android:layout_height="78dp"
+                    android:layout_marginBottom="28dp"
+                    android:background="@drawable/bg_circle_gold_soft">
+
+                    <ImageView
+                        android:id="@+id/imgLoginRequiredIcon"
+                        android:layout_width="38dp"
+                        android:layout_height="38dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/login_required_title"
+                        android:src="@drawable/ic_lock_login" />
+
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvLoginRequiredTitle"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="serif"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:text="@string/login_required_title"
+                    android:textColor="#F0E7DF"
+                    android:textSize="31sp" />
+
+                <TextView
+                    android:id="@+id/tvLoginRequiredDescription"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="18dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@string/login_required_description"
+                    android:textColor="#D8CBC0"
+                    android:textSize="15sp" />
+
+                <TextView
+                    android:id="@+id/btnOpenLogin"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="28dp"
+                    android:background="@drawable/bg_button_primary_light"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:letterSpacing="0.14"
+                    android:text="@string/login_required_login"
+                    android:textColor="#3A210F"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/btnContinueBrowsing"
+                    android:layout_width="match_parent"
+                    android:layout_height="54dp"
+                    android:layout_marginTop="14dp"
+                    android:background="@drawable/bg_button_outline_gold"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:gravity="center"
+                    android:letterSpacing="0.12"
+                    android:text="@string/login_required_continue"
+                    android:textColor="#EEE6DF"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvLoginRequiredFooter"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:background="@drawable/bg_login_footer"
+                android:gravity="center"
+                android:letterSpacing="0.16"
+                android:text="@string/login_required_footer"
+                android:textColor="#AFA39B"
+                android:textSize="12sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </com.google.android.material.card.MaterialCardView>
+
+</FrameLayout>

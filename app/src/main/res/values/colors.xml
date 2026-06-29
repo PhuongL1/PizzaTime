@@ -37,4 +37,20 @@
     <!-- Basic -->
     <color name="white">#FFFFFFFF</color>
     <color name="black">#FF000000</color>
+
+    <color name="pt_black">#0B0B0D</color>
+    <color name="pt_dark">#121014</color>
+    <color name="pt_dark_2">#1A171D</color>
+    <color name="pt_card_dark">#191716</color>
+
+    <color name="pt_gold">#D08A3B</color>
+    <color name="pt_gold_dark">#8B5A2B</color>
+
+    <color name="pt_text_primary">#F8EFE8</color>
+    <color name="pt_text_secondary">#CDBFB4</color>
+    <color name="pt_text_muted">#8D7C73</color>
+    <color name="pt_text_dark">#3A210F</color>
+
+    <color name="pt_stroke_gold">#8B6A4A</color>
+    <color name="pt_stroke_dark">#2B2522</color>
 </resources>

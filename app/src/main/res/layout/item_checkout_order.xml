@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/checkoutOrderItemRoot"
+    android:layout_width="match_parent"
+    android:layout_height="82dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal">
+
+    <ImageView
+        android:id="@+id/imgOrderPizza"
+        android:layout_width="72dp"
+        android:layout_height="72dp"
+        android:contentDescription="@string/menu_open_pizza"
+        android:scaleType="centerCrop"
+        tools:src="@drawable/img_welcome_hero" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvOrderName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/pt_text_primary"
+            android:textSize="19sp"
+            tools:text="Margherita Verace" />
+
+        <TextView
+            android:id="@+id/tvOrderOption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:textColor="@color/pt_text_secondary"
+            android:textSize="15sp"
+            android:textStyle="bold"
+            tools:text="x1 · Large · Extra Basil" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvOrderPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pt_gold"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="$24.00" />
+
+</LinearLayout>

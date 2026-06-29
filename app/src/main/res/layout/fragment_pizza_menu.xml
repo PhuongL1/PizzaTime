@@ -1,0 +1,213 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/pizzaMenuRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark">
+
+    <ScrollView
+        android:id="@+id/menuScroll"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingBottom="120dp"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/menuContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="28dp"
+            android:paddingEnd="28dp"
+            android:paddingBottom="24dp">
+
+            <LinearLayout
+                android:id="@+id/menuTopBar"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:background="@drawable/bg_top_bar_dark"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp">
+
+                <ImageView
+                    android:id="@+id/btnOpenDrawer"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/menu_drawer_content_description"
+                    android:src="@drawable/ic_menu" />
+
+                <TextView
+                    android:id="@+id/tvMenuBrand"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:fontFamily="serif"
+                    android:gravity="center"
+                    android:includeFontPadding="false"
+                    android:letterSpacing="0.12"
+                    android:text="@string/menu_brand"
+                    android:textColor="@color/pt_gold"
+                    android:textSize="26sp" />
+
+                <ImageView
+                    android:id="@+id/btnOpenCart"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/menu_cart_content_description"
+                    android:src="@drawable/ic_bag" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/searchFilterRow"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="22dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/searchBar"
+                    android:layout_width="0dp"
+                    android:layout_height="58dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_input_round_dark"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@string/menu_search_hint"
+                        android:src="@drawable/ic_search" />
+
+                    <TextView
+                        android:id="@+id/tvSearchHint"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:text="@string/menu_search_hint"
+                        android:textColor="@color/pt_text_muted"
+                        android:textSize="15sp" />
+
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/btnFilter"
+                    android:layout_width="58dp"
+                    android:layout_height="58dp"
+                    android:layout_marginStart="10dp"
+                    android:background="@drawable/bg_filter_square"
+                    android:clickable="true"
+                    android:contentDescription="@string/menu_filter_content_description"
+                    android:focusable="true">
+
+                    <ImageView
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/menu_filter_content_description"
+                        android:src="@drawable/ic_filter" />
+
+                </FrameLayout>
+
+            </LinearLayout>
+
+            <HorizontalScrollView
+                android:id="@+id/categoryScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/categoryContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chipSignature"
+                        android:layout_width="112dp"
+                        android:layout_height="42dp"
+                        android:background="@drawable/bg_chip_selected_gold"
+                        android:gravity="center"
+                        android:letterSpacing="0.10"
+                        android:text="@string/menu_category_signature"
+                        android:textColor="@color/pt_text_dark"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipClassic"
+                        android:layout_width="104dp"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="14dp"
+                        android:background="@drawable/bg_chip_unselected_dark"
+                        android:gravity="center"
+                        android:letterSpacing="0.10"
+                        android:text="@string/menu_category_classic"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipVeggie"
+                        android:layout_width="104dp"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="14dp"
+                        android:background="@drawable/bg_chip_unselected_dark"
+                        android:gravity="center"
+                        android:letterSpacing="0.10"
+                        android:text="@string/menu_category_veggie"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipBuildYourOwn"
+                        android:layout_width="140dp"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="14dp"
+                        android:background="@drawable/bg_chip_unselected_dark"
+                        android:gravity="center"
+                        android:letterSpacing="0.10"
+                        android:text="@string/menu_category_build_your_own"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </HorizontalScrollView>
+
+            <LinearLayout
+                android:id="@+id/pizzaMenuContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:orientation="vertical" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <include
+        android:id="@+id/bottomNav"
+        layout="@layout/layout_customer_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:layout_gravity="bottom"
+        android:layout_marginStart="16dp"
+        android:layout_marginEnd="16dp"
+        android:layout_marginBottom="18dp" />
+
+</FrameLayout>

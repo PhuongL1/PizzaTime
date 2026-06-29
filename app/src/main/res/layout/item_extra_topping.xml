@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/cardTopping"
+    android:layout_width="0dp"
+    android:layout_height="92dp"
+    android:background="@drawable/bg_topping_card"
+    android:clickable="true"
+    android:focusable="true"
+    android:paddingStart="18dp"
+    android:paddingEnd="18dp">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:gravity="center_vertical"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvToppingName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:textColor="@color/pt_text_primary"
+                android:textSize="18sp"
+                tools:text="Extra Cheese" />
+
+            <TextView
+                android:id="@+id/tvToppingPrice"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/pt_gold"
+                android:textSize="18sp"
+                tools:text="+$2.00" />
+
+        </LinearLayout>
+
+        <FrameLayout
+            android:id="@+id/boxToppingCheck"
+            android:layout_width="28dp"
+            android:layout_height="28dp"
+            android:background="@drawable/bg_topping_checkbox"
+            android:contentDescription="@string/detail_topping_content_description" />
+
+    </LinearLayout>
+
+</FrameLayout>

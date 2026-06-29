@@ -1,0 +1,32 @@
+package com.devpro.pizzatime.shared.component
+
+import android.os.Bundle
+import android.view.LayoutInflater
+import android.view.View
+import android.view.ViewGroup
+import androidx.fragment.app.Fragment
+import androidx.viewbinding.ViewBinding
+
+abstract class BaseFragment<VB : ViewBinding>(
+    private val inflateBinding: (LayoutInflater, ViewGroup?, Boolean) -> VB
+) : Fragment() {
+
+    private var _binding: VB? = null
+
+    protected val binding: VB
+        get() = _binding ?: error("ViewBinding is only valid between onCreateView and onDestroyView.")
+
+    override fun onCreateView(
+        inflater: LayoutInflater,
+        container: ViewGroup?,
+        savedInstanceState: Bundle?
+    ): View {
+        _binding = inflateBinding(inflater, container, false)
+        return binding.root
+    }
+
+    override fun onDestroyView() {
+        _binding = null
+        super.onDestroyView()
+    }
+}

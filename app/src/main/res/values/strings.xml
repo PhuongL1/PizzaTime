@@ -1,3 +1,240 @@
-<resources>
+﻿<resources>
     <string name="app_name">PizzaTime</string>
+    <string name="splash_tagline">Hot pizza, right on time.</string>
+    <string name="splash_loading">PREPARING THE HEARTH</string>
+    <string name="login_member_access">Member Access</string>
+    <string name="login_description">A login is required to proceed. Join our circle of nighttime epicureans to access exclusive artisan selections.</string>
+    <string name="login_button">LOGIN</string>
+    <string name="continue_browsing">CONTINUE BROWSING</string>
+    <string name="login_footer">ARTISAN QUALITY â€¢ DELIVERED LATE</string>
+    <string name="welcome_location_label">Location</string>
+    <string name="welcome_location_value">NEW\nYORK, NY</string>
+    <string name="welcome_avatar_content_description">Avatar</string>
+    <string name="welcome_chip">ARTISAN EXPERIENCE</string>
+    <string name="welcome_hero_title">The Art of Late-Night\nDining</string>
+    <string name="welcome_hero_subtitle">A sophisticated sanctuary for the discerning\nepicurean. Hand-stretched dough, heritage\ntomatoes, and midnight inspiration.</string>
+    <string name="welcome_start_ordering">Start Ordering â†’</string>
+    <string name="welcome_login">Log In</string>
+    <string name="welcome_scroll_to_discover">SCROLL TO DISCOVER</string>
+    <string name="welcome_wood_fired_content_description">Wood fired</string>
+    <string name="welcome_wood_fired_title">Wood-Fired Mastery</string>
+    <string name="welcome_wood_fired_subtitle">Charred to perfection at 800 degrees.</string>
+    <string name="welcome_delivery_content_description">Delivery</string>
+    <string name="welcome_delivery_title">Midnight Delivery</string>
+    <string name="welcome_delivery_subtitle">Precision arrival for the late-night crave.</string>
+    <string name="welcome_footer">PIZZATIME Â© 2024 Â· ARTISAN CRAFT</string>
+
+    <string name="register_title">Create Account</string>
+    <string name="register_subtitle">Join PizzaTime and unlock late-night artisan selections, faster checkout, and order tracking.</string>
+    <string name="register_experience_label">MEMBER EXPERIENCE</string>
+    <string name="register_full_name">Full name</string>
+    <string name="register_email">Email address</string>
+    <string name="register_password">Password</string>
+    <string name="register_confirm_password">Confirm password</string>
+    <string name="register_create_account">CREATE ACCOUNT</string>
+    <string name="register_or_continue">OR CONTINUE WITH</string>
+    <string name="register_google">GOOGLE</string>
+    <string name="register_guest">GUEST</string>
+    <string name="register_already_member">Already a member?</string>
+    <string name="register_login">Log in</string>
+    <string name="register_terms">By creating an account, you agree to PizzaTime artisan terms.</string>
+    <string name="register_brand_footer">PIZZATIME Â· MIDNIGHT ARTISAN CLUB</string>
+    <string name="register_top_location_content_description">PizzaTime location mark</string>
+    <string name="register_avatar_content_description">User avatar</string>
+    <string name="register_label_full_name">FULL NAME</string>
+    <string name="register_hint_full_name">Lorenzo Medici</string>
+    <string name="register_label_email">EMAIL ADDRESS</string>
+    <string name="register_hint_email">lorenzo@epicurean.com</string>
+    <string name="register_label_phone">PHONE NUMBER</string>
+    <string name="register_hint_phone">+1 (555) 000-0000</string>
+    <string name="register_label_password">PASSWORD</string>
+    <string name="register_hint_password">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</string>
+    <string name="register_label_confirm">CONFIRM</string>
+    <string name="register_hint_confirm">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</string>
+    <string name="register_terms_prefix">I agree to the </string>
+    <string name="register_terms_service">Terms of Service</string>
+    <string name="register_terms_and"> and </string>
+    <string name="register_terms_privacy">Privacy Policy.</string>
+    <string name="register_back_to_login">â€¹ Back to Login</string>
+    <string name="register_or_join_with">OR JOIN WITH</string>
+    <string name="register_facebook">Facebook</string>
+    <string name="register_experience_title">THE EXPERIENCE</string>
+    <string name="register_artisan_quality">ARTISAN QUALITY</string>
+    <string name="register_image_oven_content_description">Wood fired pizza oven</string>
+    <string name="register_image_kitchen_content_description">Artisan kitchen preparation</string>
+
+    <string name="login_welcome_back">Welcome Back</string>
+    <string name="login_workspace_subtitle">Enter your credentials to access your workspace</string>
+    <string name="login_identifier_label">EMAIL, PHONE, OR STAFF ID</string>
+    <string name="login_identifier_hint">Enter your ID</string>
+    <string name="login_password_label">PASSWORD</string>
+    <string name="login_password_hint">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</string>
+    <string name="login_forgot_password">Forgot Password?</string>
+    <string name="login_submit">Log In</string>
+    <string name="login_new_user">New to the sanctuary?</string>
+    <string name="login_create_account">Create Account</string>
+
+    <string name="login_required_title">Member Access</string>
+    <string name="login_required_description">A login is required to proceed. Join our circle of nighttime epicureans to access exclusive artisan selections.</string>
+    <string name="login_required_login">LOGIN</string>
+    <string name="login_required_continue">CONTINUE BROWSING</string>
+    <string name="login_required_footer">ARTISAN QUALITY â€¢ DELIVERED LATE</string>
+    <string name="login_form_welcome_back">Welcome Back</string>
+    <string name="login_form_subtitle">Enter your credentials to access your workspace</string>
+    <string name="login_form_identifier_label">EMAIL, PHONE, OR STAFF ID</string>
+    <string name="login_form_identifier_hint">Enter your ID</string>
+    <string name="login_form_password_label">PASSWORD</string>
+    <string name="login_form_password_hint">â€¢â€¢â€¢â€¢â€¢â€¢â€¢â€¢</string>
+    <string name="login_form_forgot_password">Forgot Password?</string>
+    <string name="login_form_submit">Log In</string>
+    <string name="login_form_new_user">New to the sanctuary?</string>
+    <string name="login_form_create_account">Create Account</string>
+    <string name="login_form_footer">ONE ACCOUNT, THE RIGHT WORKSPACE</string>
+
+    <string name="home_delivering_to">DELIVERING TO</string>
+    <string name="home_location">Upper East Side, NY</string>
+    <string name="home_avatar_content_description">Customer avatar</string>
+    <string name="home_greeting_line_1">Good evening,</string>
+    <string name="home_greeting_line_2">Epicurean.</string>
+    <string name="home_search_hint">Search for your artisan craving...</string>
+
+    <string name="home_service_delivery">DELIVERY</string>
+    <string name="home_service_collect">COLLECT</string>
+    <string name="home_service_dine_in">DINE-IN</string>
+
+    <string name="home_promo_label">LATE NIGHT SPECIAL</string>
+    <string name="home_promo_title">Midnight Truffle\n&amp; Bubbles</string>
+    <string name="home_promo_button">RESERVE NOW</string>
+
+    <string name="home_category_pizza">PIZZA</string>
+    <string name="home_category_combo">COMBO</string>
+    <string name="home_category_drinks">DRINKS</string>
+    <string name="home_category_dessert">DESSERT</string>
+
+    <string name="home_best_sellers">Best Sellers</string>
+    <string name="home_see_all">SEE ALL</string>
+
+    <string name="home_product_diavola">Diavola Noir</string>
+    <string name="home_product_diavola_desc">Spicy salami, honey, activated charcoal dough.</string>
+    <string name="home_product_diavola_price">$24.00</string>
+
+    <string name="home_product_copper">Copper Garden</string>
+    <string name="home_product_copper_desc">Artichoke hearts, smoked provolone, burnt sage.</string>
+    <string name="home_product_copper_price">$22.00</string>
+
+    <string name="home_chef_selection">Chef\'s Selection</string>
+    <string name="home_chef_title">The Amalfi Coast</string>
+    <string name="home_chef_desc">Lemon-zest ricotta, prosciutto di parma, arugula.</string>
+    <string name="home_chef_price">$28.00</string>
+    <string name="home_award_winning">AWARD WINNING</string>
+    <string name="home_rating_49">â˜… 4.9</string>
+    <string name="home_time_20_30">20-30 min</string>
+
+    <string name="home_nav_home">Home</string>
+    <string name="home_nav_orders">Orders</string>
+    <string name="home_nav_alerts">Alerts</string>
+    <string name="home_nav_profile">Profile</string>
+
+    <string name="home_add_to_cart">Add to cart</string>
+    <string name="home_open_product">Open product</string>
+    <string name="home_add_to_favorite">Add to favorite</string>
+    <string name="menu_brand">PIZZATIME</string>
+    <string name="menu_search_hint">Search our signature bakes...</string>
+    <string name="menu_filter_content_description">Filter menu</string>
+    <string name="menu_drawer_content_description">Open menu</string>
+    <string name="menu_cart_content_description">Open cart</string>
+
+    <string name="menu_category_signature">Signature</string>
+    <string name="menu_category_classic">Classic</string>
+    <string name="menu_category_veggie">Veggie</string>
+    <string name="menu_category_build_your_own">Build Your Own</string>
+
+    <string name="menu_add_to_cart">Add to cart</string>
+    <string name="menu_open_pizza">Open pizza detail</string>
+
+    <string name="menu_nav_menu">Menu</string>
+    <string name="menu_nav_loyalty">Loyalty</string>
+    <string name="detail_brand">PIZZATIME</string>
+    <string name="detail_back_content_description">Back</string>
+    <string name="detail_cart_content_description">Cart</string>
+    <string name="detail_favorite_content_description">Favorite</string>
+    <string name="detail_rating_format">★ %1$s</string>
+    <string name="detail_info_time">25-30 MIN</string>
+    <string name="detail_info_kcal">840 KCAL</string>
+
+    <string name="detail_select_size">Select Size</string>
+    <string name="detail_size_small">SMALL</string>
+    <string name="detail_size_medium">MEDIUM</string>
+    <string name="detail_size_large">LARGE</string>
+    <string name="detail_size_small_inch">10&quot;</string>
+    <string name="detail_size_medium_inch">12&quot;</string>
+    <string name="detail_size_large_inch">14&quot;</string>
+
+    <string name="detail_crust_style">Crust Style</string>
+    <string name="detail_crust_classic">Classic</string>
+    <string name="detail_crust_thin_charcoal">Thin Charcoal</string>
+    <string name="detail_crust_thick_pan">Thick Pan</string>
+
+    <string name="detail_extra_toppings">Extra Toppings</string>
+    <string name="detail_customize">CUSTOMIZE</string>
+    <string name="detail_quantity">Quantity</string>
+    <string name="detail_add_to_cart_format">Add to Cart - %1$s</string>
+    <string name="detail_topping_content_description">Select topping</string>
+    <string name="cart_title">Your Order</string>
+    <string name="cart_items_selected_format">%1$d items selected for late-night indulgence</string>
+    <string name="cart_empty_title">Your cart is empty</string>
+    <string name="cart_empty_message">Add a pizza to begin your late-night indulgence.</string>
+
+    <string name="cart_promo_hint">Promo code</string>
+    <string name="cart_apply">APPLY</string>
+
+    <string name="cart_subtotal">Subtotal</string>
+    <string name="cart_delivery_fee">Delivery Fee</string>
+    <string name="cart_discount">Discount</string>
+    <string name="cart_total">Total</string>
+
+    <string name="cart_proceed_checkout">Proceed to Checkout →</string>
+    <string name="cart_remove_item">Remove item</string>
+    <string name="cart_increase_quantity">Increase quantity</string>
+    <string name="cart_decrease_quantity">Decrease quantity</string>
+    <string name="checkout_title">Review Your Order</string>
+    <string name="checkout_subtitle">Finalize your artisan experience.</string>
+    <string name="checkout_delivery_details">DELIVERY DETAILS</string>
+    <string name="checkout_delivery_name">Lorenzo Medici</string>
+    <string name="checkout_delivery_phone">+1 (555) 000-0000</string>
+    <string name="checkout_delivery_address">Via de\' Tornabuoni, 15\n50123 Firenze FI, Italy</string>
+    <string name="checkout_delivery_edit">EDIT</string>
+    <string name="checkout_map_location">Florence</string>
+    <string name="checkout_payment_method">PAYMENT METHOD</string>
+    <string name="checkout_credit_card">Credit Card</string>
+    <string name="checkout_card_last4">**** 4432</string>
+    <string name="checkout_apple_pay">Apple Pay</string>
+    <string name="checkout_cash_on_arrival">Cash on Arrival</string>
+
+    <string name="checkout_order_note">ORDER NOTE</string>
+    <string name="checkout_order_note_hint">e.g. Please leave by the door, don\'t ring the bell...</string>
+
+    <string name="checkout_your_order">YOUR ORDER</string>
+    <string name="checkout_subtotal">Subtotal</string>
+    <string name="checkout_delivery_fee">Delivery Fee</string>
+    <string name="checkout_total">Total</string>
+
+    <string name="checkout_place_order">Place Order</string>
+    <string name="checkout_secure">SECURE CHECKOUT BY PIZZATIME</string>
+
+    <string name="tracking_order_number">ORDER #PT-9823</string>
+    <string name="tracking_eta">15-20 Mins</string>
+    <string name="tracking_eta_label">Estimated Arrival</string>
+    <string name="tracking_map_location">New York</string>
+
+    <string name="tracking_live_status">Live Status</string>
+    <string name="tracking_product_name">The Midnight Truffle</string>
+    <string name="tracking_product_option">x1 Large · Extra Basil ·</string>
+    <string name="tracking_product_price">$32.00</string>
+    <string name="tracking_need_support">Need Support?</string>
+
+    <string name="tracking_nav_menu">Menu</string>
+    <string name="tracking_nav_orders">Orders</string>
+    <string name="tracking_nav_loyalty">Loyalty</string>
+    <string name="tracking_nav_profile">Profile</string>
 </resources>
