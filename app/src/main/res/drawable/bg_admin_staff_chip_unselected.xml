@@ -1,0 +1,8 @@
+<!-- bg_admin_staff_chip_unselected.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@android:color/transparent" />
+    <corners android:radius="22dp" />
+    <stroke
+        android:width="1dp"
+        android:color="@color/pt_text_secondary" />
+</shape>

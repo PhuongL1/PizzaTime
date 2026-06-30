@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/assignedDeliveryRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="22dp"
+    android:background="@drawable/bg_shipper_assigned_card"
+    android:orientation="vertical"
+    android:padding="22dp">
+
+    <LinearLayout
+        android:id="@+id/assignedTopRow"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="top"
+        android:orientation="horizontal">
+
+        <LinearLayout
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvAssignedOrderLabel"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="@string/shipper_order_label"
+                android:textColor="#D8C8BC"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAssignedOrderId"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="2dp"
+                android:letterSpacing="0.08"
+                android:textColor="#D8C8BC"
+                android:textSize="13sp"
+                android:textStyle="bold"
+                tools:text="#PX-9925" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvPaymentBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:background="@drawable/bg_shipper_payment_badge"
+            android:gravity="center"
+            android:minWidth="92dp"
+            android:paddingHorizontal="12dp"
+            android:textColor="#FFB47A"
+            android:textSize="14sp"
+            android:textStyle="bold"
+            tools:text="PREPAID" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvAssignedCustomerName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="8dp"
+        android:textColor="#F4EEE8"
+        android:textSize="26sp"
+        android:textStyle="bold"
+        tools:text="Leo Sterling" />
+
+    <TextView
+        android:id="@+id/tvAssignedAddress"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="20dp"
+        android:textColor="#D8C8BC"
+        android:textSize="18sp"
+        tools:text="404 Echo Park Ln, Apt 4" />
+
+    <TextView
+        android:id="@+id/btnStartDelivery"
+        android:layout_width="match_parent"
+        android:layout_height="66dp"
+        android:layout_marginTop="24dp"
+        android:background="@drawable/bg_shipper_start_delivery_button"
+        android:gravity="center"
+        android:letterSpacing="0.12"
+        android:text="@string/shipper_start_delivery"
+        android:textColor="#FFB47A"
+        android:textSize="15sp"
+        android:textStyle="bold" />
+
+</LinearLayout>

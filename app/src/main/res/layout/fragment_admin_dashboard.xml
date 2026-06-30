@@ -1,0 +1,464 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/adminDashboardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/headerAdmin"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_top_bar_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp">
+
+        <ImageView
+            android:id="@+id/btnMenu"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="@string/staff_menu_content_description"
+            android:padding="5dp"
+            android:src="@drawable/ic_menu" />
+
+        <TextView
+            android:id="@+id/tvAdminTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:text="@string/staff_dashboard_title"
+            android:textColor="#F2A96B"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvAdminAvatar"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:text="@string/staff_avatar_initial"
+            android:textColor="#F2A96B"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/adminScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/adminContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_admin_dashboard_glow"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="42dp"
+            android:paddingBottom="36dp">
+
+            <TextView
+                android:id="@+id/tvAdminHeadline"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="serif"
+                android:text="@string/admin_dashboard_headline"
+                android:textColor="@color/pt_gold_light"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvAdminSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="6dp"
+                android:lineSpacingExtra="4dp"
+                android:text="@string/admin_dashboard_subtitle"
+                android:textColor="@color/pt_gold_light"
+                android:textSize="17sp" />
+
+            <LinearLayout
+                android:id="@+id/revenueCard"
+                android:layout_width="match_parent"
+                android:layout_height="132dp"
+                android:layout_marginTop="44dp"
+                android:background="@drawable/bg_admin_metric_light_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="28dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="@string/admin_total_revenue"
+                        android:textColor="#D6BFB0"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:id="@+id/tvTotalRevenue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:fontFamily="serif"
+                            android:textColor="#111111"
+                            android:textSize="36sp"
+                            android:textStyle="bold"
+                            tools:text="$4,250.00" />
+
+                        <TextView
+                            android:id="@+id/tvRevenueGrowth"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginStart="12dp"
+                            android:textColor="#148E46"
+                            android:textSize="12sp"
+                            tools:text="↗12%" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <ImageView
+                    android:id="@+id/icRevenue"
+                    android:layout_width="74dp"
+                    android:layout_height="74dp"
+                    android:contentDescription="@string/admin_revenue_icon_content_description"
+                    android:padding="10dp"
+                    android:src="@drawable/ic_admin_revenue" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/metricRow"
+                android:layout_width="match_parent"
+                android:layout_height="156dp"
+                android:layout_marginTop="24dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/todayTotalCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_admin_metric_light_card"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="@string/admin_today_total"
+                        android:textColor="#D6BFB0"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvTodayTotal"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="26dp"
+                        android:fontFamily="serif"
+                        android:textColor="#111111"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        tools:text="142" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/admin_live_dispatch"
+                        android:textColor="#D6BFB0"
+                        android:textSize="13sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/pendingCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="22dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_admin_pending_card"
+                    android:gravity="center_vertical"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="@string/admin_pending"
+                        android:textColor="#3A210D"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvPendingCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="28dp"
+                        android:fontFamily="serif"
+                        android:textColor="#3A210D"
+                        android:textSize="32sp"
+                        android:textStyle="bold"
+                        tools:text="8" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/completedBar"
+                android:layout_width="match_parent"
+                android:layout_height="92dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_admin_dark_panel"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="22dp">
+
+                <TextView
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:background="@drawable/bg_admin_completed_icon"
+                    android:gravity="center"
+                    android:text="@string/admin_check_icon"
+                    android:textColor="#D8C8BC"
+                    android:textSize="26sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="18dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvCompletedCount"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.08"
+                        android:textColor="#F4EEE8"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="124 Completed" />
+
+                    <TextView
+                        android:id="@+id/tvSatisfactionLabel"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="#D8C8BC"
+                        android:textSize="13sp"
+                        tools:text="98% Satisfaction tonight" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="88dp"
+                    android:layout_height="5dp"
+                    android:background="@drawable/bg_admin_progress_short" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvQuickActionsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="46dp"
+                android:text="@string/admin_quick_actions"
+                android:textColor="@color/pt_gold_light"
+                android:textSize="27sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/quickActionRow"
+                android:layout_width="match_parent"
+                android:layout_height="118dp"
+                android:layout_marginTop="20dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/btnAddProduct"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/bg_admin_quick_action_circle"
+                        android:contentDescription="@string/admin_action_add_product"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_admin_add_product" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/admin_action_add_product"
+                        android:textColor="@color/pt_white"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btnManageStaff"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/bg_admin_quick_action_circle"
+                        android:contentDescription="@string/admin_action_manage_staff"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_admin_manage_staff" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/admin_action_manage_staff"
+                        android:textColor="@color/pt_white"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btnViewReports"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/bg_admin_quick_action_circle"
+                        android:contentDescription="@string/admin_action_view_reports"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_admin_view_reports" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/admin_action_view_reports"
+                        android:textColor="@color/pt_white"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/btnInventory"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/bg_admin_quick_action_circle"
+                        android:contentDescription="@string/admin_action_inventory"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_admin_inventory" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/admin_action_inventory"
+                        android:textColor="@color/pt_white"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/recentOrdersHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="42dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/admin_recent_orders"
+                    android:textColor="@color/pt_gold_light"
+                    android:textSize="27sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvSeeAllOrders"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="@string/admin_see_all"
+                    android:textColor="#F2A96B"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvRecentOrders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <include
+        android:id="@+id/staffBottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="86dp" />
+
+</LinearLayout>

@@ -1,0 +1,197 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/rootManageStaff"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    android:orientation="vertical">
+
+    <ScrollView
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="false"
+        android:overScrollMode="never">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingBottom="28dp">
+
+            <LinearLayout
+                android:id="@+id/layoutTopBar"
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:layout_margin="12dp"
+                android:background="@drawable/bg_admin_top_bar"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingHorizontal="24dp">
+
+                <TextView
+                    android:id="@+id/tvMenu"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:gravity="center"
+                    android:text="@string/menu"
+                    android:textColor="@color/pt_gold_light"
+                    android:textSize="24sp" />
+
+                <TextView
+                    android:id="@+id/tvBrandName"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_weight="1"
+                    android:text="@string/midnight_artisan"
+                    android:textColor="@color/pt_gold_light"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+
+                <ImageView
+                    android:id="@+id/ivAvatar"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:background="@drawable/bg_promo_avatar"
+                    android:contentDescription="@string/profile"
+                    android:padding="12dp"
+                    android:src="@drawable/ic_admin_view_reports" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="26dp"
+                android:text="@string/staff_roster"
+                android:textColor="@color/pt_text_primary"
+                android:textSize="32sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="10dp"
+                android:text="@string/staff_roster_subtitle"
+                android:textColor="@color/pt_text_secondary"
+                android:textSize="16sp" />
+
+            <TextView
+                android:id="@+id/btnAddStaff"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginHorizontal="24dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_admin_staff_add_button"
+                android:drawablePadding="10dp"
+                android:gravity="center"
+                android:text="@string/add_staff"
+                android:textColor="@color/pt_text_dark"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                app:drawableStartCompat="@drawable/ic_admin_manage_staff" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/layoutFilters"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="24dp"
+                    android:layout_marginEnd="24dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvChipAllStaff"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:background="@drawable/bg_admin_staff_chip_selected"
+                        android:gravity="center"
+                        android:paddingHorizontal="18dp"
+                        android:text="@string/all_staff"
+                        android:textColor="@color/pt_gold_light"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvChipKitchen"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_admin_staff_chip_unselected"
+                        android:gravity="center"
+                        android:paddingHorizontal="18dp"
+                        android:text="@string/kitchen"
+                        android:textColor="@color/pt_text_secondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvChipShipper"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_admin_staff_chip_unselected"
+                        android:gravity="center"
+                        android:paddingHorizontal="18dp"
+                        android:text="@string/shipper"
+                        android:textColor="@color/pt_text_secondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvChipAdmin"
+                        android:layout_width="wrap_content"
+                        android:layout_height="44dp"
+                        android:layout_marginStart="10dp"
+                        android:background="@drawable/bg_admin_staff_chip_unselected"
+                        android:gravity="center"
+                        android:paddingHorizontal="18dp"
+                        android:text="@string/admin"
+                        android:textColor="@color/pt_text_secondary"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvStaff"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never"
+                tools:listitem="@layout/item_admin_staff" />
+
+            <TextView
+                android:id="@+id/tvEmptyStaff"
+                android:layout_width="match_parent"
+                android:layout_height="120dp"
+                android:gravity="center"
+                android:text="@string/no_staff_found"
+                android:textColor="@color/pt_text_secondary"
+                android:textSize="16sp"
+                android:visibility="gone"
+                tools:visibility="gone" />
+        </LinearLayout>
+    </ScrollView>
+
+    <include
+        android:id="@+id/staffBottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="96dp" />
+
+</LinearLayout>

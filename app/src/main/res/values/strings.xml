@@ -266,4 +266,174 @@
     <string name="role_shipper">Shipper</string>
     <string name="role_admin">Admin</string>
     <string name="role_screen_coming_soon">%1$s screen is coming soon</string>
+
+    <!-- Kitchen Board -->
+    <string name="kitchen_chip_waiting">⏳  Waiting (12)</string>
+    <string name="kitchen_chip_preparing">♨  Preparing (4)</string>
+    <string name="kitchen_action_start_baking">🔥  START BAKING</string>
+    <string name="kitchen_action_complete">⏱  80%% COMPLETE</string>
+    <string name="kitchen_action_handover">▣  MARK HANDED OVER</string>
+    <string name="kitchen_action_accept_order">ACCEPT ORDER</string>
+    <string name="kitchen_pending_review">Pending Review...</string>
+
+    <string name="kitchen_food_quantity_name">%1$dx %2$s</string>
+    <string name="kitchen_status_priority">Priority</string>
+    <string name="kitchen_status_in_oven">In Oven</string>
+    <string name="kitchen_action_progress">⏱  %1$s</string>
+    <string name="kitchen_action_handed_over">▣  MARK HANDED OVER</string>
+    <string name="kitchen_ready_check">✓</string>
+    <string name="kitchen_default_progress">80%% COMPLETE</string>
+
+    <string name="coming_soon_format">%1$s coming soon</string>
+    <string name="kitchen_message_baking_started">Baking started</string>
+    <string name="kitchen_message_progress_updated">Order progress updated</string>
+    <string name="kitchen_message_order_handed_over">Order handed over</string>
+    <string name="kitchen_message_order_accepted">Order accepted</string>
+
+    <!-- Shipper Delivery Dashboard -->
+    <string name="shipper_active_delivery">Active Delivery</string>
+    <string name="shipper_active_order_count">1 ORDER</string>
+    <string name="shipper_order_id_label">ORDER ID:</string>
+    <string name="shipper_order_label">ORDER</string>
+    <string name="shipper_navigate">Navigate</string>
+    <string name="shipper_call">CALL</string>
+    <string name="shipper_assigned">Assigned</string>
+    <string name="shipper_ready_count">2 READY</string>
+    <string name="shipper_start_delivery">START DELIVERY</string>
+    <string name="shipper_completed_count">12</string>
+    <string name="shipper_completed_label">COMPLETED</string>
+    <string name="shipper_tips_amount">$142</string>
+    <string name="shipper_tips_label">TIPS EARNED</string>
+    <string name="shipper_view_full_history">VIEW FULL HISTORY  &gt;</string>
+    <string name="shipper_message_navigation_started">Navigation started</string>
+    <string name="shipper_message_call_customer">Calling customer</string>
+    <string name="shipper_message_start_delivery">Starting delivery for %1$s</string>
+
+    <!-- Shipper Delivery Detail -->
+    <string name="common_back_arrow">←</string>
+    <string name="shipper_detail_order_title">Order %1$s</string>
+    <string name="shipper_detail_progress_pickup">✓&#10;Picked Up</string>
+    <string name="shipper_detail_customer">CUSTOMER</string>
+    <string name="shipper_detail_call_customer">Call Customer</string>
+    <string name="shipper_detail_delivery_address">DELIVERY ADDRESS</string>
+    <string name="shipper_detail_courier_note">COURIER NOTE</string>
+    <string name="shipper_detail_note_quote">"%1$s"</string>
+    <string name="shipper_detail_payment_due">Payment Due</string>
+    <string name="shipper_detail_confirm_delivery">✓  Confirm Delivery</string>
+    <string name="shipper_detail_calling_customer">Calling %1$s</string>
+    <string name="shipper_detail_delivery_confirmed">Delivery confirmed for %1$s</string>
+    <string name="shipper_detail_progress_picked_up">Picked Up</string>
+    <string name="shipper_detail_progress_arriving">Arriving</string>
+    <string name="shipper_detail_progress_delivered">Delivered</string>
+
+    <!-- Admin Dashboard -->
+    <string name="admin_dashboard_headline">Artisan Dashboard</string>
+    <string name="admin_dashboard_subtitle">Overseeing the night\'s craft. Your boutique metrics are ready.</string>
+    <string name="admin_total_revenue">TOTAL REVENUE</string>
+    <string name="admin_today_total">TODAY\'S TOTAL</string>
+    <string name="admin_live_dispatch">Live Dispatch</string>
+    <string name="admin_pending">PENDING</string>
+    <string name="admin_quick_actions">Quick Actions</string>
+    <string name="admin_action_add_product">Add Product</string>
+    <string name="admin_action_manage_staff">Manage Staff</string>
+    <string name="admin_action_view_reports">View Reports</string>
+    <string name="admin_action_inventory">Inventory</string>
+    <string name="admin_recent_orders">Recent Orders</string>
+    <string name="admin_see_all">SEE ALL</string>
+    <string name="admin_money_icon">▭</string>
+    <string name="admin_check_icon">✓</string>
+    <string name="admin_order_icon">🍴</string>
+    <string name="common_chevron_right">›</string>
+    <string name="admin_recent_order_clicked">%1$s selected</string>
+    <string name="admin_order_icon_content_description">Order icon</string>
+    <string name="admin_revenue_icon_content_description">Revenue icon</string>
+    <string name="common_chevron_right_content_description">Open detail</string>
+
+    <!-- Manage Menu -->
+    <string name="manage_menu_title">Manage Menu</string>
+    <string name="manage_menu_subtitle">Update artisan offerings and availability.</string>
+    <string name="manage_menu_search_hint">Search menu items...</string>
+    <string name="manage_menu_category_signature">Signature</string>
+    <string name="manage_menu_category_classic">Classic</string>
+    <string name="manage_menu_category_veggie">Veggie</string>
+    <string name="manage_menu_available">AVAILABLE</string>
+    <string name="manage_menu_sold_out">SOLD OUT</string>
+    <string name="manage_menu_image_content_description">Menu item image</string>
+    <string name="manage_menu_edit_content_description">Edit menu item</string>
+    <string name="manage_menu_edit_message">Editing %1$s</string>
+    <!-- promo menu -->
+    <string name="midnight_artisan">Midnight Artisan</string>
+    <string name="promotions">PROMOTIONS</string>
+    <string name="manage_codes">Manage Codes</string>
+    <string name="add_promo">Add Promo</string>
+
+    <string name="active">ACTIVE</string>
+    <string name="inactive">INACTIVE</string>
+    <string name="expired">EXPIRED</string>
+    <string name="scheduled">Scheduled</string>
+    <string name="active_count">Active (3)</string>
+    <string name="inactive_count">Inactive (8)</string>
+
+    <string name="discount">DISCOUNT</string>
+    <string name="expiry">EXPIRY</string>
+    <string name="min_spend">MIN. SPEND</string>
+    <string name="ends_in">ENDS IN</string>
+    <string name="used">USED</string>
+    <string name="reactivate">Re-activate</string>
+
+    <string name="redemption_rate">REDEMPTION RATE</string>
+    <string name="redemption_rate_value">14.2%%</string>
+    <string name="total_reach">TOTAL REACH</string>
+    <string name="total_reach_value">4.8k</string>
+    <string name="no_promos_found">No promo codes found</string>
+
+    <string name="menu">Menu</string>
+    <string name="profile">Profile</string>
+    <string name="edit">Edit</string>
+    <string name="delete">Delete</string>
+    <string name="share">Share</string>
+    <string name="promo_action_coming_soon">%1$s coming soon</string>
+
+    <!-- Manage Staff -->
+    <string name="staff_roster">Staff Roster</string>
+    <string name="staff_roster_subtitle">Manage your night-shift team and Artisan specialists.</string>
+    <string name="add_staff">ADD STAFF</string>
+    <string name="all_staff">ALL STAFF</string>
+    <string name="kitchen">KITCHEN</string>
+    <string name="shipper">SHIPPER</string>
+    <string name="admin">ADMIN</string>
+    <string name="staff">STAFF</string>
+    <string name="staff_avatar">Staff avatar</string>
+    <string name="change_staff_status">Change staff status</string>
+    <string name="no_staff_found">No staff found</string>
+    <string name="staff_action_coming_soon">%1$s coming soon</string>
+    <string name="edit_staff_format">Edit %1$s</string>
+    <string name="change_staff_status_format">Change status for %1$s</string>
+    <!-- reports -->
+    <string name="nightly_analytics">Nightly Analytics</string>
+    <string name="nightly_analytics_subtitle">Reviewing the artisan shift performance.</string>
+    <string name="revenue_trend">Revenue Trend</string>
+    <string name="reports_shift_time">SHIFT: 20:00 - 04:00</string>
+    <string name="report_revenue_value">$4,820</string>
+    <string name="report_revenue_change">+12.4%% vs avg</string>
+
+    <string name="report_8pm">8PM</string>
+    <string name="report_10pm">10PM</string>
+    <string name="report_12am">12AM</string>
+    <string name="report_2am">2AM</string>
+    <string name="report_4am">4AM</string>
+
+    <string name="order_health">ORDER HEALTH</string>
+    <string name="report_completed_orders">142 Completed</string>
+    <string name="report_cancelled_orders">12 Cancelled</string>
+
+    <string name="avg_time">AVG TIME</string>
+    <string name="report_avg_time_value">24 min</string>
+    <string name="report_avg_time_goal">Goal: 20 min</string>
+
+    <string name="best_sellers">Best Sellers</string>
+    <string name="best_seller_image">Best seller pizza image</string>
+
+    <string name="kitchen_peak_performance">Kitchen Peak Performance</string>
+    <string name="kitchen_peak_performance_message">The Night Owl shift is operating at 94%% efficiency. Inventory levels are healthy for the 2AM rush.</string>
 </resources>

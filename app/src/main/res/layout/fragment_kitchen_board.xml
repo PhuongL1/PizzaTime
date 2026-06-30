@@ -1,0 +1,100 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/kitchenBoardRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/headerKitchen"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_top_bar_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp">
+
+        <ImageView
+            android:id="@+id/btnMenu"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="@string/staff_menu_content_description"
+            android:padding="5dp"
+            android:src="@drawable/ic_menu" />
+
+        <TextView
+            android:id="@+id/tvKitchenTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:text="@string/staff_dashboard_title"
+            android:textColor="#F2A96B"
+            android:textSize="22sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvKitchenAvatar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:text="@string/staff_avatar_initial"
+            android:textColor="#F2A96B"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <LinearLayout
+        android:id="@+id/kitchenFilterContainer"
+        android:layout_width="match_parent"
+        android:layout_height="104dp"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp">
+
+        <TextView
+            android:id="@+id/chipWaiting"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_chip_selected_gold"
+            android:gravity="center"
+            android:text="@string/kitchen_chip_waiting"
+            android:textColor="#3A210D"
+            android:textSize="16sp" />
+
+        <TextView
+            android:id="@+id/chipPreparing"
+            android:layout_width="0dp"
+            android:layout_height="54dp"
+            android:layout_marginStart="24dp"
+            android:layout_weight="1"
+            android:background="@drawable/bg_chip_unselected_dark"
+            android:gravity="center"
+            android:text="@string/kitchen_chip_preparing"
+            android:textColor="#E6D4C8"
+            android:textSize="16sp" />
+
+    </LinearLayout>
+
+    <androidx.recyclerview.widget.RecyclerView
+        android:id="@+id/rvKitchenOrders"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:clipToPadding="false"
+        android:overScrollMode="never"
+        android:paddingHorizontal="24dp"
+        android:paddingBottom="24dp" />
+
+    <include
+        android:id="@+id/staffBottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="86dp" />
+
+</LinearLayout>

@@ -1,0 +1,5 @@
+<!-- bg_admin_pending_card.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="#C98037" />
+    <corners android:radius="12dp" />
+</shape>

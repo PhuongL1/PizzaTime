@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/kitchenOrderRoot"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="22dp"
+    android:background="@drawable/bg_kitchen_card_dark"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/viewTopAccent"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:background="#D58A3A" />
+
+    <LinearLayout
+        android:id="@+id/cardContent"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingHorizontal="22dp"
+        android:paddingTop="24dp"
+        android:paddingBottom="22dp">
+
+        <LinearLayout
+            android:id="@+id/headerRow"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="top"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvOrderType"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:textColor="#FFB47A"
+                    android:textSize="16sp"
+                    tools:text="DINE-IN · TABLE 14" />
+
+                <TextView
+                    android:id="@+id/tvOrderId"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="serif"
+                    android:textColor="#F4EEE8"
+                    android:textSize="21sp"
+                    android:textStyle="bold"
+                    tools:text="ORD-7721" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="92dp"
+                android:layout_height="wrap_content"
+                android:gravity="end"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvOrderTime"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="end"
+                    android:textColor="#FFB47A"
+                    android:textSize="21sp"
+                    android:textStyle="bold"
+                    tools:text="12m" />
+
+                <TextView
+                    android:id="@+id/tvOrderStatusLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="end"
+                    android:textColor="#D8C8BC"
+                    android:textSize="16sp"
+                    tools:text="Priority" />
+
+            </LinearLayout>
+
+        </LinearLayout>
+
+        <View
+            android:id="@+id/viewHeaderDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginTop="24dp"
+            android:background="#39312D" />
+
+        <LinearLayout
+            android:id="@+id/llOrderItems"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical" />
+
+        <LinearLayout
+            android:id="@+id/layoutReadyPanel"
+            android:layout_width="match_parent"
+            android:layout_height="92dp"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_kitchen_ready_panel"
+            android:gravity="center_vertical"
+            android:orientation="horizontal"
+            android:paddingHorizontal="18dp"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="54dp"
+                android:layout_height="54dp"
+                android:background="@drawable/bg_kitchen_ready_icon_circle"
+                android:gravity="center"
+                android:text="▢"
+                android:textColor="#31E978"
+                android:textSize="24sp" />
+
+            <TextView
+                android:id="@+id/tvReadyNote"
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_weight="1"
+                android:lineSpacingExtra="6dp"
+                android:textColor="#EDE2DA"
+                android:textSize="17sp"
+                tools:text="3 Items Ready&#10;Station 4 - Heat Racô" />
+
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/layoutPendingReview"
+            android:layout_width="match_parent"
+            android:layout_height="160dp"
+            android:gravity="center"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="▣"
+                android:textColor="#9D9692"
+                android:textSize="36sp" />
+
+            <TextView
+                android:id="@+id/tvPendingReview"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:text="@string/kitchen_pending_review"
+                android:textColor="#9D9692"
+                android:textSize="16sp" />
+
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/btnPrimaryAction"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:layout_marginTop="22dp"
+            android:background="@drawable/bg_button_primary_gold"
+            android:gravity="center"
+            android:textColor="#1F0E05"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="🔥  START BAKING" />
+
+    </LinearLayout>
+
+</LinearLayout>

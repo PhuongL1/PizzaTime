@@ -1,0 +1,371 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/shipperDeliveryRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/headerShipper"
+        android:layout_width="match_parent"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_top_bar_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp">
+
+        <ImageView
+            android:id="@+id/btnMenu"
+            android:layout_width="32dp"
+            android:layout_height="32dp"
+            android:contentDescription="@string/staff_menu_content_description"
+            android:padding="5dp"
+            android:src="@drawable/ic_menu" />
+
+        <TextView
+            android:id="@+id/tvShipperTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="18dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:text="@string/staff_dashboard_title"
+            android:textColor="#F2A96B"
+            android:textSize="24sp" />
+
+        <TextView
+            android:id="@+id/tvShipperAvatar"
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:text="@string/staff_avatar_initial"
+            android:textColor="#F2A96B"
+            android:textSize="18sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/shipperScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:fillViewport="false"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/shipperContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@drawable/bg_shipper_delivery_glow"
+            android:orientation="vertical"
+            android:paddingHorizontal="24dp"
+            android:paddingTop="26dp"
+            android:paddingBottom="36dp">
+
+            <LinearLayout
+                android:id="@+id/activeDeliveryHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvActiveDeliveryTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/shipper_active_delivery"
+                    android:textColor="#FFFFFF"
+                    android:textSize="27sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvActiveOrderCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:background="@drawable/bg_shipper_count_chip"
+                    android:gravity="center"
+                    android:paddingHorizontal="20dp"
+                    android:text="@string/shipper_active_order_count"
+                    android:textColor="#2A160A"
+                    android:textSize="14sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/activeDeliveryCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_shipper_active_card"
+                android:elevation="10dp"
+                android:orientation="vertical"
+                android:padding="26dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="top"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvActiveOrderIdLabel"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:text="@string/shipper_order_id_label"
+                            android:textColor="#D8C8BC"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvActiveOrderId"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:letterSpacing="0.08"
+                            android:textColor="#D8C8BC"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="#PX-9921" />
+
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvActiveEta"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.08"
+                        android:textColor="#FFB47A"
+                        android:textSize="14sp"
+                        android:textStyle="bold"
+                        tools:text="ETA: 8 MIN" />
+
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvActiveCustomerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:fontFamily="serif"
+                    android:textColor="#F4EEE8"
+                    android:textSize="34sp"
+                    tools:text="Julianne Moore" />
+
+                <TextView
+                    android:id="@+id/tvActiveAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="16dp"
+                    android:lineSpacingExtra="4dp"
+                    android:textColor="#D8C8BC"
+                    android:textSize="19sp"
+                    tools:text="722 Nightshade Ave, Penthouse B&#10;Upper East Side, NY" />
+
+                <LinearLayout
+                    android:id="@+id/paymentPanel"
+                    android:layout_width="match_parent"
+                    android:layout_height="80dp"
+                    android:layout_marginTop="30dp"
+                    android:background="@drawable/bg_shipper_payment_panel"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingHorizontal="22dp">
+
+                    <TextView
+                        android:id="@+id/tvActivePaymentLabel"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:letterSpacing="0.14"
+                        android:textColor="#D8C8BC"
+                        android:textSize="15sp"
+                        android:textStyle="bold"
+                        tools:text="COLLECT CASH" />
+
+                    <TextView
+                        android:id="@+id/tvActivePaymentAmount"
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:textColor="#FFB47A"
+                        android:textSize="28sp"
+                        android:textStyle="bold"
+                        tools:text="$42.50" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/activeActions"
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="28dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/btnNavigate"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_button_primary_gold"
+                        android:gravity="center"
+                        android:text="@string/shipper_navigate"
+                        android:textColor="#1F0E05"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnCallCustomer"
+                        android:layout_width="78dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_shipper_call_button"
+                        android:gravity="center"
+                        android:text="@string/shipper_call"
+                        android:textColor="#F2E8E0"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/assignedHeader"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvAssignedTitle"
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:text="@string/shipper_assigned"
+                    android:textColor="#FFFFFF"
+                    android:textSize="27sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvReadyCount"
+                    android:layout_width="wrap_content"
+                    android:layout_height="38dp"
+                    android:background="@drawable/bg_shipper_ready_chip"
+                    android:gravity="center"
+                    android:paddingHorizontal="18dp"
+                    android:text="@string/shipper_ready_count"
+                    android:textColor="#D8C8BC"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvAssignedDeliveries"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:nestedScrollingEnabled="false"
+                android:overScrollMode="never" />
+
+            <LinearLayout
+                android:id="@+id/shipperStatsRow"
+                android:layout_width="match_parent"
+                android:layout_height="170dp"
+                android:layout_marginTop="34dp"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/completedStatCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_shipper_stat_card"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/shipper_completed_count"
+                        android:textColor="#F4EEE8"
+                        android:textSize="48sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="@string/shipper_completed_label"
+                        android:textColor="#D8C8BC"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/tipsStatCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="22dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_shipper_stat_card"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/shipper_tips_amount"
+                        android:textColor="#F4EEE8"
+                        android:textSize="48sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="@string/shipper_tips_label"
+                        android:textColor="#D8C8BC"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvViewHistory"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="22dp"
+                android:gravity="center"
+                android:letterSpacing="0.12"
+                android:text="@string/shipper_view_full_history"
+                android:textColor="#F2E8E0"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <include
+        android:id="@+id/staffBottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="86dp" />
+
+</LinearLayout>

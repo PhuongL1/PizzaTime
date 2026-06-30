@@ -45,6 +45,10 @@
 
     <color name="pt_gold">#D08A3B</color>
     <color name="pt_gold_dark">#8B5A2B</color>
+    <color name="pt_gold_light">#FFB77B</color>
+
+    <color name="pt_white">#E7E1DF</color>
+    <color name="pt_white_light">#D8C3B4</color>
 
     <color name="pt_text_primary">#F8EFE8</color>
     <color name="pt_text_secondary">#CDBFB4</color>
@@ -56,4 +60,7 @@
 
     <color name="staff_action_primary_text">#3A210D</color>
     <color name="staff_action_outline_text">#CF843F</color>
+
+    <color name="staff_nav_selected">#3A210D</color>
+    <color name="staff_nav_unselected">#D8C8BC</color>
 </resources>

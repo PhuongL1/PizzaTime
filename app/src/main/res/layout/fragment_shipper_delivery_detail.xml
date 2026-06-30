@@ -1,0 +1,410 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/shipperDeliveryDetailRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_app_dark"
+    android:orientation="vertical">
+
+    <LinearLayout
+        android:id="@+id/headerDeliveryDetail"
+        android:layout_width="match_parent"
+        android:layout_height="86dp"
+        android:background="@drawable/bg_top_bar_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingHorizontal="24dp">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="@string/common_back_arrow"
+            android:textColor="#D8C8BC"
+            android:textSize="34sp" />
+
+        <TextView
+            android:id="@+id/tvOrderTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:textColor="#F2A96B"
+            android:textSize="26sp"
+            tools:text="Order #8821" />
+
+        <TextView
+            android:id="@+id/tvDetailAvatar"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:background="@drawable/bg_avatar_circle"
+            android:gravity="center"
+            android:text="@string/staff_avatar_initial"
+            android:textColor="#F2A96B"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+    <ScrollView
+        android:id="@+id/detailScroll"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:overScrollMode="never"
+        android:scrollbars="none">
+
+        <LinearLayout
+            android:id="@+id/detailContent"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingHorizontal="28dp"
+            android:paddingTop="32dp"
+            android:paddingBottom="36dp">
+
+            <LinearLayout
+                android:id="@+id/progressRow"
+                android:layout_width="match_parent"
+                android:layout_height="112dp"
+                android:gravity="center"
+                android:orientation="vertical"
+                android:paddingHorizontal="2dp">
+
+                <LinearLayout
+                    android:id="@+id/progressIconRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="64dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <FrameLayout
+                        android:id="@+id/progressPickedUpCircle"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_shipper_progress_done_circle">
+
+                        <ImageView
+                            android:id="@+id/icProgressPickedUp"
+                            android:layout_width="26dp"
+                            android:layout_height="26dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/shipper_detail_progress_picked_up"
+                            android:src="@drawable/ic_shipper_progress_check" />
+
+                    </FrameLayout>
+
+                    <View
+                        android:id="@+id/progressLinePickupToArriving"
+                        android:layout_width="0dp"
+                        android:layout_height="3dp"
+                        android:layout_marginHorizontal="14dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_shipper_progress_line_active" />
+
+                    <FrameLayout
+                        android:id="@+id/progressArrivingCircle"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_shipper_progress_active_circle">
+
+                        <ImageView
+                            android:id="@+id/icProgressArriving"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/shipper_detail_progress_arriving"
+                            android:src="@drawable/ic_shipper_progress_truck" />
+
+                    </FrameLayout>
+
+                    <View
+                        android:id="@+id/progressLineArrivingToDelivered"
+                        android:layout_width="0dp"
+                        android:layout_height="3dp"
+                        android:layout_marginHorizontal="14dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_shipper_progress_line_inactive" />
+
+                    <FrameLayout
+                        android:id="@+id/progressDeliveredCircle"
+                        android:layout_width="56dp"
+                        android:layout_height="56dp"
+                        android:background="@drawable/bg_shipper_progress_inactive_circle">
+
+                        <ImageView
+                            android:id="@+id/icProgressDelivered"
+                            android:layout_width="28dp"
+                            android:layout_height="28dp"
+                            android:layout_gravity="center"
+                            android:alpha="0.55"
+                            android:contentDescription="@string/shipper_detail_progress_delivered"
+                            android:src="@drawable/ic_shipper_progress_double_check" />
+
+                    </FrameLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/progressLabelRow"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="6dp"
+                    android:gravity="center"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvProgressPickedUp"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="start"
+                        android:text="@string/shipper_detail_progress_picked_up"
+                        android:textColor="#FFB47A"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvProgressArriving"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="center"
+                        android:text="@string/shipper_detail_progress_arriving"
+                        android:textColor="#FFB47A"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvProgressDelivered"
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:gravity="end"
+                        android:text="@string/shipper_detail_progress_delivered"
+                        android:textColor="#7C746F"
+                        android:textSize="17sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/customerCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_shipper_active_card"
+                android:orientation="vertical"
+                android:padding="28dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/shipper_detail_customer"
+                    android:textColor="#FFB47A"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCustomerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="serif"
+                    android:textColor="#F4EEE8"
+                    android:textSize="38sp"
+                    android:textStyle="bold"
+                    tools:text="Alessandra Rossi" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="70dp"
+                    android:layout_marginTop="42dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/btnCallCustomer"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_button_primary_gold"
+                        android:gravity="center"
+                        android:text="@string/shipper_detail_call_customer"
+                        android:textColor="#2A160A"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/btnNavigate"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="18dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_shipper_detail_disabled_button"
+                        android:gravity="center"
+                        android:text="@string/shipper_navigate"
+                        android:textColor="#BDB6B1"
+                        android:textSize="18sp"
+                        android:textStyle="bold" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/mapAddressCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_shipper_map_card"
+                android:orientation="vertical"
+                android:paddingHorizontal="28dp"
+                android:paddingTop="220dp"
+                android:paddingBottom="28dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/shipper_detail_delivery_address"
+                    android:textColor="#FFB47A"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDeliveryAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="5dp"
+                    android:textColor="#F4EEE8"
+                    android:textSize="21sp"
+                    tools:text="422 Artisan Way, Suite 8B&#10;Manhattan, NY 10014" />
+
+                <LinearLayout
+                    android:id="@+id/courierNoteCard"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="28dp"
+                    android:background="@drawable/bg_shipper_note_card"
+                    android:orientation="vertical"
+                    android:padding="24dp">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:letterSpacing="0.12"
+                        android:text="@string/shipper_detail_courier_note"
+                        android:textColor="#FFB47A"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/tvCourierNote"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:lineSpacingExtra="6dp"
+                        android:textColor="#D8C8BC"
+                        android:textSize="18sp"
+                        tools:text="&quot;Gate code is 1992.&quot;" />
+
+                </LinearLayout>
+
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/paymentCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_shipper_active_card"
+                android:orientation="vertical"
+                android:padding="28dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:text="@string/shipper_detail_payment_due"
+                        android:textColor="#F4EEE8"
+                        android:textSize="28sp"
+                        android:textStyle="bold" />
+
+                    <LinearLayout
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:gravity="end"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvPaymentAmount"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:textColor="#FFB47A"
+                            android:textSize="34sp"
+                            tools:text="$42.50" />
+
+                        <TextView
+                            android:id="@+id/tvPaymentMethod"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:textColor="#FFB47A"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="CASH ON DELIVERY" />
+
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="28dp"
+                    android:layout_marginBottom="22dp"
+                    android:background="#342D29" />
+
+                <LinearLayout
+                    android:id="@+id/llPaymentItems"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical" />
+
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnConfirmDelivery"
+                android:layout_width="match_parent"
+                android:layout_height="74dp"
+                android:layout_marginTop="42dp"
+                android:background="@drawable/bg_button_primary_gold"
+                android:gravity="center"
+                android:text="@string/shipper_detail_confirm_delivery"
+                android:textColor="#2A160A"
+                android:textSize="22sp"
+                android:textStyle="bold" />
+
+        </LinearLayout>
+
+    </ScrollView>
+
+    <include
+        android:id="@+id/staffBottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="86dp" />
+
+</LinearLayout>

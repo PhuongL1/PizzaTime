@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/adminRecentOrderRoot"
+    android:layout_width="match_parent"
+    android:layout_height="92dp"
+    android:layout_marginBottom="18dp"
+    android:background="@drawable/bg_admin_recent_order_card"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingHorizontal="20dp">
+
+    <ImageView
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:background="@drawable/bg_admin_recent_icon"
+        android:contentDescription="@string/admin_order_icon_content_description"
+        android:padding="14dp"
+        android:src="@drawable/ic_order_icon" />
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvRecentOrderId"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/pt_white"
+            android:textSize="20sp"
+            android:textStyle="bold"
+            tools:text="Order #8842" />
+
+        <TextView
+            android:id="@+id/tvRecentOrderSummary"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="4dp"
+            android:textColor="@color/pt_white_light"
+            android:textSize="14sp"
+            android:textStyle="italic"
+            tools:text="2x Truffle Pepperoni, 1x Nero Soda" />
+
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvRecentOrderPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pt_gold_light"
+        android:textSize="19sp"
+        tools:text="$42.00" />
+
+    <ImageView
+        android:layout_width="28dp"
+        android:layout_height="match_parent"
+        android:contentDescription="@string/common_chevron_right_content_description"
+        android:paddingStart="10dp"
+        android:src="@drawable/ic_chevron_right" />
+
+</LinearLayout>

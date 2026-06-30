@@ -1,0 +1,5 @@
+<!-- bg_admin_staff_card.xml -->
+<shape xmlns:android="http://schemas.android.com/apk/res/android">
+    <solid android:color="@color/pt_surface_soft" />
+    <corners android:radius="14dp" />
+</shape>

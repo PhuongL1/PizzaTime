@@ -7,12 +7,15 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.devpro.pizzatime.R
 import androidx.lifecycle.ViewModelProvider
+import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
 import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
-import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 
 class LoginFragment : Fragment() {
 
@@ -46,11 +49,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.btnCreateAccount.setOnClickListener {
-            parentFragmentManager.beginTransaction()
-                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-                .replace(R.id.fragmentContainer, RegisterFragment())
-                .addToBackStack(null)
-                .commit()
+            openRegister()
         }
 
         binding.btnForgotPassword.setOnClickListener {
@@ -71,6 +70,7 @@ class LoginFragment : Fragment() {
                         getString(R.string.auth_login_success_as, user.displayName),
                         Toast.LENGTH_SHORT,
                     ).show()
+
                     openHomeByRole(user.role)
                 }
                 .onFailure { error ->
@@ -115,27 +115,36 @@ class LoginFragment : Fragment() {
             UserRole.CUSTOMER,
                 -> openCustomerHome()
 
-            UserRole.STAFF -> openStaffDashboard()
+            UserRole.STAFF -> {
+                openStaffDashboard(addToBackStack = false)
+            }
 
-            UserRole.KITCHEN -> showRoleComingSoon(R.string.role_kitchen)
+            UserRole.KITCHEN -> {
+                openKitchenBoard(addToBackStack = false)
+            }
 
-            UserRole.SHIPPER -> showRoleComingSoon(R.string.role_shipper)
+            UserRole.SHIPPER -> {
+                openShipperDeliveryDashboard(addToBackStack = false)
+            }
 
-            UserRole.ADMIN -> showRoleComingSoon(R.string.role_admin)
+            UserRole.ADMIN -> {
+                openAdminDashboard(addToBackStack = false)
+            }
         }
+    }
+
+    private fun openRegister() {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(R.id.fragmentContainer, RegisterFragment())
+            .addToBackStack(null)
+            .commit()
     }
 
     private fun openCustomerHome() {
         parentFragmentManager.beginTransaction()
             .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
             .replace(R.id.fragmentContainer, CustomerHomeFragment())
-            .commit()
-    }
-
-    private fun openStaffDashboard() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, StaffDashboardFragment())
             .commit()
     }
 
