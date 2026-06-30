@@ -8,6 +8,7 @@ import com.devpro.pizzatime.feature.admin.menu.ManageMenuFragment
 import com.devpro.pizzatime.feature.admin.promo.ManagePromoCodesFragment
 import com.devpro.pizzatime.feature.admin.reports.ReportsFragment
 import com.devpro.pizzatime.feature.admin.staff.ManageStaffFragment
+import com.devpro.pizzatime.feature.customer.order.OrderTypeFragment
 import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailFragment
@@ -78,6 +79,12 @@ fun Fragment.openManageStaff(addToBackStack: Boolean = true) {
 fun Fragment.openReports(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = ReportsFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openOrderType(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = OrderTypeFragment(),
         addToBackStack = addToBackStack,
     )
 }

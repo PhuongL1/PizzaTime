@@ -436,4 +436,28 @@
 
     <string name="kitchen_peak_performance">Kitchen Peak Performance</string>
     <string name="kitchen_peak_performance_message">The Night Owl shift is operating at 94%% efficiency. Inventory levels are healthy for the 2AM rush.</string>
+    <!-- order_type -->
+    <string name="order_type_location">DOWNTOWN BISTRO</string>
+    <string name="order_type_title">How would you like your pizza?</string>
+    <string name="order_type_subtitle">Select your preferred dining experience for tonight.</string>
+
+    <string name="order_type_delivery_title">Delivery</string>
+    <string name="order_type_delivery_description">Arrives hot at your doorstep</string>
+
+    <string name="order_type_self_collect_title">Self-Collect</string>
+    <string name="order_type_self_collect_description">Ready in 15-20 minutes</string>
+
+    <string name="order_type_dine_in_title">Dine-In Ordering</string>
+    <string name="order_type_dine_in_description">Order from your table</string>
+
+    <string name="order_type_premium_badge">PREMIUM ARTISAN</string>
+    <string name="order_type_continue">Continue →</string>
+    <string name="order_type_selected_message">Selected: %1$s</string>
+
+    <string name="order_type_location_icon_description">Order type location icon</string>
+    <string name="order_type_avatar_description">Restaurant preview image</string>
+    <string name="order_type_hero_description">Artisan pizza preview image</string>
+    <string name="order_type_delivery_icon_description">Delivery option icon</string>
+    <string name="order_type_self_collect_icon_description">Self collect option icon</string>
+    <string name="order_type_dine_in_icon_description">Dine in option icon</string>
 </resources>
