@@ -14,6 +14,7 @@ import com.devpro.pizzatime.feature.customer.cart.CartFragment
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.detail.PizzaDetailFragment
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 
 class PizzaMenuFragment : Fragment() {
 
@@ -36,8 +37,8 @@ class PizzaMenuFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.bottomNav.navHome.text = getString(R.string.menu_nav_menu)
-        binding.bottomNav.navAlerts.text = getString(R.string.menu_nav_loyalty)
+        binding.bottomNav.navMenu.text = getString(R.string.menu_nav_menu)
+        binding.bottomNav.navLoyalty.text = getString(R.string.menu_nav_loyalty)
     }
 
     private fun renderPizzaList(items: List<PizzaMenuUiModel>) {
@@ -113,7 +114,7 @@ class PizzaMenuFragment : Fragment() {
             Toast.makeText(requireContext(), "Orders coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        binding.bottomNav.navAlerts.setOnClickListener {
+        binding.bottomNav.navLoyalty.setOnClickListener {
             Toast.makeText(requireContext(), "Loyalty coming soon", Toast.LENGTH_SHORT).show()
         }
 
@@ -133,13 +134,6 @@ class PizzaMenuFragment : Fragment() {
         parentFragmentManager.beginTransaction()
             .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
             .replace(R.id.fragmentContainer, PizzaDetailFragment())
-            .addToBackStack(null)
-            .commit()
-    }
-    private fun openCartScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(com.devpro.pizzatime.R.id.fragmentContainer, CartFragment())
             .addToBackStack(null)
             .commit()
     }

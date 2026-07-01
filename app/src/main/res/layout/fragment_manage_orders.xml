@@ -1,0 +1,227 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.admin.orders.ManageOrdersFragment">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_manage_orders_top_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="@string/manage_orders_menu_icon"
+            android:textColor="@color/pt_copper"
+            android:textSize="28sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="14dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:text="@string/manage_orders_brand"
+            android:textColor="@color/pt_copper"
+            android:textSize="24sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/manage_orders_admin_avatar_description"
+            android:src="@drawable/ic_customer_account_avatar_placeholder" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="32dp"
+        android:paddingTop="22dp"
+        android:paddingEnd="32dp"
+        android:paddingBottom="24dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:letterSpacing="0.12"
+                android:text="@string/manage_orders_admin_sub"
+                android:textColor="@color/pt_copper"
+                android:textSize="13sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="serif"
+                android:text="@string/manage_orders_title"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="34sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnNewManualOrder"
+                android:layout_width="wrap_content"
+                android:layout_height="48dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_manage_orders_manual_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp"
+                android:text="@string/manage_orders_new_manual_order"
+                android:textColor="@color/pt_text_dark"
+                android:textSize="16sp" />
+
+            <GridLayout
+                android:id="@+id/statsGrid"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:columnCount="2"
+                android:rowCount="2">
+
+                <TextView
+                    android:id="@+id/tvActiveOrdersStat"
+                    style="@style/ManageOrdersStatCard"
+                    android:text="@string/manage_orders_stat_active_preview" />
+
+                <TextView
+                    android:id="@+id/tvConfirmedStat"
+                    style="@style/ManageOrdersStatCard"
+                    android:layout_marginStart="14dp"
+                    android:text="@string/manage_orders_stat_confirmed_preview" />
+
+                <TextView
+                    android:id="@+id/tvInDeliveryStat"
+                    style="@style/ManageOrdersStatCard"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/manage_orders_stat_delivery_preview" />
+
+                <TextView
+                    android:id="@+id/tvAvgTimeStat"
+                    style="@style/ManageOrdersStatCard"
+                    android:layout_marginStart="14dp"
+                    android:layout_marginTop="14dp"
+                    android:text="@string/manage_orders_stat_avg_preview" />
+            </GridLayout>
+
+            <EditText
+                android:id="@+id/etSearch"
+                android:layout_width="match_parent"
+                android:layout_height="54dp"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_manage_orders_search_box"
+                android:hint="@string/manage_orders_search_hint"
+                android:inputType="text"
+                android:paddingStart="22dp"
+                android:paddingEnd="22dp"
+                android:singleLine="true"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textColorHint="@color/pt_text_secondary_dark_bg"
+                android:textSize="15sp" />
+
+            <HorizontalScrollView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="20dp"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/filterContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="48dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/chipAll"
+                        style="@style/ManageOrdersFilterChip"
+                        android:text="@string/manage_orders_filter_all" />
+
+                    <TextView
+                        android:id="@+id/chipPending"
+                        style="@style/ManageOrdersFilterChip"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/manage_orders_filter_pending" />
+
+                    <TextView
+                        android:id="@+id/chipConfirmed"
+                        style="@style/ManageOrdersFilterChip"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/manage_orders_filter_confirmed" />
+
+                    <TextView
+                        android:id="@+id/chipReady"
+                        style="@style/ManageOrdersFilterChip"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/manage_orders_filter_ready" />
+
+                    <TextView
+                        android:id="@+id/chipShipped"
+                        style="@style/ManageOrdersFilterChip"
+                        android:layout_marginStart="10dp"
+                        android:text="@string/manage_orders_filter_shipped" />
+                </LinearLayout>
+            </HorizontalScrollView>
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/rvOrders"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:nestedScrollingEnabled="false"
+                tools:itemCount="4"
+                tools:listitem="@layout/item_admin_order" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="40dp"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/bottomNav"
+        layout="@layout/layout_staff_bottom_nav"
+        android:layout_width="match_parent"
+        android:layout_height="88dp"
+        android:layout_marginStart="11dp"
+        android:layout_marginEnd="11dp"
+        android:layout_marginBottom="18dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

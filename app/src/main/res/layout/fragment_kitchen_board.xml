@@ -78,6 +78,9 @@
             android:text="@string/kitchen_chip_preparing"
             android:textColor="#E6D4C8"
             android:textSize="16sp" />
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="60dp" />
 
     </LinearLayout>
 

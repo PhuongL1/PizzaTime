@@ -264,6 +264,9 @@
                 android:textColor="@color/pt_text_primary"
                 android:textSize="26sp"
                 android:textStyle="bold" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="100dp" />
 
         </LinearLayout>
 

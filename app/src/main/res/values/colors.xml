@@ -63,4 +63,16 @@
 
     <color name="staff_nav_selected">#3A210D</color>
     <color name="staff_nav_unselected">#D8C8BC</color>
+
+    <color name="pt_text_hint_dark_bg">#82756D</color>
+    <color name="pt_divider_dark">#2F2925</color>
+    <color name="pt_border_warm">#5B493E</color>
+    <color name="pt_input_dark">#100E0C</color>
+    <color name="pt_danger_surface">#42181A</color>
+    <color name="pt_danger_text">#FFB0A8</color>
+    <color name="pt_danger_button_bg">#F3A7A0</color>
+    <color name="pt_danger_button_text">#6E0E13</color>
+    <color name="pt_overlay_dark_55">#8C000000</color>
+    <color name="pt_switch_track_off">#3A3430</color>
+    <color name="pt_switch_thumb">#FFF4E6</color>
 </resources>

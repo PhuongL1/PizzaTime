@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="0dp"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_build_pizza_size"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center"
+    android:orientation="vertical">
+
+    <TextView
+        android:id="@+id/tvSizeLabel"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:gravity="center"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="20sp"
+        tools:text="14&quot;" />
+
+    <TextView
+        android:id="@+id/tvSizePrice"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="14dp"
+        android:gravity="center"
+        android:textColor="@color/pt_copper"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="$22.00" />
+</LinearLayout>

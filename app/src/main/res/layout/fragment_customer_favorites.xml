@@ -1,0 +1,131 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.customer.favorites.CustomerFavoritesFragment">
+
+    <include
+        android:id="@+id/customerTopBar"
+        layout="@layout/layout_customer_top_bar"
+        android:layout_width="0dp"
+        android:layout_height="66dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="false"
+        android:paddingStart="30dp"
+        android:paddingTop="44dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@id/customerBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/customerTopBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <TextView
+                android:id="@+id/tvTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:fontFamily="serif"
+                android:includeFontPadding="false"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="38sp"
+                android:textStyle="bold"
+                tools:text="Your Cravings" />
+
+            <TextView
+                android:id="@+id/tvSubtitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:lineSpacingExtra="4dp"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                tools:text="Hand-picked artisan selections for the midnight epicurean." />
+
+            <LinearLayout
+                android:id="@+id/favoritesContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="42dp"
+                android:orientation="vertical" />
+
+            <LinearLayout
+                android:id="@+id/pairingCard"
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:layout_marginTop="4dp"
+                android:background="@drawable/bg_customer_favorites_pairing_card"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="28dp"
+                android:paddingEnd="28dp">
+
+                <TextView
+                    android:id="@+id/tvPairingIcon"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:background="@drawable/bg_customer_favorites_pairing_icon_circle"
+                    android:gravity="center"
+                    android:text="@string/customer_favorites_pairing_icon"
+                    android:textColor="@color/pt_copper"
+                    android:textSize="24sp" />
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="22dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:id="@+id/tvPairingTitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold"
+                        tools:text="Weekly Pairings" />
+
+                    <TextView
+                        android:id="@+id/tvPairingSubtitle"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="15sp"
+                        tools:text="Recommended wines for your favorites" />
+                </LinearLayout>
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/customerBottomNav"
+        layout="@layout/layout_customer_bottom_nav"
+        android:layout_width="0dp"
+        android:layout_height="88dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

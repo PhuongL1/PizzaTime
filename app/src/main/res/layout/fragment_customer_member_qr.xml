@@ -1,0 +1,307 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.customer.memberqr.CustomerMemberQrFragment">
+
+    <include
+        android:id="@+id/customerTopBar"
+        layout="@layout/layout_customer_top_bar"
+        android:layout_width="0dp"
+        android:layout_height="66dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="false"
+        android:paddingStart="30dp"
+        android:paddingTop="44dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@id/customerBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/customerTopBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:id="@+id/memberCard"
+                android:layout_width="match_parent"
+                android:layout_height="300dp"
+                android:background="@drawable/bg_customer_member_qr_member_card"
+                android:orientation="vertical"
+                android:paddingStart="34dp"
+                android:paddingTop="34dp"
+                android:paddingEnd="34dp"
+                android:paddingBottom="30dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="top"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvTierLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:textColor="@color/pt_copper"
+                            android:textSize="16sp"
+                            android:textStyle="bold"
+                            tools:text="PREMIUM TIER" />
+
+                        <TextView
+                            android:id="@+id/tvMemberTitle"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="18dp"
+                            android:fontFamily="serif"
+                            android:includeFontPadding="false"
+                            android:textColor="@color/pt_text_primary_dark_bg"
+                            android:textSize="42sp"
+                            tools:text="Artisan Member" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:id="@+id/tvTierIcon"
+                        android:layout_width="74dp"
+                        android:layout_height="74dp"
+                        android:background="@drawable/bg_customer_member_qr_tier_icon"
+                        android:gravity="center"
+                        android:text="@string/customer_member_qr_tier_icon"
+                        android:textColor="@color/pt_copper"
+                        android:textSize="34sp" />
+                </LinearLayout>
+
+                <TextView
+                    android:id="@+id/tvPointsLabel"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="58dp"
+                    android:letterSpacing="0.14"
+                    android:textColor="@color/pt_text_secondary_dark_bg"
+                    android:textSize="15sp"
+                    android:textStyle="bold"
+                    tools:text="DOUGH POINTS" />
+
+                <TextView
+                    android:id="@+id/tvPointsValue"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/pt_copper"
+                    android:textSize="40sp"
+                    tools:text="1,250 / 2,000 for next reward" />
+
+                <ProgressBar
+                    android:id="@+id/memberProgress"
+                    style="?android:attr/progressBarStyleHorizontal"
+                    android:layout_width="match_parent"
+                    android:layout_height="7dp"
+                    android:layout_marginTop="20dp"
+                    android:indeterminate="false"
+                    android:max="2000"
+                    android:progress="1250"
+                    android:progressDrawable="@drawable/bg_customer_member_qr_progress" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="0dp"
+                    android:layout_weight="1"
+                    android:gravity="bottom"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:id="@+id/tvMemberSinceLabel"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.14"
+                            android:textColor="@color/pt_text_secondary_dark_bg"
+                            android:textSize="15sp"
+                            android:textStyle="bold"
+                            tools:text="MEMBER SINCE" />
+
+                        <TextView
+                            android:id="@+id/tvMemberSinceValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="10dp"
+                            android:textColor="@color/pt_text_primary_dark_bg"
+                            android:textSize="24sp"
+                            tools:text="Oct 2023" />
+                    </LinearLayout>
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="serif"
+                        android:includeFontPadding="false"
+                        android:text="@string/app_name_upper"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="italic" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/qrCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="44dp"
+                android:background="@drawable/bg_customer_member_qr_card"
+                android:gravity="center_horizontal"
+                android:orientation="vertical"
+                android:paddingStart="28dp"
+                android:paddingTop="52dp"
+                android:paddingEnd="28dp"
+                android:paddingBottom="44dp">
+
+                <FrameLayout
+                    android:id="@+id/qrImageFrame"
+                    android:layout_width="match_parent"
+                    android:layout_height="300dp"
+                    android:background="@drawable/bg_customer_member_qr_image_frame"
+                    android:padding="20dp">
+
+                    <ImageView
+                        android:id="@+id/ivQrImage"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/customer_member_qr_image_description"
+                        android:scaleType="centerCrop"
+                        android:src="@drawable/img_pizza_qr"
+                        tools:src="@drawable/img_pizza_qr" />
+                </FrameLayout>
+
+                <TextView
+                    android:id="@+id/tvQrInstruction"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="36dp"
+                    android:gravity="center"
+                    android:lineSpacingExtra="8dp"
+                    android:textColor="@color/pt_text_secondary_dark_bg"
+                    android:textSize="22sp"
+                    tools:text="Scan at the counter or kiosk to&#10;earn points and redeem&#10;rewards" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/actionRow"
+                android:layout_width="match_parent"
+                android:layout_height="128dp"
+                android:layout_marginTop="40dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/historyCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginEnd="16dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_customer_member_qr_action_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ivHistoryIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:contentDescription="@string/customer_member_qr_history_icon"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/img_customer_member_qr_history_icon"
+                        app:tint="@color/pt_copper" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:letterSpacing="0.12"
+                        android:text="@string/customer_member_qr_history"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rewardsCard"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_marginStart="16dp"
+                    android:layout_weight="1"
+                    android:background="@drawable/bg_customer_member_qr_action_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:id="@+id/ivRewardsIcon"
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:contentDescription="@string/customer_member_qr_rewards_icon"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/img_customer_member_qr_rewards_icon"
+                        app:tint="@color/pt_copper" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:letterSpacing="0.12"
+                        android:text="@string/customer_member_qr_rewards"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="16sp"
+                        android:textStyle="bold" />
+                </LinearLayout>
+            </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/customerBottomNav"
+        layout="@layout/layout_customer_bottom_nav"
+        android:layout_width="0dp"
+        android:layout_height="88dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="176dp"
+    android:layout_height="190dp"
+    android:background="@drawable/bg_build_pizza_sauce_card"
+    android:clipToOutline="true"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:orientation="vertical">
+
+    <View
+        android:id="@+id/vSaucePreview"
+        android:layout_width="match_parent"
+        android:layout_height="100dp"
+        android:background="@drawable/bg_build_pizza_sauce_red" />
+
+    <TextView
+        android:id="@+id/tvSauceName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="12dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:textColor="@color/pt_text_primary_dark_bg"
+        android:textSize="16sp"
+        tools:text="San Marzano" />
+
+    <TextView
+        android:id="@+id/tvSauceSubtitle"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="6dp"
+        android:paddingStart="14dp"
+        android:paddingEnd="14dp"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="11sp"
+        tools:text="CLASSIC RED" />
+</LinearLayout>

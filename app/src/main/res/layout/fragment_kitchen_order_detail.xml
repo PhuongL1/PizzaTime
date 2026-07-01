@@ -1,0 +1,411 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.kitchen.detail.KitchenOrderDetailFragment">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_kitchen_order_detail_top_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="26dp"
+        android:paddingEnd="26dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/btnBack"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="@string/kitchen_order_detail_back_icon"
+            android:textColor="@color/pt_copper"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:text="@string/kitchen_order_detail_title"
+            android:textColor="@color/pt_copper"
+            android:textSize="25sp"
+            android:textStyle="bold" />
+
+        <ImageView
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:contentDescription="@string/kitchen_order_detail_avatar_description"
+            android:src="@drawable/ic_customer_account_avatar_placeholder" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="34dp"
+        android:paddingTop="18dp"
+        android:paddingEnd="34dp"
+        android:paddingBottom="32dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:letterSpacing="0.12"
+                    android:text="@string/kitchen_order_detail_live_order"
+                    android:textColor="@color/pt_copper"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvReceivedAgo"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.08"
+                    android:textColor="@color/pt_text_secondary_dark_bg"
+                    android:textSize="12sp"
+                    android:textStyle="bold"
+                    tools:text="RECEIVED 4m AGO" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/tvOrderId"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:fontFamily="serif"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="48sp"
+                tools:text="#ORD-8824" />
+
+            <TextView
+                android:id="@+id/tvStatus"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="8dp"
+                android:textColor="@color/pt_copper"
+                android:textSize="20sp"
+                android:textStyle="bold"
+                tools:text="• PREPARATION PENDING" />
+
+            <LinearLayout
+                android:id="@+id/itemCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_kitchen_order_detail_item_card"
+                android:orientation="vertical"
+                android:paddingStart="28dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="28dp"
+                android:paddingBottom="28dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/kitchen_order_detail_current_item"
+                    android:textColor="@color/pt_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvItemName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/pt_text_dark"
+                    android:textSize="31sp"
+                    android:textStyle="bold"
+                    tools:text="TRUFFLE NOIR" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="24dp"
+                    android:baselineAligned="false"
+                    android:orientation="horizontal">
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:text="@string/kitchen_order_detail_size"
+                            android:textColor="@color/pt_text_muted"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvSizeValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="@color/pt_text_dark"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            tools:text="Large (16&quot;)" />
+                    </LinearLayout>
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:text="@string/kitchen_order_detail_crust"
+                            android:textColor="@color/pt_text_muted"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvCrustValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:textColor="@color/pt_text_dark"
+                            android:textSize="20sp"
+                            android:textStyle="bold"
+                            tools:text="Artisan Thin" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="22dp"
+                    android:background="@color/pt_border_warm" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:letterSpacing="0.12"
+                    android:text="@string/kitchen_order_detail_toppings_build"
+                    android:textColor="@color/pt_text_muted"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTopping1"
+                    style="@style/KitchenOrderDetailToppingText"
+                    tools:text="⊙ Double Buffalo Mozzarella" />
+
+                <TextView
+                    android:id="@+id/tvTopping2"
+                    style="@style/KitchenOrderDetailToppingText"
+                    tools:text="⊙ Black Truffle Shavings" />
+
+                <TextView
+                    android:id="@+id/tvTopping3"
+                    style="@style/KitchenOrderDetailToppingText"
+                    tools:text="⊙ Wild Porcini Mushrooms" />
+
+                <TextView
+                    android:id="@+id/tvTopping4"
+                    style="@style/KitchenOrderDetailToppingText"
+                    tools:text="⊙ Roasted Garlic Confit" />
+
+                <TextView
+                    android:id="@+id/tvTopping5"
+                    style="@style/KitchenOrderDetailToppingText"
+                    tools:text="⊙ Fresh Chives" />
+
+                <ImageView
+                    android:id="@+id/ivItemImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="140dp"
+                    android:layout_marginTop="26dp"
+                    android:contentDescription="@string/kitchen_order_detail_item_image_description"
+                    android:scaleType="centerCrop"
+                    tools:src="@drawable/img_pizza_time" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/allergyCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_kitchen_order_detail_alert_card"
+                android:orientation="vertical"
+                android:paddingStart="28dp"
+                android:paddingTop="24dp"
+                android:paddingEnd="28dp"
+                android:paddingBottom="24dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/kitchen_order_detail_critical_alert"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvAllergyTitle"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:fontFamily="serif"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="29sp"
+                    tools:text="ALLERGY: GLUTEN" />
+
+                <TextView
+                    android:id="@+id/tvAllergyMessage"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="14dp"
+                    android:lineSpacingExtra="5dp"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="16sp"
+                    tools:text="Use separate preparation station and clean peel." />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/requestCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:background="@drawable/bg_kitchen_order_detail_request_card"
+                android:orientation="vertical"
+                android:paddingStart="28dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="28dp"
+                android:paddingBottom="28dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/kitchen_order_detail_customer_request"
+                    android:textColor="@color/pt_text_secondary_dark_bg"
+                    android:textSize="12sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvCustomerRequest"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
+                    android:lineSpacingExtra="7dp"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="25sp"
+                    tools:text="&quot;Extra truffle oil on the side.&quot;" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="26dp"
+                    android:orientation="horizontal">
+
+                    <TextView
+                        android:id="@+id/tvTagPrimary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:background="@drawable/bg_kitchen_order_detail_chip_gold"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="@color/pt_text_dark"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="VIP TIER" />
+
+                    <TextView
+                        android:id="@+id/tvTagSecondary"
+                        android:layout_width="wrap_content"
+                        android:layout_height="32dp"
+                        android:layout_marginStart="12dp"
+                        android:background="@drawable/bg_kitchen_order_detail_chip_dark"
+                        android:gravity="center"
+                        android:paddingStart="16dp"
+                        android:paddingEnd="16dp"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="12sp"
+                        android:textStyle="bold"
+                        tools:text="ANNIVERSARY" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnStartPreparing"
+                style="@style/KitchenOrderDetailActionButtonDark"
+                android:layout_marginTop="34dp"
+                android:text="@string/kitchen_order_detail_start_preparing" />
+
+            <TextView
+                android:id="@+id/btnStartBaking"
+                style="@style/KitchenOrderDetailActionButtonDark"
+                android:layout_marginTop="18dp"
+                android:text="@string/kitchen_order_detail_start_baking" />
+
+            <TextView
+                android:id="@+id/btnMarkReady"
+                style="@style/KitchenOrderDetailActionButtonPrimary"
+                android:layout_marginTop="18dp"
+                android:text="@string/kitchen_order_detail_mark_ready" />
+
+            <TextView
+                android:id="@+id/btnCancelOrder"
+                android:layout_width="match_parent"
+                android:layout_height="110dp"
+                android:layout_marginTop="18dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:background="@drawable/bg_customer_account_logout_card"
+                android:gravity="center"
+                android:letterSpacing="0.12"
+                android:text="@string/staff_order_detail_cancel_order"
+                android:textColor="@color/pt_danger_text"
+                android:textSize="18sp"
+                android:textStyle="bold" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="40dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

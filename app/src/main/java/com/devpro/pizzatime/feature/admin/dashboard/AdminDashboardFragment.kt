@@ -8,9 +8,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentAdminDashboardBinding
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
+import com.devpro.pizzatime.feature.staff.navigation.openAddEditProduct
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
-import com.devpro.pizzatime.feature.staff.navigation.openManagePromoCodes
+import com.devpro.pizzatime.feature.staff.navigation.openManageOrders
 import com.devpro.pizzatime.feature.staff.navigation.openManageStaff
 import com.devpro.pizzatime.feature.staff.navigation.openReports
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -58,7 +58,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
     private fun setupQuickActions() = with(binding) {
         btnAddProduct.setOnClickListener {
-            openManageMenu()
+            openAddEditProduct()
         }
 
         btnManageStaff.setOnClickListener {
@@ -88,7 +88,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         binding.staffBottomNav.setupStaffBottomNav(
             currentTab = StaffBottomNavTab.DASHBOARD,
             onKitchenClick = {
-                openKitchenBoard()
+                openManageOrders()
             },
             onDeliveryClick = {
                 openShipperDeliveryDashboard()

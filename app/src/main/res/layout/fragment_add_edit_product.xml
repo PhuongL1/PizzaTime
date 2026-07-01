@@ -1,0 +1,447 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.admin.product.AddEditProductFragment">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_add_edit_product_top_bar"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="28dp"
+        android:paddingEnd="28dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/btnClose"
+            android:layout_width="46dp"
+            android:layout_height="46dp"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="@string/add_edit_product_close_icon"
+            android:textColor="@color/pt_copper"
+            android:textSize="30sp" />
+
+        <TextView
+            android:id="@+id/tvScreenTitle"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:textColor="@color/pt_copper"
+            android:textSize="23sp"
+            android:textStyle="bold"
+            tools:text="Edit Artisan Pizza" />
+
+        <ImageView
+            android:layout_width="44dp"
+            android:layout_height="44dp"
+            android:contentDescription="@string/add_edit_product_admin_avatar_description"
+            android:src="@drawable/ic_customer_account_avatar_placeholder" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingStart="30dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="132dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomActionBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/heroUploadCard"
+                android:layout_width="match_parent"
+                android:layout_height="204dp"
+                android:background="@drawable/bg_add_edit_product_hero_upload"
+                android:clipToOutline="true"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:padding="1dp">
+
+                <ImageView
+                    android:id="@+id/ivHeroImage"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:contentDescription="@string/add_edit_product_hero_description"
+                    android:scaleType="centerCrop"
+                    android:src="@drawable/img_pizza_time"
+                    tools:src="@drawable/img_pizza_time" />
+
+                <View
+                    android:id="@+id/heroImageOverlay"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:background="@drawable/bg_add_edit_product_hero_overlay" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp">
+
+                    <ImageView
+                        android:id="@+id/ivUploadIcon"
+                        android:layout_width="72dp"
+                        android:layout_height="72dp"
+                        android:background="@drawable/bg_add_edit_product_camera_circle"
+                        android:contentDescription="@string/add_edit_product_camera_icon"
+                        android:padding="18dp"
+                        android:scaleType="centerInside"
+                        android:src="@drawable/ic_camera_icon" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="18dp"
+                        android:gravity="center"
+                        android:letterSpacing="0.10"
+                        android:text="@string/add_edit_product_upload_title"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:gravity="center"
+                        android:text="@string/add_edit_product_upload_subtitle"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="12sp" />
+                </LinearLayout>
+            </FrameLayout>
+
+            <LinearLayout
+                android:id="@+id/availabilityCard"
+                android:layout_width="match_parent"
+                android:layout_height="92dp"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_add_edit_product_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="24dp"
+                android:paddingEnd="24dp">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:text="@string/add_edit_product_available_title"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="4dp"
+                        android:text="@string/add_edit_product_available_subtitle"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="16sp" />
+                </LinearLayout>
+
+                <FrameLayout
+                    android:id="@+id/availabilitySwitch"
+                    android:layout_width="64dp"
+                    android:layout_height="36dp"
+                    android:background="@drawable/bg_add_edit_product_switch_track_on"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:padding="4dp">
+
+                    <View
+                        android:id="@+id/availabilityThumb"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center_vertical|start"
+                        android:background="@drawable/bg_add_edit_product_switch_thumb" />
+                </FrameLayout>
+            </LinearLayout>
+
+            <TextView
+                style="@style/AddEditProductLabel"
+                android:layout_marginTop="36dp"
+                android:text="@string/add_edit_product_pizza_name" />
+
+            <EditText
+                android:id="@+id/etPizzaName"
+                style="@style/AddEditProductInput"
+                android:autofillHints="name"
+                android:inputType="textCapWords"
+                tools:ignore="LabelFor" />
+
+            <TextView
+                style="@style/AddEditProductLabel"
+                android:layout_marginTop="26dp"
+                android:text="@string/add_edit_product_description" />
+
+            <EditText
+                android:id="@+id/etDescription"
+                style="@style/AddEditProductInput"
+                android:autofillHints="name"
+                android:gravity="top|start"
+                android:inputType="textMultiLine|textCapSentences"
+                android:minHeight="112dp"
+                tools:ignore="LabelFor" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="26dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginEnd="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/AddEditProductLabel"
+                        android:text="@string/add_edit_product_category" />
+
+                    <TextView
+                        android:id="@+id/tvCategoryValue"
+                        style="@style/AddEditProductInputText"
+                        android:clickable="true"
+                        android:focusable="true"
+                        android:foreground="?attr/selectableItemBackground" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:layout_weight="1"
+                    android:orientation="vertical">
+
+                    <TextView
+                        style="@style/AddEditProductLabel"
+                        android:text="@string/add_edit_product_base_price" />
+
+                    <EditText
+                        android:id="@+id/etBasePrice"
+                        style="@style/AddEditProductInput"
+                        android:autofillHints="price"
+                        android:inputType="numberDecimal"
+                        tools:ignore="LabelFor" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <TextView
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="40dp"
+                android:fontFamily="serif"
+                android:text="@string/add_edit_product_customization"
+                android:textColor="@color/pt_copper"
+                android:textSize="30sp"
+                android:textStyle="bold" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="1dp"
+                android:layout_marginTop="10dp"
+                android:background="@color/pt_border_warm" />
+
+            <TextView
+                style="@style/AddEditProductLabel"
+                android:layout_marginTop="26dp"
+                android:text="@string/add_edit_product_sizes" />
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:orientation="horizontal">
+
+                <TextView
+                    android:id="@+id/tvSizeSmall"
+                    style="@style/AddEditProductChip" />
+
+                <TextView
+                    android:id="@+id/tvSizeMedium"
+                    style="@style/AddEditProductChip"
+                    android:layout_marginStart="10dp" />
+
+                <TextView
+                    android:id="@+id/tvSizeLarge"
+                    style="@style/AddEditProductChip"
+                    android:layout_marginStart="10dp" />
+            </LinearLayout>
+
+            <TextView
+                style="@style/AddEditProductLabel"
+                android:layout_marginTop="32dp"
+                android:text="@string/add_edit_product_crust_options" />
+
+            <GridLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="12dp"
+                android:columnCount="2">
+
+                <LinearLayout
+                    style="@style/AddEditProductOptionCard">
+
+                    <TextView
+                        android:id="@+id/tvCrustSourdoughCheck"
+                        style="@style/AddEditProductCheckBox" />
+
+                    <TextView
+                        android:id="@+id/tvCrustSourdough"
+                        style="@style/AddEditProductOptionText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    style="@style/AddEditProductOptionCard"
+                    android:layout_marginStart="10dp">
+
+                    <TextView
+                        android:id="@+id/tvCrustGlutenFreeCheck"
+                        style="@style/AddEditProductCheckBox" />
+
+                    <TextView
+                        android:id="@+id/tvCrustGlutenFree"
+                        style="@style/AddEditProductOptionText" />
+                </LinearLayout>
+
+                <LinearLayout
+                    style="@style/AddEditProductOptionCard"
+                    android:layout_marginTop="10dp">
+
+                    <TextView
+                        android:id="@+id/tvCrustCharredCheck"
+                        style="@style/AddEditProductCheckBox" />
+
+                    <TextView
+                        android:id="@+id/tvCrustCharred"
+                        style="@style/AddEditProductOptionText" />
+                </LinearLayout>
+            </GridLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="32dp"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
+
+                <TextView
+                    style="@style/AddEditProductLabel"
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:text="@string/add_edit_product_toppings" />
+
+                <TextView
+                    android:id="@+id/btnAddTopping"
+                    android:layout_width="wrap_content"
+                    android:layout_height="40dp"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center"
+                    android:text="@string/add_edit_product_add_new"
+                    android:textColor="@color/pt_copper"
+                    android:textSize="13sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/toppingsContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:background="@drawable/bg_add_edit_product_toppings_box"
+                android:orientation="horizontal"
+                android:padding="18dp" />
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="50dp"/>
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/bottomActionBar"
+        android:layout_width="0dp"
+        android:layout_height="112dp"
+        android:background="@drawable/bg_add_edit_product_bottom_bar"
+        android:gravity="center"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:id="@+id/btnDiscardChanges"
+            android:layout_width="0dp"
+            android:layout_height="72dp"
+            android:layout_marginEnd="8dp"
+            android:layout_weight="0.34"
+            android:background="@drawable/bg_add_edit_product_discard_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="@string/add_edit_product_discard_changes"
+            android:textColor="@color/pt_text_primary_dark_bg"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/btnSaveProduct"
+            android:layout_width="0dp"
+            android:layout_height="72dp"
+            android:layout_marginStart="8dp"
+            android:layout_weight="0.66"
+            android:background="@drawable/bg_add_edit_product_save_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="@string/add_edit_product_save_product"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="17sp"
+            android:textStyle="bold" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>

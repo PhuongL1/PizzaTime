@@ -10,13 +10,16 @@
     android:paddingEnd="18dp">
 
     <TextView
-        android:id="@+id/navHome"
+        android:id="@+id/navMenu"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_weight="1"
         android:background="@drawable/bg_bottom_nav_item_selected"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
-        android:text="@string/home_nav_home"
+        android:text="@string/home_nav_menu"
         android:textColor="@color/pt_text_dark"
         android:textSize="12sp"
         android:textStyle="bold" />
@@ -26,6 +29,9 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
         android:text="@string/home_nav_orders"
         android:textColor="@color/pt_text_primary"
@@ -33,12 +39,15 @@
         android:textStyle="bold" />
 
     <TextView
-        android:id="@+id/navAlerts"
+        android:id="@+id/navLoyalty"
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
-        android:text="@string/home_nav_alerts"
+        android:text="@string/home_nav_loyalty"
         android:textColor="@color/pt_text_primary"
         android:textSize="12sp"
         android:textStyle="bold" />
@@ -48,6 +57,9 @@
         android:layout_width="0dp"
         android:layout_height="48dp"
         android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
         android:text="@string/home_nav_profile"
         android:textColor="@color/pt_text_primary"

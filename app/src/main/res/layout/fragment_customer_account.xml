@@ -1,0 +1,519 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.customer.account.CustomerAccountFragment">
+
+    <include
+        android:id="@+id/customerTopBar"
+        layout="@layout/layout_customer_top_bar"
+        android:layout_width="0dp"
+        android:layout_height="66dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:fillViewport="false"
+        android:paddingStart="30dp"
+        android:paddingTop="54dp"
+        android:paddingEnd="30dp"
+        android:paddingBottom="0dp"
+        app:layout_constraintBottom_toTopOf="@id/customerBottomNav"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/customerTopBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:gravity="center_horizontal"
+            android:orientation="vertical">
+
+            <FrameLayout
+                android:id="@+id/avatarArea"
+                android:layout_width="150dp"
+                android:layout_height="150dp">
+
+                <FrameLayout
+                    android:layout_width="128dp"
+                    android:layout_height="128dp"
+                    android:layout_gravity="center"
+                    android:background="@drawable/bg_splash_ring_inner"
+                    android:padding="7dp">
+
+                    <ImageView
+                        android:id="@+id/ivAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/register_avatar_content_description"
+                        android:scaleType="centerCrop"
+                        tools:src="@drawable/ic_customer_account_avatar_placeholder" />
+                </FrameLayout>
+
+                <ImageView
+                    android:id="@+id/editAvatarButton"
+                    android:layout_width="52dp"
+                    android:layout_height="52dp"
+                    android:layout_gravity="end|bottom"
+                    android:background="@drawable/bg_customer_account_edit_button"
+                    android:contentDescription="@string/register_edit_avatar_content_description"
+                    android:padding="14dp"
+                    android:scaleType="centerInside"
+                    android:src="@drawable/ic_edit"
+                    app:tint="@color/pt_text_dark" />
+            </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvCustomerName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:fontFamily="serif"
+                android:gravity="center"
+                android:includeFontPadding="false"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="42sp"
+                android:textStyle="bold"
+                tools:text="Julian Vane" />
+
+            <TextView
+                android:id="@+id/tvTierName"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:textColor="@color/pt_copper"
+                android:textSize="18sp"
+                android:textStyle="bold"
+                tools:text="ARTISAN MEMBER" />
+
+            <LinearLayout
+                android:id="@+id/pointsRow"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="14dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <ImageView
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/register_avatar_content_description"
+                    android:src="@drawable/ic_customer_account_points"
+                    app:tint="@color/pt_text_secondary_dark_bg" />
+
+                <TextView
+                    android:id="@+id/tvDoughPoints"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="12dp"
+                    android:textColor="@color/pt_text_secondary_dark_bg"
+                    android:textSize="19sp"
+                    android:textStyle="bold"
+                    tools:text="1,250 Dough Points" />
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/contactCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="54dp"
+                android:background="@drawable/bg_admin_dark_panel"
+                android:orientation="vertical"
+                android:paddingStart="30dp"
+                android:paddingTop="28dp"
+                android:paddingEnd="30dp"
+                android:paddingBottom="28dp">
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:contentDescription="@string/customer_account_email_icon_description"
+                        android:src="@drawable/ic_customer_account_email"
+                        app:tint="@color/pt_copper" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="28dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:text="@string/customer_account_email"
+                            android:textColor="@color/pt_text_secondary_dark_bg"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvEmailValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="@color/pt_text_primary_dark_bg"
+                            android:textSize="22sp"
+                            tools:text="j.vane@artisan.mail" />
+                    </LinearLayout>
+                </LinearLayout>
+
+                <View
+                    android:layout_width="match_parent"
+                    android:layout_height="1dp"
+                    android:layout_marginTop="26dp"
+                    android:layout_marginBottom="26dp"
+                    android:background="@color/pt_stroke_dark" />
+
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:baselineAligned="false"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal">
+
+                    <ImageView
+                        android:layout_width="34dp"
+                        android:layout_height="34dp"
+                        android:contentDescription="@string/customer_account_phone_icon_description"
+                        android:src="@drawable/ic_customer_account_phone"
+                        app:tint="@color/pt_copper" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="28dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.12"
+                            android:text="@string/customer_account_phone"
+                            android:textColor="@color/pt_text_secondary_dark_bg"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvPhoneValue"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="@color/pt_text_primary_dark_bg"
+                            android:textSize="22sp"
+                            tools:text="+1 (555) 012-3456" />
+                    </LinearLayout>
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/menuContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="42dp"
+                android:orientation="vertical">
+
+                <LinearLayout
+                    android:id="@+id/rowOrderHistory"
+                    android:layout_width="match_parent"
+                    android:layout_height="82dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_customer_account_menu_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="30dp"
+                    android:paddingEnd="26dp">
+
+                    <FrameLayout
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_customer_account_icon_circle">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/customer_account_order_history_icon_description"
+                            android:src="@drawable/customer_menu_icon_orders"
+                            app:tint="@color/pt_text_secondary_dark_bg" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="30dp"
+                        android:layout_weight="1"
+                        android:text="@string/customer_account_order_history"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="@string/customer_account_chevron_description"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/pt_text_secondary_dark_bg" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowPaymentMethods"
+                    android:layout_width="match_parent"
+                    android:layout_height="82dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_customer_account_menu_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="30dp"
+                    android:paddingEnd="26dp">
+
+                    <FrameLayout
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_customer_account_icon_circle">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/customer_account_payment_methods_icon_description"
+                            android:src="@drawable/customer_menu_icon_payment"
+                            app:tint="@color/pt_text_secondary_dark_bg" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="30dp"
+                        android:layout_weight="1"
+                        android:text="@string/customer_account_payment_methods"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="@string/customer_account_chevron_description"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/pt_text_secondary_dark_bg" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowDeliveryAddresses"
+                    android:layout_width="match_parent"
+                    android:layout_height="82dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_customer_account_menu_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="30dp"
+                    android:paddingEnd="26dp">
+
+                    <FrameLayout
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_customer_account_icon_circle">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/customer_account_delivery_addresses_icon_description"
+                            android:src="@drawable/customer_menu_icon_delivery_addresses"
+                            app:tint="@color/pt_text_secondary_dark_bg" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="30dp"
+                        android:layout_weight="1"
+                        android:text="@string/customer_account_delivery_addresses"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="@string/customer_account_chevron_description"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/pt_text_secondary_dark_bg" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowFavorites"
+                    android:layout_width="match_parent"
+                    android:layout_height="82dp"
+                    android:layout_marginBottom="16dp"
+                    android:background="@drawable/bg_customer_account_menu_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="30dp"
+                    android:paddingEnd="26dp">
+
+                    <FrameLayout
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_customer_account_icon_circle">
+
+                        <ImageView
+                            android:layout_width="24dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/customer_account_favorites_icon_description"
+                            android:src="@drawable/customer_menu_icon_favorites"
+                            app:tint="@color/pt_text_secondary_dark_bg" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="30dp"
+                        android:layout_weight="1"
+                        android:text="@string/customer_account_favorites"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="@string/customer_account_chevron_description"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/pt_text_secondary_dark_bg" />
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/rowSettings"
+                    android:layout_width="match_parent"
+                    android:layout_height="82dp"
+                    android:background="@drawable/bg_customer_account_menu_card"
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackground"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="30dp"
+                    android:paddingEnd="26dp">
+
+                    <FrameLayout
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
+                        android:background="@drawable/bg_customer_account_icon_circle">
+
+                        <ImageView
+                            android:layout_width="30dp"
+                            android:layout_height="30dp"
+                            android:layout_gravity="center"
+                            android:contentDescription="@string/customer_account_settings_icon_description"
+                            android:src="@drawable/customer_menu_icon_settings"
+                            app:tint="@color/pt_text_secondary_dark_bg" />
+                    </FrameLayout>
+
+                    <TextView
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="30dp"
+                        android:layout_weight="1"
+                        android:text="@string/customer_account_settings"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="24sp"
+                        android:textStyle="bold" />
+
+                    <ImageView
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
+                        android:contentDescription="@string/customer_account_chevron_description"
+                        android:src="@drawable/ic_chevron_right"
+                        app:tint="@color/pt_text_secondary_dark_bg" />
+                </LinearLayout>
+            </LinearLayout>
+
+            <LinearLayout
+                android:id="@+id/logoutCard"
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginTop="42dp"
+                android:background="@drawable/bg_customer_account_logout_card"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center_vertical"
+                android:orientation="horizontal"
+                android:paddingStart="30dp"
+                android:paddingEnd="30dp">
+
+                <FrameLayout
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:background="@drawable/bg_customer_account_logout_icon_circle">
+
+                    <ImageView
+                        android:layout_width="30dp"
+                        android:layout_height="30dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/customer_menu_icon_logout"
+                        android:src="@drawable/customer_menu_icon_logout"
+                        app:tint="@color/pt_text_primary_dark_bg" />
+                </FrameLayout>
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_marginStart="30dp"
+                    android:layout_weight="1"
+                    android:text="@string/customer_menu_title_logout"
+                    android:textColor="@color/pt_status_failed"
+                    android:textSize="24sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="74dp" />
+
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <include
+        android:id="@+id/customerBottomNav"
+        layout="@layout/layout_customer_bottom_nav"
+        android:layout_width="0dp"
+        android:layout_height="88dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

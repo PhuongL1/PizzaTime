@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="104dp"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
+
+    <FrameLayout
+        android:layout_width="76dp"
+        android:layout_height="76dp"
+        android:background="@drawable/bg_customer_order_detail_item_image">
+
+        <ImageView
+            android:id="@+id/ivItemImage"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/customer_order_detail_item_image_description"
+            android:scaleType="centerCrop"
+            tools:src="@drawable/img_pizza_time" />
+
+        <TextView
+            android:id="@+id/tvItemPlaceholder"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:gravity="center"
+            android:text="@string/customer_order_detail_item_placeholder"
+            android:textColor="@color/pt_text_secondary_dark_bg"
+            android:textSize="24sp"
+            android:visibility="gone"
+            tools:visibility="visible" />
+    </FrameLayout>
+
+    <LinearLayout
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="18dp"
+        android:layout_weight="1"
+        android:orientation="vertical">
+
+        <TextView
+            android:id="@+id/tvItemName"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:textColor="@color/pt_text_primary_dark_bg"
+            android:textSize="19sp"
+            android:textStyle="bold"
+            tools:text="1x Truffle Forest Pizza" />
+
+        <TextView
+            android:id="@+id/tvItemDescription"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="5dp"
+            android:textColor="@color/pt_text_secondary_dark_bg"
+            android:textSize="16sp"
+            tools:text="Large · Thin Crust · Extra Truffle Oil" />
+    </LinearLayout>
+
+    <TextView
+        android:id="@+id/tvItemPrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pt_copper"
+        android:textSize="16sp"
+        android:textStyle="bold"
+        tools:text="$28.00" />
+</LinearLayout>

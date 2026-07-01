@@ -121,18 +121,18 @@ class OrderTrackingFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.bottomNav.navHome.text = getString(R.string.tracking_nav_menu)
+        binding.bottomNav.navMenu.text = getString(R.string.tracking_nav_menu)
         binding.bottomNav.navOrders.text = getString(R.string.tracking_nav_orders)
-        binding.bottomNav.navAlerts.text = getString(R.string.tracking_nav_loyalty)
+        binding.bottomNav.navLoyalty.text = getString(R.string.tracking_nav_loyalty)
         binding.bottomNav.navProfile.text = getString(R.string.tracking_nav_profile)
 
         val primaryColor = ContextCompat.getColor(requireContext(), R.color.pt_text_primary)
         val darkColor = ContextCompat.getColor(requireContext(), R.color.pt_text_dark)
 
         listOf(
-            binding.bottomNav.navHome,
+            binding.bottomNav.navMenu,
             binding.bottomNav.navOrders,
-            binding.bottomNav.navAlerts,
+            binding.bottomNav.navLoyalty,
             binding.bottomNav.navProfile,
         ).forEach { item ->
             item.setBackgroundResource(0)
@@ -160,11 +160,11 @@ class OrderTrackingFragment : Fragment() {
             Toast.makeText(requireContext(), "Support coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        binding.bottomNav.navHome.setOnClickListener {
+        binding.bottomNav.navMenu.setOnClickListener {
             Toast.makeText(requireContext(), "Menu coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        binding.bottomNav.navAlerts.setOnClickListener {
+        binding.bottomNav.navLoyalty.setOnClickListener {
             Toast.makeText(requireContext(), "Loyalty coming soon", Toast.LENGTH_SHORT).show()
         }
 

@@ -415,6 +415,10 @@
                 </LinearLayout>
 
             </LinearLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="90dp" />
+
 
         </LinearLayout>
 
@@ -460,7 +464,8 @@
             android:gravity="center"
             android:textColor="@color/pt_text_dark"
             android:textSize="17sp"
-            android:textStyle="bold" />
+            android:textStyle="bold"
+            android:text="@string/detail_add_to_cart" />
 
     </LinearLayout>
 

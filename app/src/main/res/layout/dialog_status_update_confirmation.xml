@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="utf-8"?>
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:fillViewport="false"
+    android:overScrollMode="never">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:background="@drawable/bg_status_update_dialog_card"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="34dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="24dp">
+
+        <TextView
+            android:id="@+id/tvStatusIcon"
+            android:layout_width="72dp"
+            android:layout_height="72dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_status_update_icon_circle"
+            android:gravity="center"
+            android:text="@string/status_update_icon"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="34sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvStatusUpdateTitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="28dp"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:text="@string/status_update_title"
+            android:textColor="@color/pt_copper"
+            android:textSize="34sp" />
+
+        <TextView
+            android:id="@+id/tvStatusUpdateMessage"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="14dp"
+            android:gravity="center"
+            android:lineSpacingExtra="4dp"
+            android:text="@string/status_update_message"
+            android:textColor="@color/pt_text_secondary_dark_bg"
+            android:textSize="17sp" />
+
+        <TextView
+            android:id="@+id/tvOrderIdValue"
+            android:layout_width="wrap_content"
+            android:layout_height="42dp"
+            android:layout_gravity="center_horizontal"
+            android:layout_marginTop="28dp"
+            android:background="@drawable/bg_status_update_order_pill"
+            android:gravity="center"
+            android:letterSpacing="0.12"
+            android:minWidth="210dp"
+            android:paddingStart="22dp"
+            android:paddingEnd="22dp"
+            android:textColor="@color/pt_text_primary_dark_bg"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="52dp"
+            android:layout_marginTop="34dp"
+            android:gravity="center"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvFromStatus"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_status_update_from_chip"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:textColor="@color/pt_copper"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:layout_width="72dp"
+                android:layout_height="48dp"
+                android:gravity="center"
+                android:text="@string/status_update_arrow"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="34sp" />
+
+            <TextView
+                android:id="@+id/tvToStatus"
+                android:layout_width="0dp"
+                android:layout_height="48dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_status_update_to_chip"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:textColor="@color/pt_basil_green"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+        <EditText
+            android:id="@+id/etStatusNote"
+            android:layout_width="match_parent"
+            android:layout_height="104dp"
+            android:layout_marginTop="28dp"
+            android:autofillHints="statusNote"
+            android:background="@drawable/bg_status_update_note_input"
+            android:gravity="top|start"
+            android:hint="@string/status_update_note_hint"
+            android:inputType="textMultiLine|textCapSentences"
+            android:maxLines="3"
+            android:paddingStart="18dp"
+            android:paddingTop="16dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="16dp"
+            android:textColor="@color/pt_text_primary_dark_bg"
+            android:textColorHint="@color/pt_text_secondary_dark_bg"
+            android:textSize="17sp" />
+
+        <View
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:layout_marginStart="-24dp"
+            android:layout_marginTop="34dp"
+            android:layout_marginEnd="-24dp"
+            android:background="@color/pt_stroke_dark" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="64dp"
+            android:layout_marginTop="24dp"
+            android:baselineAligned="false"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/btnNotNow"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginEnd="12dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_status_update_cancel_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:letterSpacing="0.10"
+                android:text="@string/status_update_not_now"
+                android:textColor="@color/pt_copper"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/btnConfirmUpdate"
+                android:layout_width="0dp"
+                android:layout_height="match_parent"
+                android:layout_marginStart="12dp"
+                android:layout_weight="1"
+                android:background="@drawable/bg_status_update_confirm_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:text="@string/status_update_confirm_update"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:textColor="@color/pt_text_dark"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+        </LinearLayout>
+
+    </LinearLayout>
+</ScrollView>

@@ -11,6 +11,7 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
 import com.devpro.pizzatime.feature.customer.tracking.OrderTrackingFragment
+import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import java.util.Locale
 
 class CheckoutFragment : Fragment() {
@@ -96,7 +97,7 @@ class CheckoutFragment : Fragment() {
         }
 
         binding.btnPlaceOrder.setOnClickListener {
-            openOrderTrackingScreen()
+            openOrderSuccess(orderId = DEFAULT_SUCCESS_ORDER_ID)
         }
     }
 
@@ -111,11 +112,7 @@ class CheckoutFragment : Fragment() {
         _binding = null
         super.onDestroyView()
     }
-    private fun openOrderTrackingScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, OrderTrackingFragment())
-            .addToBackStack(null)
-            .commit()
+    companion object {
+        private const val DEFAULT_SUCCESS_ORDER_ID = "PT-9823"
     }
 }

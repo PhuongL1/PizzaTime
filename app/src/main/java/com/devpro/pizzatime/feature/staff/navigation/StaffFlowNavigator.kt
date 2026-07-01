@@ -5,10 +5,25 @@ import androidx.fragment.app.FragmentTransaction
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
 import com.devpro.pizzatime.feature.admin.menu.ManageMenuFragment
+import com.devpro.pizzatime.feature.admin.orders.ManageOrdersFragment
+import com.devpro.pizzatime.feature.admin.product.AddEditProductFragment
 import com.devpro.pizzatime.feature.admin.promo.ManagePromoCodesFragment
 import com.devpro.pizzatime.feature.admin.reports.ReportsFragment
 import com.devpro.pizzatime.feature.admin.staff.ManageStaffFragment
+import com.devpro.pizzatime.feature.auth.forgot.ForgotPasswordFragment
+import com.devpro.pizzatime.feature.customer.account.CustomerAccountFragment
+import com.devpro.pizzatime.feature.customer.cart.CartFragment
+import com.devpro.pizzatime.feature.customer.customize.BuildYourPizzaFragment
+import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
+import com.devpro.pizzatime.feature.customer.memberqr.CustomerMemberQrFragment
+import com.devpro.pizzatime.feature.customer.notifications.CustomerNotificationsFragment
 import com.devpro.pizzatime.feature.customer.order.OrderTypeFragment
+import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailFragment
+import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderHistoryFragment
+import com.devpro.pizzatime.feature.customer.ordersuccess.OrderSuccessFragment
+import com.devpro.pizzatime.feature.customer.promos.CustomerPromoCodesFragment
+import com.devpro.pizzatime.feature.customer.support.SupportFaqFragment
+import com.devpro.pizzatime.feature.customer.tracking.OrderTrackingFragment
 import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailFragment
@@ -36,6 +51,7 @@ fun Fragment.openShipperDeliveryDashboard(addToBackStack: Boolean = true) {
     )
 }
 
+
 fun Fragment.openStaffOrderDetail(orderId: String) {
     replaceStaffFlowFragment(
         fragment = StaffOrderDetailFragment.newInstance(orderId),
@@ -43,6 +59,28 @@ fun Fragment.openStaffOrderDetail(orderId: String) {
     )
 }
 
+fun Fragment.openOrderSuccess(
+    orderId: String,
+    addToBackStack: Boolean = true,
+) {
+    replaceStaffFlowFragment(
+        fragment = OrderSuccessFragment.newInstance(orderId),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCustomerHome(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerHomeFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+
+fun Fragment.openOrderTracking(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = OrderTrackingFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
 fun Fragment.openShipperDeliveryDetail(orderId: String) {
     replaceStaffFlowFragment(
         fragment = ShipperDeliveryDetailFragment.newInstance(orderId),
@@ -88,7 +126,83 @@ fun Fragment.openOrderType(addToBackStack: Boolean = true) {
         addToBackStack = addToBackStack,
     )
 }
+fun Fragment.openBuildYourPizza(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = BuildYourPizzaFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCustomerOrderDetail(orderId: String) {
+    replaceStaffFlowFragment(
+        fragment = CustomerOrderDetailFragment.newInstance(orderId),
+        addToBackStack = true,
+    )
+}
+fun Fragment.openCustomerOrderHistory(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerOrderHistoryFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCartScreen(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CartFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCustomerPromoCodes(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerPromoCodesFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCustomerMemberQr(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerMemberQrFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openManageOrders(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = ManageOrdersFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openAddEditProduct(
+    productId: String? = null,
+    addToBackStack: Boolean = true,
+) {
+    replaceStaffFlowFragment(
+        fragment = AddEditProductFragment.newInstance(productId),
+        addToBackStack = addToBackStack,
+    )
+}
 
+fun Fragment.openForgotPassword(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = ForgotPasswordFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+
+fun Fragment.openCustomerNotifications(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerNotificationsFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openSupportFaq(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = SupportFaqFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCustomerAccount(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerAccountFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
 fun Fragment.backToPreviousStaffScreen() {
     parentFragmentManager.popBackStack()
 }

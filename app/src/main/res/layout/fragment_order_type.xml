@@ -318,7 +318,11 @@
                     android:textColor="@color/pt_copper"
                     android:textSize="15sp"
                     android:textStyle="bold" />
+
             </FrameLayout>
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="20dp" />
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
 

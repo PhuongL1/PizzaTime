@@ -13,6 +13,7 @@ import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
 import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
@@ -53,11 +54,7 @@ class LoginFragment : Fragment() {
         }
 
         binding.btnForgotPassword.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.auth_forgot_password_coming_soon),
-                Toast.LENGTH_SHORT,
-            ).show()
+            openForgotPassword()
         }
     }
 

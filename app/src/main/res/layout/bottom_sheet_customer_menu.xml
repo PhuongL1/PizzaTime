@@ -1,0 +1,276 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.core.widget.NestedScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:background="@drawable/bg_customer_menu_sheet"
+    android:clipToPadding="false">
+
+    <LinearLayout
+        android:id="@+id/customerMenuSheetRoot"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="vertical"
+        android:paddingStart="28dp"
+        android:paddingTop="18dp"
+        android:paddingEnd="28dp"
+        android:paddingBottom="28dp">
+
+        <View
+            android:layout_width="88dp"
+            android:layout_height="6dp"
+            android:layout_gravity="center_horizontal"
+            android:background="@drawable/bg_customer_menu_handle" />
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="22dp"
+            android:baselineAligned="false"
+            android:gravity="top"
+            android:orientation="horizontal">
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:fontFamily="serif"
+                    android:includeFontPadding="false"
+                    android:text="@string/customer_menu_sheet_title"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="28sp" />
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="12dp"
+                    android:lineSpacingExtra="4dp"
+                    android:text="@string/customer_menu_sheet_subtitle"
+                    android:textColor="@color/pt_text_secondary_dark_bg"
+                    android:textSize="22sp" />
+            </LinearLayout>
+
+            <TextView
+                android:id="@+id/btnClose"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:text="@string/customer_menu_close"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="32sp" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowMenu"
+            style="@style/CustomerMenuRow"
+            android:layout_marginTop="26dp">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_menu" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_menu" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_menu" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowOrders"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_orders" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_orders" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_orders" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowFavorites"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_favorites" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_favorites" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_favorites" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowPromoCodes"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_promo_codes" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_promo_codes" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_promo_codes" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowMemberQr"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_member_qr" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_member_qr" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_member_qr" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowNotifications"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_notifications" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_notifications" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_notifications" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowSupport"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_support" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_support" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_support" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <LinearLayout
+            android:id="@+id/rowLogout"
+            style="@style/CustomerMenuRow">
+
+            <ImageView
+                style="@style/CustomerMenuIconImage"
+                android:src="@drawable/customer_menu_icon_logout" />
+
+            <LinearLayout style="@style/CustomerMenuTextGroup">
+
+                <TextView
+                    style="@style/CustomerMenuTitle"
+                    android:text="@string/customer_menu_title_logout" />
+
+                <TextView
+                    style="@style/CustomerMenuSubtitle"
+                    android:text="@string/customer_menu_subtitle_logout" />
+            </LinearLayout>
+
+            <ImageView
+                style="@style/CustomerMenuChevronImage"
+                android:src="@drawable/customer_menu_chevron" />
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/tvFooter"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:gravity="center"
+            android:text="@string/customer_menu_footer"
+            android:textColor="@color/pt_text_secondary_dark_bg"
+            android:textSize="13sp"
+            tools:ignore="SmallSp" />
+
+    </LinearLayout>
+</androidx.core.widget.NestedScrollView>

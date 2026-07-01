@@ -1,0 +1,70 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/customerTopBarRoot"
+    android:layout_width="match_parent"
+    android:layout_height="66dp"
+    android:background="@drawable/bg_top_bar_dark"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="24dp"
+    android:paddingEnd="24dp">
+
+    <ImageView
+        android:id="@+id/btnMenu"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:contentDescription="@string/menu_drawer_content_description"
+        android:focusable="true"
+        android:padding="8dp"
+        android:src="@drawable/ic_menu"
+        app:tint="@color/pt_gold" />
+
+    <TextView
+        android:id="@+id/tvCustomerTopBarBrand"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_weight="1"
+        android:fontFamily="serif"
+        android:gravity="center"
+        android:includeFontPadding="false"
+        android:letterSpacing="0.12"
+        android:text="@string/detail_brand"
+        android:textColor="@color/pt_gold"
+        android:textSize="32sp" />
+
+    <FrameLayout
+        android:id="@+id/cartButtonContainer"
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:background="?attr/selectableItemBackgroundBorderless"
+        android:clickable="true"
+        android:focusable="true">
+
+        <ImageView
+            android:id="@+id/btnCart"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:contentDescription="@string/detail_cart_content_description"
+            android:padding="8dp"
+            android:src="@drawable/ic_bag"
+            app:tint="@color/pt_gold" />
+
+        <TextView
+            android:id="@+id/tvCartBadge"
+            android:layout_width="18dp"
+            android:layout_height="18dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/bg_customer_top_bar_cart_badge"
+            android:gravity="center"
+            android:includeFontPadding="false"
+            android:textColor="@color/pt_white"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+    </FrameLayout>
+
+</LinearLayout>

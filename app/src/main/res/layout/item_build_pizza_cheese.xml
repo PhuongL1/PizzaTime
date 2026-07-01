@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="72dp"
+    android:background="@drawable/bg_build_pizza_option_row"
+    android:clickable="true"
+    android:focusable="true"
+    android:foreground="?attr/selectableItemBackground"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingStart="16dp"
+    android:paddingEnd="18dp">
+
+    <CheckBox
+        android:id="@+id/cbCheese"
+        android:layout_width="0dp"
+        android:layout_height="48dp"
+        android:layout_weight="1"
+        android:buttonTint="@color/pt_copper"
+        android:textColor="@color/pt_text_primary_dark_bg"
+        android:textSize="18sp"
+        tools:checked="true"
+        tools:text="Buffalo Mozzarella" />
+
+    <TextView
+        android:id="@+id/tvCheesePrice"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:textColor="@color/pt_copper"
+        android:textSize="18sp"
+        android:textStyle="bold"
+        tools:text="Incl." />
+</LinearLayout>

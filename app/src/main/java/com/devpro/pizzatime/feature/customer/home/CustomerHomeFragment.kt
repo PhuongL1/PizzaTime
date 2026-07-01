@@ -150,14 +150,14 @@ class CustomerHomeFragment : Fragment() {
             Toast.makeText(requireContext(), "Orders coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        binding.bottomNav.navAlerts.setOnClickListener {
+        binding.bottomNav.navLoyalty.setOnClickListener {
             Toast.makeText(requireContext(), "Alerts coming soon", Toast.LENGTH_SHORT).show()
         }
 
         binding.bottomNav.navProfile.setOnClickListener {
             Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
         }
-        binding.bottomNav.navHome.setOnClickListener {
+        binding.bottomNav.navMenu.setOnClickListener {
             openPizzaMenuScreen()
         }
     }

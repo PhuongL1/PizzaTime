@@ -1,0 +1,266 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_background"
+    tools:context=".feature.customer.customize.BuildYourPizzaFragment">
+
+    <LinearLayout
+        android:id="@+id/topBar"
+        android:layout_width="0dp"
+        android:layout_height="56dp"
+        android:background="@color/pt_surface_dark"
+        android:gravity="center_vertical"
+        android:orientation="horizontal"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
+
+        <TextView
+            android:id="@+id/tvMenuIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="@string/build_pizza_menu_icon"
+            android:textColor="@color/pt_copper"
+            android:textSize="30sp"
+            android:textStyle="bold" />
+
+        <TextView
+            android:id="@+id/tvBrand"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:fontFamily="serif"
+            android:gravity="center"
+            android:letterSpacing="0.08"
+            android:text="@string/app_name_upper"
+            android:textColor="@color/pt_copper"
+            android:textSize="28sp" />
+
+        <TextView
+            android:id="@+id/tvCartIcon"
+            android:layout_width="48dp"
+            android:layout_height="48dp"
+            android:gravity="center"
+            android:text="@string/build_pizza_cart_icon"
+            android:textColor="@color/pt_copper"
+            android:textSize="26sp" />
+    </LinearLayout>
+
+    <androidx.core.widget.NestedScrollView
+        android:id="@+id/contentScroll"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
+        android:clipToPadding="false"
+        android:paddingBottom="28dp"
+        app:layout_constraintBottom_toTopOf="@id/bottomBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/topBar">
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:paddingStart="54dp"
+            android:paddingTop="52dp"
+            android:paddingEnd="54dp">
+
+            <ImageView
+                android:id="@+id/ivPizzaPreview"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_gravity="center_horizontal"
+                android:contentDescription="@string/build_pizza_preview_description"
+                android:scaleType="centerCrop"
+                tools:src="@drawable/img_pizza_time2" />
+
+            <TextView
+                android:id="@+id/tvVisualizing"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:gravity="center"
+                android:letterSpacing="0.08"
+                android:text="@string/build_pizza_visualizing"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="14sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvBaseSizeTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="30dp"
+                android:fontFamily="serif"
+                android:text="@string/build_pizza_base_size"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/sizeContainer"
+                android:layout_width="match_parent"
+                android:layout_height="112dp"
+                android:layout_marginTop="14dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal"
+                tools:ignore="UselessLeaf" />
+
+            <TextView
+                android:id="@+id/tvCrustLabel"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="22dp"
+                android:text="@string/build_pizza_crust_style"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="16sp"
+                android:textStyle="bold" />
+
+            <TextView
+                android:id="@+id/tvCrustDropdown"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="8dp"
+                android:background="@drawable/bg_build_pizza_dropdown"
+                android:gravity="center_vertical"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="17sp"
+                tools:text="Classic Neapolitan (Charred)" />
+
+            <TextView
+                android:id="@+id/tvSauceTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="36dp"
+                android:fontFamily="serif"
+                android:text="@string/build_pizza_select_sauce"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <HorizontalScrollView
+                android:id="@+id/sauceScroll"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:scrollbars="none">
+
+                <LinearLayout
+                    android:id="@+id/sauceContainer"
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:orientation="horizontal" />
+            </HorizontalScrollView>
+
+            <TextView
+                android:id="@+id/tvCheeseTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="42dp"
+                android:fontFamily="serif"
+                android:text="@string/build_pizza_cheese"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/cheeseContainer"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="18dp"
+                android:orientation="vertical" />
+
+            <TextView
+                android:id="@+id/tvToppingsTitle"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="42dp"
+                android:fontFamily="serif"
+                android:text="@string/build_pizza_premium_toppings"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="21sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:id="@+id/toppingGroupContainer"
+                android:layout_width="match_parent"
+                android:layout_height="180dp"
+                android:layout_marginTop="18dp"
+                android:baselineAligned="false"
+                android:orientation="horizontal" />
+
+            <TextView
+                android:id="@+id/tvFreshHerbs"
+                android:layout_width="match_parent"
+                android:layout_height="58dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_build_pizza_option_row"
+                android:gravity="center_vertical"
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:text="@string/build_pizza_fresh_herbs"
+                android:textColor="@color/pt_text_primary_dark_bg"
+                android:textSize="18sp" />
+            <View
+                android:layout_width="match_parent"
+                android:layout_height="60dp" />
+        </LinearLayout>
+    </androidx.core.widget.NestedScrollView>
+
+    <LinearLayout
+        android:id="@+id/bottomBar"
+        android:layout_width="0dp"
+        android:layout_height="170dp"
+        android:background="@color/pt_surface_dark"
+        android:orientation="vertical"
+        android:paddingStart="54dp"
+        android:paddingTop="24dp"
+        android:paddingEnd="54dp"
+        android:paddingBottom="26dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:letterSpacing="0.12"
+            android:text="@string/build_pizza_estimated_total"
+            android:textColor="@color/pt_text_secondary_dark_bg"
+            android:textSize="12sp" />
+
+        <TextView
+            android:id="@+id/tvEstimatedTotal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="8dp"
+            android:textColor="@color/pt_copper"
+            android:textSize="20sp"
+            tools:text="$22.00" />
+
+        <TextView
+            android:id="@+id/btnAddToOrder"
+            android:layout_width="match_parent"
+            android:layout_height="68dp"
+            android:layout_marginTop="20dp"
+            android:background="@drawable/bg_build_pizza_add_button"
+            android:clickable="true"
+            android:focusable="true"
+            android:foreground="?attr/selectableItemBackground"
+            android:gravity="center"
+            android:text="@string/build_pizza_add_to_order"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="20sp" />
+    </LinearLayout>
+
+</androidx.constraintlayout.widget.ConstraintLayout>
