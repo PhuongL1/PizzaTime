@@ -1,5 +1,7 @@
 package com.devpro.pizzatime.feature.staff.navigation
 
+import android.view.View
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentTransaction
 import com.devpro.pizzatime.R
@@ -29,6 +31,8 @@ import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFr
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailFragment
 import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailFragment
+import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
+import com.devpro.pizzatime.shared.drawer.StaffNavigationDrawerDialogFragment
 
 fun Fragment.openStaffDashboard(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
@@ -202,6 +206,93 @@ fun Fragment.openCustomerAccount(addToBackStack: Boolean = true) {
         fragment = CustomerAccountFragment(),
         addToBackStack = addToBackStack,
     )
+}
+fun Fragment.setupStaffDrawer(
+    avatarView: View,
+    selectedItem: StaffDrawerItem = StaffDrawerItem.STAFF_SCHEDULE,
+    onItemSelected: ((StaffDrawerItem) -> Unit)? = null,
+) {
+    parentFragmentManager.setFragmentResultListener(
+        StaffNavigationDrawerDialogFragment.REQUEST_KEY,
+        viewLifecycleOwner,
+    ) { _, bundle ->
+        val item = StaffDrawerItem.fromAction(
+            bundle.getString(StaffNavigationDrawerDialogFragment.KEY_ACTION),
+        ) ?: return@setFragmentResultListener
+
+        if (onItemSelected != null) {
+            onItemSelected(item)
+        } else {
+            handleStaffDrawerItem(item)
+        }
+    }
+
+    avatarView.setOnClickListener {
+        openStaffDrawer(selectedItem)
+    }
+}
+
+fun Fragment.openStaffDrawer(
+    selectedItem: StaffDrawerItem = StaffDrawerItem.STAFF_SCHEDULE,
+) {
+    val existingDrawer = parentFragmentManager.findFragmentByTag(
+        StaffNavigationDrawerDialogFragment.TAG,
+    )
+
+    if (existingDrawer != null) {
+        return
+    }
+
+    StaffNavigationDrawerDialogFragment
+        .newInstance(selectedItem)
+        .show(
+            parentFragmentManager,
+            StaffNavigationDrawerDialogFragment.TAG,
+        )
+}
+
+private fun Fragment.handleStaffDrawerItem(item: StaffDrawerItem) {
+    when (item) {
+        StaffDrawerItem.ORDER_HISTORY -> {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.staff_drawer_order_history_toast),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+
+        StaffDrawerItem.INVENTORY -> {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.staff_drawer_inventory_toast),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+
+        StaffDrawerItem.STAFF_SCHEDULE -> {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.staff_drawer_schedule_toast),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+
+        StaffDrawerItem.SUPPORT -> {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.staff_drawer_support_toast),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+
+        StaffDrawerItem.LOGOUT -> {
+            Toast.makeText(
+                requireContext(),
+                getString(R.string.staff_drawer_logout_toast),
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+    }
 }
 fun Fragment.backToPreviousStaffScreen() {
     parentFragmentManager.popBackStack()

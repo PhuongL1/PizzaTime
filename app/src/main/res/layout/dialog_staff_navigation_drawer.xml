@@ -1,0 +1,122 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/drawerRoot"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@color/pt_overlay_dark_55"
+    android:clickable="true"
+    android:focusable="true">
+
+    <LinearLayout
+        android:id="@+id/drawerPanel"
+        android:layout_width="340dp"
+        android:layout_height="match_parent"
+        android:layout_gravity="end"
+        android:background="@drawable/bg_staff_drawer_panel"
+        android:clickable="true"
+        android:focusable="true"
+        android:orientation="vertical"
+        android:paddingStart="24dp"
+        android:paddingTop="42dp"
+        android:paddingEnd="24dp"
+        android:paddingBottom="28dp">
+
+        <LinearLayout
+            android:id="@+id/profileRow"
+            android:layout_width="match_parent"
+            android:layout_height="78dp"
+            android:baselineAligned="false"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <TextView
+                android:id="@+id/tvAvatarInitials"
+                android:layout_width="56dp"
+                android:layout_height="56dp"
+                android:background="@drawable/bg_staff_drawer_avatar"
+                android:gravity="center"
+                android:text="@string/staff_drawer_avatar_initials"
+                android:textColor="@color/pt_text_dark"
+                android:textSize="20sp"
+                android:textStyle="bold" />
+
+            <LinearLayout
+                android:layout_width="0dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="18dp"
+                android:layout_weight="1"
+                android:orientation="vertical">
+
+                <TextView
+                    android:id="@+id/tvDrawerName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/staff_drawer_name"
+                    android:textColor="@color/pt_copper"
+                    android:textSize="20sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvDrawerShift"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="4dp"
+                    android:text="@string/staff_drawer_shift"
+                    android:textColor="@color/pt_border_warm"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+            </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:id="@+id/navOrderHistory"
+            style="@style/StaffDrawerMenuItem"
+            android:layout_marginTop="44dp"
+            android:text="@string/staff_drawer_order_history" />
+
+        <TextView
+            android:id="@+id/navInventory"
+            style="@style/StaffDrawerMenuItem"
+            android:text="@string/staff_drawer_inventory" />
+
+        <TextView
+            android:id="@+id/navStaffSchedule"
+            style="@style/StaffDrawerMenuItem"
+            android:text="@string/staff_drawer_staff_schedule" />
+
+        <TextView
+            android:id="@+id/navSupport"
+            style="@style/StaffDrawerMenuItem"
+            android:text="@string/staff_drawer_support" />
+
+        <Space
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_weight="1" />
+
+        <View
+            android:id="@+id/bottomDivider"
+            android:layout_width="match_parent"
+            android:layout_height="1dp"
+            android:background="@color/pt_border_warm" />
+
+        <TextView
+            android:id="@+id/navLogout"
+            style="@style/StaffDrawerMenuItem"
+            android:layout_marginTop="34dp"
+            android:text="@string/staff_drawer_logout" />
+
+        <TextView
+            android:id="@+id/tvVersion"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="44dp"
+            android:gravity="center"
+            android:text="@string/staff_drawer_version"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+    </LinearLayout>
+
+</FrameLayout>

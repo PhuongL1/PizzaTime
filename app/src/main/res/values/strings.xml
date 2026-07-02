@@ -917,4 +917,22 @@
     <string name="status_update_mark_ready">Mark as Ready</string>
     <string name="status_update_complete_order">Complete Order</string>
     <string name="status_update_assign_shipper">Assign Shipper</string>
+
+    <!-- Navigation Drawer -->
+    <string name="staff_drawer_avatar_initials">AL</string>
+    <string name="staff_drawer_name">Artisan Lead</string>
+    <string name="staff_drawer_shift">Shift: Night Owl</string>
+
+    <string name="staff_drawer_order_history">↺   Order History</string>
+    <string name="staff_drawer_inventory">▭   Inventory</string>
+    <string name="staff_drawer_staff_schedule">▣   Staff Schedule</string>
+    <string name="staff_drawer_support">ⓘ   Support</string>
+    <string name="staff_drawer_logout">⇱   Logout</string>
+    <string name="staff_drawer_version">V2.4.0</string>
+    <string name="staff_drawer_order_history_toast">Order history is coming soon.</string>
+
+    <string name="staff_drawer_inventory_toast">Inventory is coming soon.</string>
+    <string name="staff_drawer_schedule_toast">Staff schedule is coming soon.</string>
+    <string name="staff_drawer_support_toast">Support is coming soon.</string>
+    <string name="staff_drawer_logout_toast">Logged out.</string>
 </resources>
