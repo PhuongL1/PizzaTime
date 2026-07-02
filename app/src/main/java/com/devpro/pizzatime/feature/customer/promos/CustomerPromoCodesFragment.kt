@@ -24,7 +24,7 @@ class CustomerPromoCodesFragment : Fragment() {
             "FragmentCustomerPromoCodesBinding is only valid between onCreateView and onDestroyView."
         }
 
-    private val promoData: CustomerPromoCodesUiModel = FakeCustomerPromoCodesData.getPromoCodes()
+    private var promoData: CustomerPromoCodesUiModel = FakeCustomerPromoCodesData.getPromoCodes()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,6 +42,18 @@ class CustomerPromoCodesFragment : Fragment() {
         setupTabs()
         renderActivePromos()
         renderPastPromos()
+        loadFirestorePromos()
+    }
+
+    private fun loadFirestorePromos() {
+        CustomerPromoFirestoreRepository.loadActivePromos { result ->
+            if (_binding == null) return@loadActivePromos
+            result.onSuccess { promos ->
+                promoData = promoData.copy(activePromos = promos, pastPromos = emptyList())
+                renderActivePromos()
+                renderPastPromos()
+            }
+        }
     }
 
     private fun bindHeader() = with(binding) {

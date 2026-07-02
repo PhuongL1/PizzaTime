@@ -23,12 +23,24 @@ class ManagePromoCodesFragment : Fragment() {
     private var _binding: FragmentManagePromoCodesBinding? = null
     private val binding get() = _binding!!
 
+    private var allPromos: List<AdminPromoUiModel> = FakeAdminPromoData.promos
+
     private val promoAdapter by lazy {
         AdminPromoAdapter(
             onEditClick = { showActionToast(getString(R.string.edit), it) },
-            onDeleteClick = { showActionToast(getString(R.string.delete), it) },
+            onDeleteClick = { promo ->
+                AdminPromoFirestoreRepository.setActive(promo.id, false) { result ->
+                    if (!isAdded) return@setActive
+                    if (result.isSuccess) loadFirestorePromos()
+                }
+            },
             onShareClick = { showActionToast(getString(R.string.share), it) },
-            onReactivateClick = { showActionToast(getString(R.string.reactivate), it) },
+            onReactivateClick = { promo ->
+                AdminPromoFirestoreRepository.setActive(promo.id, true) { result ->
+                    if (!isAdded) return@setActive
+                    if (result.isSuccess) loadFirestorePromos()
+                }
+            },
         )
     }
 
@@ -49,6 +61,15 @@ class ManagePromoCodesFragment : Fragment() {
         setupFilters()
         setupBottomNav()
         renderPromos()
+        loadFirestorePromos()
+    }
+
+    private fun loadFirestorePromos() {
+        AdminPromoFirestoreRepository.loadPromos { result ->
+            if (!isAdded) return@loadPromos
+            allPromos = result.getOrElse { FakeAdminPromoData.promos }
+            renderPromos()
+        }
     }
 
     private fun setupRecyclerView() = with(binding.rvPromos) {
@@ -104,15 +125,15 @@ class ManagePromoCodesFragment : Fragment() {
 
     private fun renderPromos() {
         val promos = when (selectedFilter) {
-            PromoFilter.ACTIVE -> FakeAdminPromoData.promos.filter {
+            PromoFilter.ACTIVE -> allPromos.filter {
                 it.status == AdminPromoStatus.ACTIVE
             }
 
-            PromoFilter.INACTIVE -> FakeAdminPromoData.promos.filter {
+            PromoFilter.INACTIVE -> allPromos.filter {
                 it.status == AdminPromoStatus.INACTIVE || it.status == AdminPromoStatus.EXPIRED
             }
 
-            PromoFilter.SCHEDULED -> FakeAdminPromoData.promos.filter {
+            PromoFilter.SCHEDULED -> allPromos.filter {
                 it.status == AdminPromoStatus.SCHEDULED
             }
         }
