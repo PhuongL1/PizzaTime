@@ -14,12 +14,14 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentOrderTrackingBinding
 import com.devpro.pizzatime.databinding.ItemOrderTrackingStepBinding
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
 
 class OrderTrackingFragment : Fragment() {
 
     private var _binding: FragmentOrderTrackingBinding? = null
     private val binding get() = _binding!!
+    private var listenerRegistration: ListenerRegistration? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,23 +45,23 @@ class OrderTrackingFragment : Fragment() {
     }
 
     private fun loadOrderFromFirestore(orderId: String) {
-        FirebaseFirestore.getInstance()
+        listenerRegistration = FirebaseFirestore.getInstance()
             .collection("orders")
             .document(orderId)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (_binding == null) return@addOnSuccessListener
-                if (!doc.exists()) {
+            .addSnapshotListener { snapshot, error ->
+                if (_binding == null) return@addSnapshotListener
+                if (error != null || snapshot == null || !snapshot.exists()) {
                     renderTrackingSteps(FakeTrackingData.steps)
                     bindProduct(FakeTrackingData.product)
-                    return@addOnSuccessListener
+                    return@addSnapshotListener
                 }
-                val status = doc.getString("status") ?: "PENDING"
+                val status = snapshot.getString("status") ?: "PENDING"
                 renderTrackingSteps(buildStepsFromStatus(status))
 
-                val items = doc.get("items") as? List<*>
-                val firstName = (items?.firstOrNull() as? Map<*, *>)?.get("name") as? String ?: "Your Order"
-                val total = doc.getDouble("total") ?: 0.0
+                val items = snapshot.get("items") as? List<*>
+                val firstName = (items?.firstOrNull() as? Map<*, *>)
+                    ?.get("name") as? String ?: "Your Order"
+                val total = snapshot.getDouble("total") ?: 0.0
                 val itemCount = items?.size ?: 1
                 bindProduct(
                     TrackingProductUiModel(
@@ -69,11 +71,6 @@ class OrderTrackingFragment : Fragment() {
                         imageRes = R.drawable.img_welcome_hero,
                     ),
                 )
-            }
-            .addOnFailureListener {
-                if (_binding == null) return@addOnFailureListener
-                renderTrackingSteps(FakeTrackingData.steps)
-                bindProduct(FakeTrackingData.product)
             }
     }
 
@@ -85,11 +82,14 @@ class OrderTrackingFragment : Fragment() {
             "Out for Delivery" to "Your pizza is on its way",
             "Delivered" to "",
         )
-        val currentIndex = when (status.uppercase()) {
+        val currentIndex = when (status.uppercase(Locale.US)) {
             "PENDING" -> 0
+            "CONFIRMED" -> 1
             "PREPARING" -> 1
             "BAKING" -> 2
-            "OUT_FOR_DELIVERY" -> 3
+            "READY" -> 2
+            "ASSIGNED_TO_SHIPPER" -> 3
+            "DELIVERING" -> 3
             "DELIVERED" -> 4
             else -> 0
         }
@@ -245,6 +245,8 @@ class OrderTrackingFragment : Fragment() {
         get() = (this * resources.displayMetrics.density).toInt()
 
     override fun onDestroyView() {
+        listenerRegistration?.remove()
+        listenerRegistration = null
         _binding = null
         super.onDestroyView()
     }
