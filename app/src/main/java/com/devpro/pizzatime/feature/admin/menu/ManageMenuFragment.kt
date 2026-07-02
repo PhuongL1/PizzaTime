@@ -25,11 +25,16 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
 
     private var selectedCategory = AdminMenuCategory.SIGNATURE
     private var searchQuery = ""
+    private var allProducts: List<AdminMenuUiModel> = FakeAdminMenuData.getItems()
 
     private val menuAdapter = AdminMenuAdapter(
         onAvailabilityClick = { item ->
-            FakeAdminMenuData.toggleAvailability(item.id)
-            renderMenuItems()
+            AdminMenuFirestoreRepository.toggleAvailability(item.id, !item.isAvailable) { result ->
+                if (!isAdded) return@toggleAvailability
+                if (result.isSuccess) {
+                    loadFirestoreProducts()
+                }
+            }
         },
         onEditClick = { item ->
             Toast.makeText(
@@ -50,6 +55,15 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         setupMenuList()
         setupBottomNav()
         renderMenuItems()
+        loadFirestoreProducts()
+    }
+
+    private fun loadFirestoreProducts() {
+        AdminMenuFirestoreRepository.loadProducts { result ->
+            if (!isAdded) return@loadProducts
+            allProducts = result.getOrElse { FakeAdminMenuData.getItems() }
+            renderMenuItems()
+        }
     }
 
     private fun setupSearch() {
@@ -87,7 +101,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     private fun renderMenuItems() {
         val normalizedQuery = searchQuery.trim().lowercase()
 
-        val filteredItems = FakeAdminMenuData.getItems()
+        val filteredItems = allProducts
             .filter { item -> item.category == selectedCategory }
             .filter { item ->
                 normalizedQuery.isBlank() ||
