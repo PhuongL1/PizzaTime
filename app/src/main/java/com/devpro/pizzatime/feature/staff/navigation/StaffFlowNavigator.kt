@@ -163,9 +163,9 @@ fun Fragment.openCustomerHome(addToBackStack: Boolean = true) {
     )
 }
 
-fun Fragment.openOrderTracking(addToBackStack: Boolean = true) {
+fun Fragment.openOrderTracking(orderId: String = "", addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
-        fragment = OrderTrackingFragment(),
+        fragment = OrderTrackingFragment.newInstance(orderId),
         addToBackStack = addToBackStack,
     )
 }

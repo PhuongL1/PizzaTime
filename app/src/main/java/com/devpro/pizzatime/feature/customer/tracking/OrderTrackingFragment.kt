@@ -13,14 +13,13 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentOrderTrackingBinding
 import com.devpro.pizzatime.databinding.ItemOrderTrackingStepBinding
+import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Locale
 
 class OrderTrackingFragment : Fragment() {
 
     private var _binding: FragmentOrderTrackingBinding? = null
     private val binding get() = _binding!!
-
-    private val steps = FakeTrackingData.steps
-    private val product = FakeTrackingData.product
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -32,10 +31,79 @@ class OrderTrackingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        renderTrackingSteps(steps)
-        bindProduct(product)
+        val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
+        if (orderId.isNotBlank()) {
+            loadOrderFromFirestore(orderId)
+        } else {
+            renderTrackingSteps(FakeTrackingData.steps)
+            bindProduct(FakeTrackingData.product)
+        }
         setupBottomNav()
         setupActions()
+    }
+
+    private fun loadOrderFromFirestore(orderId: String) {
+        FirebaseFirestore.getInstance()
+            .collection("orders")
+            .document(orderId)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (_binding == null) return@addOnSuccessListener
+                if (!doc.exists()) {
+                    renderTrackingSteps(FakeTrackingData.steps)
+                    bindProduct(FakeTrackingData.product)
+                    return@addOnSuccessListener
+                }
+                val status = doc.getString("status") ?: "PENDING"
+                renderTrackingSteps(buildStepsFromStatus(status))
+
+                val items = doc.get("items") as? List<*>
+                val firstName = (items?.firstOrNull() as? Map<*, *>)?.get("name") as? String ?: "Your Order"
+                val total = doc.getDouble("total") ?: 0.0
+                val itemCount = items?.size ?: 1
+                bindProduct(
+                    TrackingProductUiModel(
+                        name = firstName,
+                        optionText = "$itemCount item(s)",
+                        price = String.format(Locale.US, "$%.2f", total),
+                        imageRes = R.drawable.img_welcome_hero,
+                    ),
+                )
+            }
+            .addOnFailureListener {
+                if (_binding == null) return@addOnFailureListener
+                renderTrackingSteps(FakeTrackingData.steps)
+                bindProduct(FakeTrackingData.product)
+            }
+    }
+
+    private fun buildStepsFromStatus(status: String): List<TrackingStepUiModel> {
+        val stepDefs = listOf(
+            "Order Placed" to "Successfully received",
+            "Preparing" to "Artisans at work",
+            "Baking Now" to "In our wood-fired stone oven",
+            "Out for Delivery" to "Your pizza is on its way",
+            "Delivered" to "",
+        )
+        val currentIndex = when (status.uppercase()) {
+            "PENDING" -> 0
+            "PREPARING" -> 1
+            "BAKING" -> 2
+            "OUT_FOR_DELIVERY" -> 3
+            "DELIVERED" -> 4
+            else -> 0
+        }
+        return stepDefs.mapIndexed { index, (title, subtitle) ->
+            TrackingStepUiModel(
+                title = title,
+                subtitle = subtitle,
+                state = when {
+                    index < currentIndex -> TrackingStepState.DONE
+                    index == currentIndex -> TrackingStepState.CURRENT
+                    else -> TrackingStepState.PENDING
+                },
+            )
+        }
     }
 
     private fun renderTrackingSteps(items: List<TrackingStepUiModel>) {
@@ -179,5 +247,15 @@ class OrderTrackingFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    companion object {
+        private const val ARG_ORDER_ID = "order_id"
+
+        fun newInstance(orderId: String) = OrderTrackingFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_ORDER_ID, orderId)
+            }
+        }
     }
 }

@@ -9,7 +9,10 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
+import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 
 class CheckoutFragment : Fragment() {
@@ -17,7 +20,7 @@ class CheckoutFragment : Fragment() {
     private var _binding: FragmentCheckoutBinding? = null
     private val binding get() = _binding!!
 
-    private val orderItems = FakeCheckoutData.orderItems
+    private var orderItems = emptyList<CheckoutOrderItemUiModel>()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -29,6 +32,7 @@ class CheckoutFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        orderItems = CartStore.items.map { it.toCheckoutItem() }
         renderOrderItems(orderItems)
         renderSummary()
         setupActions()
@@ -65,7 +69,7 @@ class CheckoutFragment : Fragment() {
 
     private fun renderSummary() {
         val subtotal = orderItems.sumOf { it.price }
-        val deliveryFee = FakeCheckoutData.deliveryFee
+        val deliveryFee = DELIVERY_FEE
         val total = subtotal + deliveryFee
 
         binding.tvSubtotal.text = formatMoney(subtotal)
@@ -95,8 +99,43 @@ class CheckoutFragment : Fragment() {
         }
 
         binding.btnPlaceOrder.setOnClickListener {
-            openOrderSuccess(orderId = DEFAULT_SUCCESS_ORDER_ID)
+            placeOrder()
         }
+    }
+
+    private fun placeOrder() {
+        if (orderItems.isEmpty()) {
+            Toast.makeText(requireContext(), "Your cart is empty.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val user = FirebaseAuth.getInstance().currentUser
+        if (user == null) {
+            Toast.makeText(requireContext(), "Please log in to place an order.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        binding.btnPlaceOrder.isEnabled = false
+        FirebaseOrderRepository.createOrder(
+            customerId = user.uid,
+            customerEmail = user.email ?: "",
+            items = CartStore.items,
+            deliveryFee = DELIVERY_FEE,
+            onResult = { result ->
+                if (_binding == null) return@createOrder
+                binding.btnPlaceOrder.isEnabled = true
+                result
+                    .onSuccess { orderId ->
+                        CartStore.clear()
+                        openOrderSuccess(orderId = orderId, addToBackStack = false)
+                    }
+                    .onFailure { error ->
+                        Toast.makeText(
+                            requireContext(),
+                            error.message ?: "Failed to place order.",
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                    }
+            },
+        )
     }
 
     private fun formatMoney(value: Double): String {
@@ -111,6 +150,15 @@ class CheckoutFragment : Fragment() {
         super.onDestroyView()
     }
     companion object {
-        private const val DEFAULT_SUCCESS_ORDER_ID = "PT-9823"
+        private const val DELIVERY_FEE = 4.5
     }
 }
+
+private fun CartItemUiModel.toCheckoutItem() = CheckoutOrderItemUiModel(
+    id = id,
+    name = name,
+    optionText = "x$quantity",
+    price = price * quantity,
+    imageRes = imageRes,
+)
+

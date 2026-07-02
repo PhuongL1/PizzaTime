@@ -42,7 +42,7 @@ class OrderSuccessFragment : Fragment(R.layout.fragment_order_success) {
 
     private fun setupActions() = with(binding) {
         btnTrackPizza.setOnClickListener {
-            openOrderTracking()
+            openOrderTracking(orderId = orderSuccess.orderId)
         }
 
         btnReturnHome.setOnClickListener {
