@@ -56,6 +56,9 @@ class LoginFragment : Fragment() {
         binding.btnForgotPassword.setOnClickListener {
             openForgotPassword()
         }
+        binding.btnBack.setOnClickListener {
+            parentFragmentManager.popBackStack()
+        }
     }
 
     private fun observeLoginResult() {

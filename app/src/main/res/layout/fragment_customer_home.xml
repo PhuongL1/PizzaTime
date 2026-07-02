@@ -68,7 +68,7 @@
                 </LinearLayout>
 
                 <ImageView
-                    android:id="@+id/imgHomeAvatar"
+                    android:id="@+id/btnHomeAvatar"
                     android:layout_width="44dp"
                     android:layout_height="44dp"
                     android:background="@drawable/bg_avatar_circle"
@@ -387,6 +387,7 @@
                     android:textStyle="bold" />
 
                 <TextView
+                    android:id="@+id/tvSeeAll"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.08"

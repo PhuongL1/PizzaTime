@@ -8,6 +8,7 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.databinding.FragmentRegisterBinding
+import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 
 class RegisterFragment : Fragment() {
 
@@ -32,8 +33,8 @@ class RegisterFragment : Fragment() {
             handleCreateAccount()
         }
 
-        binding.btnBackToLogin.setOnClickListener {
-            parentFragmentManager.popBackStack()
+        binding.btnBack.setOnClickListener {
+            openLoginScreen()
         }
 
         binding.btnGoogle.setOnClickListener {

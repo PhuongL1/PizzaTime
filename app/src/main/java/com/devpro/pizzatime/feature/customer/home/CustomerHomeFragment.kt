@@ -12,6 +12,8 @@ import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
 import com.devpro.pizzatime.feature.customer.menu.PizzaMenuFragment
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 
 class CustomerHomeFragment : Fragment() {
 
@@ -138,6 +140,9 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun setupActions() {
+        binding.btnHomeAvatar.setOnClickListener {
+            Toast.makeText(requireContext(), "Search coming soon", Toast.LENGTH_SHORT).show()
+        }
         binding.searchBar.setOnClickListener {
             Toast.makeText(requireContext(), "Search coming soon", Toast.LENGTH_SHORT).show()
         }
@@ -151,13 +156,16 @@ class CustomerHomeFragment : Fragment() {
         }
 
         binding.bottomNav.navLoyalty.setOnClickListener {
-            Toast.makeText(requireContext(), "Alerts coming soon", Toast.LENGTH_SHORT).show()
+            openCustomerPromoCodes()
         }
 
         binding.bottomNav.navProfile.setOnClickListener {
             Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
         }
         binding.bottomNav.navMenu.setOnClickListener {
+            openCustomerHome()
+        }
+        binding.tvSeeAll.setOnClickListener {
             openPizzaMenuScreen()
         }
     }

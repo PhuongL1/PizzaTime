@@ -19,43 +19,37 @@
         android:paddingBottom="36dp">
 
         <!-- TOP BAR -->
-        <LinearLayout
+        <FrameLayout
             android:id="@+id/registerTopBar"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
-            android:gravity="center_vertical"
-            android:orientation="horizontal">
+            android:layout_height="64dp">
 
             <ImageView
-                android:id="@+id/imgRegisterLocation"
-                android:layout_width="26dp"
-                android:layout_height="26dp"
-                android:contentDescription="@string/register_top_location_content_description"
-                android:src="@drawable/ic_location" />
+                android:id="@+id/btnBack"
+                android:layout_width="48dp"
+                android:layout_height="48dp"
+                android:layout_gravity="start|center_vertical"
+                android:background="@drawable/bg_login_back_button"
+                android:clickable="true"
+                android:contentDescription="@string/common_back_content_description"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless"
+                android:padding="13dp"
+                android:scaleType="centerInside"
+                android:src="@drawable/ic_back" />
 
             <TextView
                 android:id="@+id/tvRegisterBrand"
-                android:layout_width="0dp"
+                android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="8dp"
-                android:layout_weight="1"
+                android:layout_gravity="center"
                 android:fontFamily="serif"
                 android:includeFontPadding="false"
                 android:text="@string/app_name"
                 android:textColor="@color/pt_gold"
-                android:textSize="34sp" />
+                android:textSize="40sp" />
 
-            <ImageView
-                android:id="@+id/imgRegisterAvatar"
-                android:layout_width="46dp"
-                android:layout_height="46dp"
-                android:background="@drawable/bg_avatar_circle"
-                android:contentDescription="@string/register_avatar_content_description"
-                android:padding="2dp"
-                android:scaleType="centerCrop"
-                android:src="@drawable/bg_avatar" />
-
-        </LinearLayout>
+        </FrameLayout>
 
         <!-- TITLE -->
         <TextView
@@ -273,18 +267,6 @@
             android:textSize="22sp"
             android:textStyle="bold" />
 
-        <TextView
-            android:id="@+id/btnBackToLogin"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="28dp"
-            android:clickable="true"
-            android:focusable="true"
-            android:gravity="center"
-            android:text="@string/register_back_to_login"
-            android:textColor="@color/pt_text_primary"
-            android:textSize="13sp"
-            android:textStyle="bold" />
 
         <!-- SOCIAL DIVIDER -->
         <LinearLayout

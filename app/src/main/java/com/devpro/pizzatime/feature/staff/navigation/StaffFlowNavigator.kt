@@ -12,6 +12,8 @@ import com.devpro.pizzatime.feature.admin.product.AddEditProductFragment
 import com.devpro.pizzatime.feature.admin.promo.ManagePromoCodesFragment
 import com.devpro.pizzatime.feature.admin.reports.ReportsFragment
 import com.devpro.pizzatime.feature.admin.staff.ManageStaffFragment
+import com.devpro.pizzatime.feature.auth.LoginFragment
+import com.devpro.pizzatime.feature.auth.LoginRequiredFragment
 import com.devpro.pizzatime.feature.auth.forgot.ForgotPasswordFragment
 import com.devpro.pizzatime.feature.customer.account.CustomerAccountFragment
 import com.devpro.pizzatime.feature.customer.cart.CartFragment
@@ -40,7 +42,52 @@ fun Fragment.openStaffDashboard(addToBackStack: Boolean = true) {
         addToBackStack = addToBackStack,
     )
 }
-
+fun Fragment.openLoginRequiredScreen(addToBackStack: Boolean = true) {
+    parentFragmentManager.beginTransaction()
+        .setCustomAnimations(
+            android.R.anim.fade_in,
+            android.R.anim.fade_out,
+        )
+        .replace(
+            R.id.fragmentContainer,
+            LoginRequiredFragment(),
+        )
+        .apply {
+            if (addToBackStack) {
+                addToBackStack(null)
+            }
+        }
+        .commit()
+}
+fun Fragment.openLoginScreen(addToBackStack: Boolean = true) {
+    parentFragmentManager.beginTransaction()
+        .setCustomAnimations(
+            android.R.anim.fade_in,
+            android.R.anim.fade_out,
+        )
+        .replace(
+            R.id.fragmentContainer,
+            LoginFragment(),
+        )
+        .apply {
+            if (addToBackStack) {
+                addToBackStack(null)
+            }
+        }
+        .commit()
+}
+fun Fragment.openCustomerHomeScreen() {
+    parentFragmentManager.beginTransaction()
+        .setCustomAnimations(
+            android.R.anim.fade_in,
+            android.R.anim.fade_out,
+        )
+        .replace(
+            R.id.fragmentContainer,
+            CustomerHomeFragment(),
+        )
+        .commit()
+}
 fun Fragment.openKitchenBoard(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = KitchenBoardFragment(),

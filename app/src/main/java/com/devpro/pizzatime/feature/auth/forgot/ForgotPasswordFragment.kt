@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentForgotPasswordBinding
+import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 
 class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
 
@@ -29,8 +30,8 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
             sendResetInstructions()
         }
 
-        btnBackToLogin.setOnClickListener {
-            parentFragmentManager.popBackStack()
+        btnBack.setOnClickListener {
+            openLoginScreen()
         }
     }
 

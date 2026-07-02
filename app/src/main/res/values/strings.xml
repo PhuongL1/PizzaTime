@@ -13,7 +13,8 @@
     <string name="welcome_chip">ARTISAN EXPERIENCE</string>
     <string name="welcome_hero_title">The Art of Late-Night\nDining</string>
     <string name="welcome_hero_subtitle">A sophisticated sanctuary for the discerning\nepicurean. Hand-stretched dough, heritage\ntomatoes, and midnight inspiration.</string>
-    <string name="welcome_start_ordering">Start Ordering â†’</string>
+    <string name="welcome_start_ordering">Start Ordering </string>
+    <string name="common_back_content_description">Back</string>
     <string name="welcome_login">Log In</string>
     <string name="welcome_scroll_to_discover">SCROLL TO DISCOVER</string>
     <string name="welcome_wood_fired_content_description">Wood fired</string>

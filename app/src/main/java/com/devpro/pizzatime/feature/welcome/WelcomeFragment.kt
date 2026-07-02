@@ -5,10 +5,8 @@ import android.view.View
 import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.databinding.FragmentWelcomeBinding
 import com.devpro.pizzatime.shared.component.BaseFragment
-import com.devpro.pizzatime.R
-import com.devpro.pizzatime.feature.auth.LoginFragment
-import com.devpro.pizzatime.feature.auth.LoginRequiredFragment
-import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHomeScreen
+import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 
 class WelcomeFragment : BaseFragment<FragmentWelcomeBinding>(
     FragmentWelcomeBinding::inflate
@@ -28,17 +26,5 @@ class WelcomeFragment : BaseFragment<FragmentWelcomeBinding>(
             openLoginScreen()
         }
     }
-    private fun openLoginScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, LoginRequiredFragment())
-            .addToBackStack(null)
-            .commit()
-    }
-    private fun openCustomerHomeScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, CustomerHomeFragment())
-            .commit()
-    }
+
 }
