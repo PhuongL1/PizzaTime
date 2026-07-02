@@ -22,6 +22,8 @@ class KitchenBoardFragment : Fragment() {
         "Binding is only valid between onCreateView and onDestroyView"
     }
 
+    private var firestoreOrders: List<KitchenOrderUiModel>? = null
+
     private val adapter = KitchenOrderAdapter(
         onPrimaryActionClick = { order ->
             handleOrderAction(order)
@@ -43,12 +45,23 @@ class KitchenBoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupOrders()
         setupBottomNav()
+        loadFirestoreOrders()
     }
 
     private fun setupOrders() = with(binding.rvKitchenOrders) {
         layoutManager = LinearLayoutManager(requireContext())
         adapter = this@KitchenBoardFragment.adapter
         this@KitchenBoardFragment.adapter.submitList(FakeKitchenBoardData.getOrders())
+    }
+
+    private fun loadFirestoreOrders() {
+        KitchenOrderFirestoreRepository.loadOrders { result ->
+            if (!isAdded) return@loadOrders
+            result.onSuccess { orders ->
+                firestoreOrders = orders
+                adapter.submitList(orders)
+            }
+        }
     }
 
     private fun setupBottomNav() {
@@ -74,7 +87,35 @@ class KitchenBoardFragment : Fragment() {
             KitchenOrderStatus.NEW -> R.string.kitchen_message_order_accepted
         }
 
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+        val nextStatus = nextFirestoreStatus(order.status)
+        if (firestoreOrders != null && nextStatus != null) {
+            updateFirestoreStatus(order.orderId, nextStatus, messageRes)
+        } else {
+            Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun updateFirestoreStatus(orderId: String, nextStatus: String, messageRes: Int) {
+        KitchenOrderFirestoreRepository.updateOrderStatus(orderId, nextStatus) { result ->
+            if (!isAdded) return@updateOrderStatus
+            result
+                .onSuccess {
+                    Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+                    loadFirestoreOrders()
+                }
+                .onFailure {
+                    Toast.makeText(requireContext(), "Failed to update order.", Toast.LENGTH_SHORT).show()
+                }
+        }
+    }
+
+    private fun nextFirestoreStatus(status: KitchenOrderStatus): String? {
+        return when (status) {
+            KitchenOrderStatus.WAITING -> "PREPARING"
+            KitchenOrderStatus.PREPARING -> "BAKING"
+            KitchenOrderStatus.READY -> "READY"
+            KitchenOrderStatus.NEW -> null
+        }
     }
 
     private fun showComingSoon(titleRes: Int) {
