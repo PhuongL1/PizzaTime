@@ -21,7 +21,7 @@ class PizzaDetailFragment : Fragment() {
     private var quantity = 1
     private var isFavorite = false
 
-    private val pizzaDetail = FakePizzaDetailData.truffleNoir
+    private lateinit var pizzaDetail: PizzaDetailUiModel
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -33,9 +33,27 @@ class PizzaDetailFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        pizzaDetail = buildPizzaDetail()
         bindPizzaDetail(pizzaDetail)
         renderToppings(pizzaDetail.toppings)
         setupActions()
+    }
+
+    private fun buildPizzaDetail(): PizzaDetailUiModel {
+        val args = arguments ?: return FakePizzaDetailData.truffleNoir
+        val name = args.getString(ARG_NAME).orEmpty()
+        if (name.isBlank()) return FakePizzaDetailData.truffleNoir
+        return PizzaDetailUiModel(
+            id = args.getString(ARG_PRODUCT_ID, ""),
+            name = name,
+            description = args.getString(ARG_DESCRIPTION, ""),
+            price = args.getString(ARG_PRICE, ""),
+            rating = args.getString(ARG_RATING, "0.0"),
+            time = "25-30 MIN",
+            kcal = "840 KCAL",
+            imageRes = R.drawable.img_welcome_hero,
+            toppings = FakePizzaDetailData.truffleNoir.toppings,
+        )
     }
 
     private fun bindPizzaDetail(item: PizzaDetailUiModel) {
@@ -157,5 +175,29 @@ class PizzaDetailFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    companion object {
+        private const val ARG_PRODUCT_ID = "product_id"
+        private const val ARG_NAME = "name"
+        private const val ARG_DESCRIPTION = "description"
+        private const val ARG_PRICE = "price"
+        private const val ARG_RATING = "rating"
+
+        fun newInstance(
+            productId: String,
+            name: String,
+            description: String,
+            price: String,
+            rating: String,
+        ) = PizzaDetailFragment().apply {
+            arguments = Bundle().apply {
+                putString(ARG_PRODUCT_ID, productId)
+                putString(ARG_NAME, name)
+                putString(ARG_DESCRIPTION, description)
+                putString(ARG_PRICE, price)
+                putString(ARG_RATING, rating)
+            }
+        }
     }
 }

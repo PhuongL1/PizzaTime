@@ -112,9 +112,22 @@ fun Fragment.openPizzaMenuScreen(addToBackStack: Boolean = true) {
     )
 }
 
-fun Fragment.openPizzaDetailScreen(addToBackStack: Boolean = true) {
+fun Fragment.openPizzaDetailScreen(
+    productId: String = "",
+    productName: String = "",
+    productDescription: String = "",
+    productPrice: String = "",
+    productRating: String = "",
+    addToBackStack: Boolean = true,
+) {
     replaceStaffFlowFragment(
-        fragment = PizzaDetailFragment(),
+        fragment = PizzaDetailFragment.newInstance(
+            productId = productId,
+            name = productName,
+            description = productDescription,
+            price = productPrice,
+            rating = productRating,
+        ),
         addToBackStack = addToBackStack,
     )
 }

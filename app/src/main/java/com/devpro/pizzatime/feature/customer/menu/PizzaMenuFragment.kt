@@ -36,8 +36,15 @@ class PizzaMenuFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupBottomNav()
-        renderPizzaList(FakePizzaMenuData.pizzas)
+        loadAndRenderProducts()
         setupActions()
+    }
+
+    private fun loadAndRenderProducts() {
+        FirebaseProductRepository.loadProducts { products ->
+            if (_binding == null) return@loadProducts
+            renderPizzaList(products.map { it.toPizzaMenuUiModel() })
+        }
     }
 
     private fun setupBottomNav() {
@@ -63,7 +70,13 @@ class PizzaMenuFragment : Fragment() {
             itemBinding.tvPizzaRating.text = getString(R.string.home_rating_49).replace("4.9", item.rating)
 
             itemBinding.root.setOnClickListener {
-                openPizzaDetailScreen()
+                openPizzaDetailScreen(
+                    productId = item.id,
+                    productName = item.name,
+                    productDescription = item.description,
+                    productPrice = item.price,
+                    productRating = item.rating,
+                )
             }
 
             itemBinding.btnAddToCart.setOnClickListener {
@@ -143,10 +156,20 @@ class PizzaMenuFragment : Fragment() {
         _binding = null
         super.onDestroyView()
     }
+
     private fun parsePrice(price: String): Double {
         return price
             .replace("$", "")
             .trim()
             .toDoubleOrNull() ?: 0.0
     }
+
+    private fun ProductUiModel.toPizzaMenuUiModel() = PizzaMenuUiModel(
+        id = id,
+        name = name,
+        description = description,
+        price = "$${String.format("%.2f", basePrice)}",
+        rating = String.format("%.1f", rating),
+        imageRes = R.drawable.img_welcome_hero,
+    )
 }

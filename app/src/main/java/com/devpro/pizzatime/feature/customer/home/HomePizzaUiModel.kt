@@ -8,6 +8,7 @@ data class BestSellerPizzaUiModel(
     val name: String,
     val description: String,
     val price: String,
+    val rating: String = "",
     @DrawableRes val imageRes: Int,
     val isFavorite: Boolean = false,
 )

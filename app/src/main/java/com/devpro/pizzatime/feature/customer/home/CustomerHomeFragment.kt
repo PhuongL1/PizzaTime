@@ -13,6 +13,8 @@ import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.customer.menu.FirebaseProductRepository
+import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
@@ -40,8 +42,13 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun renderHomeData() {
-        renderBestSellers(FakeHomeData.bestSellers)
-        renderChefSelections(FakeHomeData.chefSelections)
+        FirebaseProductRepository.loadProducts { products ->
+            if (_binding == null) return@loadProducts
+            val bestSellers = products.map { it.toBestSellerUiModel() }
+            val chefSelections = products.take(3).map { it.toChefPizzaUiModel() }
+            renderBestSellers(bestSellers)
+            renderChefSelections(chefSelections)
+        }
     }
 
     private fun renderBestSellers(items: List<BestSellerPizzaUiModel>) {
@@ -67,7 +74,13 @@ class CustomerHomeFragment : Fragment() {
             )
 
             itemBinding.root.setOnClickListener {
-                openPizzaDetailScreen()
+                openPizzaDetailScreen(
+                    productId = item.id,
+                    productName = item.name,
+                    productDescription = item.description,
+                    productPrice = item.price,
+                    productRating = item.rating,
+                )
             }
 
             itemBinding.btnFavorite.setOnClickListener {
@@ -120,7 +133,13 @@ class CustomerHomeFragment : Fragment() {
             itemBinding.tvChefRating.text = item.rating
 
             itemBinding.root.setOnClickListener {
-                openPizzaDetailScreen()
+                openPizzaDetailScreen(
+                    productId = item.id,
+                    productName = item.name,
+                    productDescription = item.description,
+                    productPrice = item.price,
+                    productRating = item.rating,
+                )
             }
 
             itemBinding.root.layoutParams = LinearLayout.LayoutParams(
@@ -173,6 +192,25 @@ class CustomerHomeFragment : Fragment() {
 
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
+
+    private fun ProductUiModel.toBestSellerUiModel() = BestSellerPizzaUiModel(
+        id = id,
+        name = name,
+        description = description,
+        price = "$${String.format("%.2f", basePrice)}",
+        rating = String.format("%.1f", rating),
+        imageRes = R.drawable.img_welcome_hero,
+    )
+
+    private fun ProductUiModel.toChefPizzaUiModel() = ChefPizzaUiModel(
+        id = id,
+        name = name,
+        description = description,
+        price = "$${String.format("%.2f", basePrice)}",
+        label = "CHEF'S PICK",
+        rating = "★ ${String.format("%.1f", rating)}",
+        imageRes = R.drawable.img_welcome_hero,
+    )
 
     override fun onDestroyView() {
         _binding = null
