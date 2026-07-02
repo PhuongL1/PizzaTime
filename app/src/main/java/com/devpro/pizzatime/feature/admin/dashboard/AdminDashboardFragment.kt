@@ -43,6 +43,14 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         setupQuickActions()
         setupRecentOrders()
         setupBottomNav()
+        loadFirestoreData()
+    }
+
+    private fun loadFirestoreData() {
+        AdminDashboardFirestoreRepository.loadDashboard { result ->
+            if (!isAdded) return@loadDashboard
+            result.onSuccess { data -> bindDashboard(data) }
+        }
     }
 
     private fun bindDashboard(data: AdminDashboardUiModel) = with(binding) {
