@@ -7,6 +7,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDashboardBinding
+import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
@@ -35,14 +36,13 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
 
         _binding = FragmentShipperDeliveryDashboardBinding.bind(view)
 
-        bindActiveDelivery()
+        bindActiveDelivery(FakeShipperDeliveryData.getActiveDelivery())
         setupAssignedDeliveries()
         setupBottomNav()
+        loadFirestoreOrders()
     }
 
-    private fun bindActiveDelivery() = with(binding) {
-        val activeDelivery = FakeShipperDeliveryData.getActiveDelivery()
-
+    private fun bindActiveDelivery(activeDelivery: ShipperDeliveryUiModel) = with(binding) {
         tvActiveOrderId.text = activeDelivery.orderId
         tvActiveEta.text = activeDelivery.etaLabel
         tvActiveCustomerName.text = activeDelivery.customerName
@@ -68,6 +68,19 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         adapter = deliveryAdapter
         isNestedScrollingEnabled = false
         deliveryAdapter.submitList(FakeShipperDeliveryData.getAssignedDeliveries())
+    }
+
+    private fun loadFirestoreOrders() {
+        ShipperOrderFirestoreRepository.loadOrders { result ->
+            if (!isAdded) return@loadOrders
+            result.onSuccess { orders ->
+                val activeDelivery = orders.firstOrNull { it.status == ShipperDeliveryStatus.ACTIVE }
+                if (activeDelivery != null) {
+                    bindActiveDelivery(activeDelivery)
+                }
+                deliveryAdapter.submitList(orders.filter { it.status == ShipperDeliveryStatus.ASSIGNED })
+            }
+        }
     }
 
     private fun setupBottomNav() {

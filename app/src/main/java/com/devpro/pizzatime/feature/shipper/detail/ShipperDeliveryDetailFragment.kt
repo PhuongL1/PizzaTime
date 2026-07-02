@@ -7,11 +7,13 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDetailBinding
 import com.devpro.pizzatime.databinding.ItemShipperPaymentRowBinding
+import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.google.firebase.auth.FirebaseAuth
 
 class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_delivery_detail) {
 
@@ -21,19 +23,43 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             "FragmentShipperDeliveryDetailBinding is only valid between onViewCreated and onDestroyView."
         }
 
+    private var firestoreStatus: String? = null
+
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding = FragmentShipperDeliveryDetailBinding.bind(view)
 
-        val detail = FakeShipperDeliveryDetailData.getDetail(
-            arguments?.getString(ARG_ORDER_ID),
-        )
-
-        bindDetail(detail)
-        setupActions(detail)
+        val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
         setupBottomNav()
+        loadOrder(orderId)
     }
+
+    private fun loadOrder(orderId: String) {
+        if (isFirestoreOrderId(orderId)) {
+            ShipperOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
+                if (!isAdded) return@loadOrderDetail
+                result
+                    .onSuccess { (detail, status) ->
+                        firestoreStatus = status
+                        bindDetail(detail)
+                        setupActions(detail)
+                    }
+                    .onFailure {
+                        val detail = FakeShipperDeliveryDetailData.getDetail(orderId)
+                        bindDetail(detail)
+                        setupActions(detail)
+                    }
+            }
+        } else {
+            val detail = FakeShipperDeliveryDetailData.getDetail(orderId.ifBlank { null })
+            bindDetail(detail)
+            setupActions(detail)
+        }
+    }
+
+    private fun isFirestoreOrderId(orderId: String): Boolean =
+        orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8
 
     private fun bindDetail(detail: ShipperDeliveryDetailUiModel) = with(binding) {
         tvOrderTitle.text = getString(R.string.shipper_detail_order_title, detail.orderId.removePrefix("#"))
@@ -85,11 +111,42 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         }
 
         btnConfirmDelivery.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.shipper_detail_delivery_confirmed, detail.orderId),
-                Toast.LENGTH_SHORT,
-            ).show()
+            val nextStatus = nextFirestoreStatus(firestoreStatus)
+            if (firestoreStatus != null && nextStatus != null) {
+                updateFirestoreStatus(detail.orderId, nextStatus)
+            } else {
+                Toast.makeText(
+                    requireContext(),
+                    getString(R.string.shipper_detail_delivery_confirmed, detail.orderId),
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+        }
+    }
+
+    private fun nextFirestoreStatus(status: String?): String? = when (status) {
+        "READY" -> "ASSIGNED_TO_SHIPPER"
+        "ASSIGNED_TO_SHIPPER" -> "DELIVERING"
+        "DELIVERING" -> "DELIVERED"
+        else -> null
+    }
+
+    private fun updateFirestoreStatus(orderId: String, nextStatus: String) {
+        val shipperId = FirebaseAuth.getInstance().currentUser?.uid
+        ShipperOrderFirestoreRepository.updateOrderStatus(orderId, nextStatus, shipperId) { result ->
+            if (!isAdded) return@updateOrderStatus
+            result
+                .onSuccess {
+                    firestoreStatus = nextStatus
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.shipper_detail_delivery_confirmed, orderId),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+                .onFailure {
+                    Toast.makeText(requireContext(), "Failed to update order.", Toast.LENGTH_SHORT).show()
+                }
         }
     }
 
