@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStaffDashboardBinding
+import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -26,6 +27,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
 
     private lateinit var staffOrderAdapter: StaffOrderAdapter
     private var selectedStatus = StaffOrderStatus.PENDING
+    private var firestoreOrders: List<StaffOrderUiModel>? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -36,6 +38,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         setupStatusChips()
         setupBottomNav()
         renderOrders()
+        loadFirestoreOrders()
     }
 
     private fun setupRecyclerView() {
@@ -55,15 +58,34 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     }
 
     private fun confirmOrder(order: StaffOrderUiModel) {
-        FakeStaffDashboardData.confirmOrder(order.orderId)
+        if (firestoreOrders != null) {
+            StaffOrderFirestoreRepository.updateOrderStatus(
+                orderId = order.orderId,
+                newStatus = "CONFIRMED",
+            ) { result ->
+                if (!isAdded) return@updateOrderStatus
+                result
+                    .onSuccess {
+                        showConfirmedToast(order.orderId)
+                        loadFirestoreOrders()
+                    }
+                    .onFailure {
+                        Toast.makeText(requireContext(), "Failed to confirm order.", Toast.LENGTH_SHORT).show()
+                    }
+            }
+        } else {
+            FakeStaffDashboardData.confirmOrder(order.orderId)
+            showConfirmedToast(order.orderId)
+            renderOrders()
+        }
+    }
 
+    private fun showConfirmedToast(orderId: String) {
         Toast.makeText(
             requireContext(),
-            getString(R.string.staff_order_confirmed_message, order.orderId),
+            getString(R.string.staff_order_confirmed_message, orderId),
             Toast.LENGTH_SHORT,
         ).show()
-
-        renderOrders()
     }
 
     private fun setupStatusChips() = with(binding) {
@@ -105,13 +127,25 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     }
 
     private fun renderOrders() {
-        val orders = FakeStaffDashboardData.getOrdersByStatus(selectedStatus)
+        val orders = firestoreOrders
+            ?.filter { it.status == selectedStatus }
+            ?: FakeStaffDashboardData.getOrdersByStatus(selectedStatus)
 
         staffOrderAdapter.submitList(orders)
         binding.rvStaffOrders.isVisible = orders.isNotEmpty()
         binding.tvEmptyOrders.isVisible = orders.isEmpty()
 
         updateChipState()
+    }
+
+    private fun loadFirestoreOrders() {
+        StaffOrderFirestoreRepository.loadOrders { result ->
+            if (!isAdded) return@loadOrders
+            result.onSuccess { orders ->
+                firestoreOrders = orders
+                renderOrders()
+            }
+        }
     }
 
     private fun updateChipState() = with(binding) {

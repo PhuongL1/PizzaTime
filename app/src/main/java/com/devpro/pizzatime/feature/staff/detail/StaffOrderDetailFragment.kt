@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStaffOrderDetailBinding
+import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderStatus
 import com.devpro.pizzatime.shared.dialog.AssignShipperDialogFragment
 import com.devpro.pizzatime.shared.dialog.CancelOrderConfirmationDialogFragment
@@ -28,12 +29,32 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         _binding = FragmentStaffOrderDetailBinding.bind(view)
 
         val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
-        currentOrder = FakeStaffOrderDetailData.getByOrderId(orderId)
 
-        bindOrderDetail(currentOrder)
-        setupActions()
         setupCancelOrderResult()
         setupAssignShipperResult()
+        loadOrder(orderId)
+    }
+
+    private fun loadOrder(orderId: String) {
+        if (isFirestoreOrderId(orderId)) {
+            StaffOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
+                if (!isAdded) return@loadOrderDetail
+                val order = result.getOrElse { FakeStaffOrderDetailData.getByOrderId(orderId) }
+                bindAndSetup(order)
+            }
+        } else {
+            bindAndSetup(FakeStaffOrderDetailData.getByOrderId(orderId))
+        }
+    }
+
+    private fun bindAndSetup(order: StaffOrderDetailUiModel) {
+        currentOrder = order
+        bindOrderDetail(order)
+        setupActions()
+    }
+
+    private fun isFirestoreOrderId(orderId: String): Boolean {
+        return orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8
     }
 
     private fun bindOrderDetail(order: StaffOrderDetailUiModel) = with(binding) {
