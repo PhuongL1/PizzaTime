@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderDetailBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderDetailLineBinding
+import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
 import java.util.Locale
 
 class CustomerOrderDetailFragment : Fragment() {
@@ -19,12 +20,6 @@ class CustomerOrderDetailFragment : Fragment() {
         get() = checkNotNull(_binding) {
             "FragmentCustomerOrderDetailBinding is only valid between onCreateView and onDestroyView."
         }
-
-    private val orderDetail: CustomerOrderDetailUiModel by lazy {
-        FakeCustomerOrderDetailData.getOrderDetail(
-            orderId = arguments?.getString(ARG_ORDER_ID) ?: DEFAULT_ORDER_ID,
-        )
-    }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -36,27 +31,46 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        bindOrderDetail()
         setupActions()
-
+        val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
+        loadOrder(orderId)
     }
 
-    private fun bindOrderDetail() = with(binding) {
-        tvStatus.text = orderDetail.statusLabel
-        tvOrderId.text = getString(R.string.customer_order_detail_order_id, orderDetail.orderId)
-        tvOrderTime.text = orderDetail.orderTime
-        ivHeroImage.setImageResource(orderDetail.heroImageRes)
-        tvHeroMessage.text = orderDetail.heroMessage
-
-        bindItems()
-        bindBill()
-        bindAddress()
+    private fun loadOrder(orderId: String) {
+        if (isFirestoreOrderId(orderId)) {
+            CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
+                if (!isAdded) return@loadOrderDetail
+                val detail = result.getOrElse {
+                    FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
+                }
+                bindOrderDetail(detail)
+            }
+        } else {
+            bindOrderDetail(
+                FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
+            )
+        }
     }
 
-    private fun bindItems() = with(binding.orderItemsContainer) {
+    private fun isFirestoreOrderId(orderId: String): Boolean =
+        orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8
+
+    private fun bindOrderDetail(detail: CustomerOrderDetailUiModel) = with(binding) {
+        tvStatus.text = detail.statusLabel
+        tvOrderId.text = getString(R.string.customer_order_detail_order_id, detail.orderId)
+        tvOrderTime.text = detail.orderTime
+        ivHeroImage.setImageResource(detail.heroImageRes)
+        tvHeroMessage.text = detail.heroMessage
+
+        bindItems(detail.items)
+        bindBill(detail.bill)
+        bindAddress(detail)
+    }
+
+    private fun bindItems(items: List<CustomerOrderItemUiModel>) = with(binding.orderItemsContainer) {
         removeAllViews()
 
-        orderDetail.items.forEach { item ->
+        items.forEach { item ->
             val itemBinding = ItemCustomerOrderDetailLineBinding.inflate(layoutInflater, this, false)
 
             itemBinding.tvItemName.text = getString(
@@ -79,19 +93,19 @@ class CustomerOrderDetailFragment : Fragment() {
         }
     }
 
-    private fun bindBill() = with(binding) {
-        tvSubtotalValue.text = formatPrice(orderDetail.bill.subtotal)
-        tvDeliveryFeeValue.text = formatPrice(orderDetail.bill.deliveryFee)
-        tvTaxesValue.text = formatPrice(orderDetail.bill.taxes)
-        tvDiscountLabel.text = orderDetail.bill.discountLabel
-        tvDiscountValue.text = formatSignedPrice(orderDetail.bill.discount)
-        tvTotalAmount.text = formatPrice(orderDetail.bill.total)
+    private fun bindBill(bill: CustomerBillUiModel) = with(binding) {
+        tvSubtotalValue.text = formatPrice(bill.subtotal)
+        tvDeliveryFeeValue.text = formatPrice(bill.deliveryFee)
+        tvTaxesValue.text = formatPrice(bill.taxes)
+        tvDiscountLabel.text = bill.discountLabel
+        tvDiscountValue.text = formatSignedPrice(bill.discount)
+        tvTotalAmount.text = formatPrice(bill.total)
     }
 
-    private fun bindAddress() = with(binding) {
-        tvDeliveredTo.text = orderDetail.deliveryAddressTitle
-        tvAddressLine1.text = orderDetail.deliveryAddressLine1
-        tvAddressLine2.text = orderDetail.deliveryAddressLine2
+    private fun bindAddress(detail: CustomerOrderDetailUiModel) = with(binding) {
+        tvDeliveredTo.text = detail.deliveryAddressTitle
+        tvAddressLine1.text = detail.deliveryAddressLine1
+        tvAddressLine2.text = detail.deliveryAddressLine2
     }
 
     private fun setupActions() = with(binding) {

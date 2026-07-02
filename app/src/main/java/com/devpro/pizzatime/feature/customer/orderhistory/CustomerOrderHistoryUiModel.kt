@@ -28,6 +28,7 @@ enum class CustomerOrderHistoryStatus(
 ) {
     DELIVERED("DELIVERED"),
     CANCELED("CANCELED"),
+    IN_PROGRESS("IN PROGRESS"),
 }
 
 enum class CustomerOrderHistoryFilter {

@@ -16,6 +16,7 @@ import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavT
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderDetail
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -29,6 +30,7 @@ class CustomerOrderHistoryFragment : Fragment() {
 
     private val historyData: CustomerOrderHistoryUiModel = FakeCustomerOrderHistoryData.getOrderHistory()
     private var selectedFilter: CustomerOrderHistoryFilter = CustomerOrderHistoryFilter.ALL
+    private var firestoreOrders: List<CustomerOrderHistoryItemUiModel>? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -47,6 +49,7 @@ class CustomerOrderHistoryFragment : Fragment() {
         renderFilterChips()
         renderOrders()
         renderRewardCard()
+        loadFirestoreOrders()
     }
 
     private fun bindStaticContent() = with(binding) {
@@ -87,19 +90,14 @@ class CustomerOrderHistoryFragment : Fragment() {
             },
         )
     }
+
     private fun setupBottomNav() = with(binding) {
         setupCustomerBottomNav(
             bottomNav = customerBottomNav,
             selectedTab = CustomerBottomNavTab.ORDERS,
-            onCustomerMenuClick = {
-                // TODO: open pizza menu / customer home
-            },
-            onCustomerLoyaltyClick = {
-                // TODO: open promo codes
-            },
-            onCustomerProfileClick = {
-                // TODO: open customer profile
-            },
+            onCustomerMenuClick = {},
+            onCustomerLoyaltyClick = {},
+            onCustomerProfileClick = {},
         )
     }
 
@@ -139,12 +137,13 @@ class CustomerOrderHistoryFragment : Fragment() {
     }
 
     private fun getFilteredOrders(): List<CustomerOrderHistoryItemUiModel> {
+        val orders = firestoreOrders ?: historyData.orders
         return when (selectedFilter) {
-            CustomerOrderHistoryFilter.ALL -> historyData.orders
-            CustomerOrderHistoryFilter.DELIVERED -> historyData.orders.filter {
+            CustomerOrderHistoryFilter.ALL -> orders
+            CustomerOrderHistoryFilter.DELIVERED -> orders.filter {
                 it.status == CustomerOrderHistoryStatus.DELIVERED
             }
-            CustomerOrderHistoryFilter.CANCELED -> historyData.orders.filter {
+            CustomerOrderHistoryFilter.CANCELED -> orders.filter {
                 it.status == CustomerOrderHistoryStatus.CANCELED
             }
         }
@@ -185,6 +184,10 @@ class CustomerOrderHistoryFragment : Fragment() {
                 tvStatus.setBackgroundResource(R.drawable.bg_customer_order_history_status_canceled)
                 tvStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.pt_copper))
             }
+            CustomerOrderHistoryStatus.IN_PROGRESS -> {
+                tvStatus.setBackgroundResource(R.drawable.bg_customer_order_history_status_delivered)
+                tvStatus.setTextColor(ContextCompat.getColor(requireContext(), R.color.pt_basil_green))
+            }
         }
     }
 
@@ -199,13 +202,8 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_primary_button)
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
 
-                btnSecondary.setOnClickListener {
-                    openCustomerOrderDetail(order.orderId)
-                }
-
-                btnPrimary.setOnClickListener {
-                    showComingSoonToast(R.string.customer_order_history_reorder_toast)
-                }
+                btnSecondary.setOnClickListener { openCustomerOrderDetail(order.orderId) }
+                btnPrimary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_reorder_toast) }
             }
 
             CustomerOrderHistoryStatus.CANCELED -> {
@@ -214,13 +212,18 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_muted_outline_button)
 
-                btnSecondary.setOnClickListener {
-                    showComingSoonToast(R.string.customer_order_history_support_toast)
-                }
+                btnSecondary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_support_toast) }
+                btnPrimary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_try_again_toast) }
+            }
 
-                btnPrimary.setOnClickListener {
-                    showComingSoonToast(R.string.customer_order_history_try_again_toast)
-                }
+            CustomerOrderHistoryStatus.IN_PROGRESS -> {
+                btnSecondary.text = getString(R.string.customer_order_history_view_details)
+                btnPrimary.text = getString(R.string.customer_order_history_view_details)
+                btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_primary_button)
+                btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
+
+                btnSecondary.setOnClickListener { openCustomerOrderDetail(order.orderId) }
+                btnPrimary.setOnClickListener { openCustomerOrderDetail(order.orderId) }
             }
         }
     }
@@ -241,12 +244,19 @@ class CustomerOrderHistoryFragment : Fragment() {
         rewardProgress.max = historyData.reward.targetOrders
     }
 
+    private fun loadFirestoreOrders() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        CustomerOrderFirestoreRepository.loadOrderHistory(uid) { result ->
+            if (!isAdded) return@loadOrderHistory
+            result.onSuccess { orders ->
+                firestoreOrders = orders
+                renderOrders()
+            }
+        }
+    }
+
     private fun showComingSoonToast(messageRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(messageRes),
-            Toast.LENGTH_SHORT,
-        ).show()
+        Toast.makeText(requireContext(), getString(messageRes), Toast.LENGTH_SHORT).show()
     }
 
     private fun formatPrice(value: Double): String {
