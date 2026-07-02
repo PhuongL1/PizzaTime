@@ -12,13 +12,13 @@ import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
-import com.devpro.pizzatime.feature.customer.menu.PizzaMenuFragment
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
+import com.devpro.pizzatime.feature.staff.navigation.openPizzaMenuScreen
 
 class CustomerHomeFragment : Fragment() {
 
@@ -179,11 +179,4 @@ class CustomerHomeFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun openPizzaMenuScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, PizzaMenuFragment())
-            .addToBackStack(null)
-            .commit()
-    }
 }

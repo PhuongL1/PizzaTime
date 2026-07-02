@@ -10,15 +10,14 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentPizzaMenuBinding
 import com.devpro.pizzatime.databinding.ItemPizzaMenuBinding
-import com.devpro.pizzatime.feature.customer.cart.CartFragment
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
-import com.devpro.pizzatime.feature.customer.detail.PizzaDetailFragment
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
+import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import com.devpro.pizzatime.core.session.FakeSessionStore
 
 class PizzaMenuFragment : Fragment() {
@@ -143,13 +142,6 @@ class PizzaMenuFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
-    }
-    private fun openPizzaDetailScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, PizzaDetailFragment())
-            .addToBackStack(null)
-            .commit()
     }
     private fun parsePrice(price: String): Double {
         return price

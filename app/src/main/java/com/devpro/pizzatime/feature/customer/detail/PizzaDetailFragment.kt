@@ -11,7 +11,7 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentPizzaDetailBinding
 import com.devpro.pizzatime.databinding.ItemExtraToppingBinding
-import com.devpro.pizzatime.feature.customer.cart.CartFragment
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 
 class PizzaDetailFragment : Fragment() {
 
@@ -157,12 +157,5 @@ class PizzaDetailFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
-    }
-    private fun openCartScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(com.devpro.pizzatime.R.id.fragmentContainer, CartFragment())
-            .addToBackStack(null)
-            .commit()
     }
 }

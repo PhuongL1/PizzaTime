@@ -12,8 +12,8 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
-import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -115,7 +115,7 @@ class LoginFragment : Fragment() {
         when (role) {
             UserRole.GUEST,
             UserRole.CUSTOMER,
-                -> openCustomerHome()
+                -> openCustomerHome(addToBackStack = false)
 
             UserRole.STAFF -> {
                 openStaffDashboard(addToBackStack = false)
@@ -143,20 +143,6 @@ class LoginFragment : Fragment() {
             .commit()
     }
 
-    private fun openCustomerHome() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, CustomerHomeFragment())
-            .commit()
-    }
-
-    private fun showRoleComingSoon(roleNameRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.role_screen_coming_soon, getString(roleNameRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
 
     private fun isLikelyEmail(value: String): Boolean {
         return value.contains("@")

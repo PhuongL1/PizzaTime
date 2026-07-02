@@ -7,10 +7,8 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
-import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
-import com.devpro.pizzatime.feature.customer.tracking.OrderTrackingFragment
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import java.util.Locale
 

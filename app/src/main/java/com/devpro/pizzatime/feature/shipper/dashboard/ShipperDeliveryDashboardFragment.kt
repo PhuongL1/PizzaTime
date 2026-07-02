@@ -25,6 +25,9 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         onStartDeliveryClick = { order ->
             startDelivery(order)
         },
+        onItemClick = { order ->
+            openShipperDeliveryDetail(order.orderId)
+        },
     )
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {

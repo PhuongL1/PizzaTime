@@ -9,6 +9,7 @@ import com.devpro.pizzatime.databinding.ItemShipperDeliveryOrderBinding
 
 class ShipperDeliveryAdapter(
     private val onStartDeliveryClick: (ShipperDeliveryUiModel) -> Unit,
+    private val onItemClick: (ShipperDeliveryUiModel) -> Unit = {},
 ) : ListAdapter<ShipperDeliveryUiModel, ShipperDeliveryAdapter.ShipperDeliveryViewHolder>(
     ShipperDeliveryDiffCallback,
 ) {
@@ -19,7 +20,7 @@ class ShipperDeliveryAdapter(
             parent,
             false,
         )
-        return ShipperDeliveryViewHolder(binding, onStartDeliveryClick)
+        return ShipperDeliveryViewHolder(binding, onStartDeliveryClick, onItemClick)
     }
 
     override fun onBindViewHolder(holder: ShipperDeliveryViewHolder, position: Int) {
@@ -29,6 +30,7 @@ class ShipperDeliveryAdapter(
     class ShipperDeliveryViewHolder(
         private val binding: ItemShipperDeliveryOrderBinding,
         private val onStartDeliveryClick: (ShipperDeliveryUiModel) -> Unit,
+        private val onItemClick: (ShipperDeliveryUiModel) -> Unit,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: ShipperDeliveryUiModel) = with(binding) {
@@ -40,6 +42,10 @@ class ShipperDeliveryAdapter(
                 order.paymentAmount
             } else {
                 order.paymentLabel
+            }
+
+            root.setOnClickListener {
+                onItemClick(order)
             }
 
             btnStartDelivery.setOnClickListener {

@@ -9,8 +9,8 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentAdminDashboardBinding
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.openAddEditProduct
-import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openManageOrders
+import com.devpro.pizzatime.feature.staff.navigation.openManagePromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openManageStaff
 import com.devpro.pizzatime.feature.staff.navigation.openReports
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -71,6 +71,10 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
         btnInventory.setOnClickListener {
             showComingSoon(R.string.admin_action_inventory)
+        }
+
+        btnPromotions.setOnClickListener {
+            openManagePromoCodes()
         }
 
         tvSeeAllOrders.setOnClickListener {

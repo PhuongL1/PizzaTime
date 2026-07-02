@@ -416,6 +416,48 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/quickActionRow2"
+                android:layout_width="match_parent"
+                android:layout_height="118dp"
+                android:layout_marginTop="12dp"
+                android:gravity="center"
+                android:orientation="horizontal">
+
+                <LinearLayout
+                    android:id="@+id/btnPromotions"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical">
+
+                    <ImageView
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/bg_admin_quick_action_circle"
+                        android:contentDescription="@string/promotions"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_admin_revenue" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/promotions"
+                        android:textColor="@color/pt_white"
+                        android:textSize="10sp" />
+
+                </LinearLayout>
+
+                <View
+                    android:layout_width="0dp"
+                    android:layout_height="0dp"
+                    android:layout_weight="3" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/recentOrdersHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
