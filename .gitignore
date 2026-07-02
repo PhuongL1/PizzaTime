@@ -19,3 +19,7 @@ app/build/
 
 # CodeGraph local index
 .codegraph/
+
+# Firebase local seed
+firebase-seed/serviceAccountKey.json
+firebase-seed/node_modules/

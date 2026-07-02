@@ -6,5 +6,16 @@ enum class UserRole {
     STAFF,
     KITCHEN,
     SHIPPER,
-    ADMIN,
+    ADMIN;
+
+    companion object {
+        fun fromString(value: String?): UserRole? = when (value?.uppercase()) {
+            "CUSTOMER" -> CUSTOMER
+            "STAFF" -> STAFF
+            "KITCHEN" -> KITCHEN
+            "SHIPPER" -> SHIPPER
+            "ADMIN" -> ADMIN
+            else -> null
+        }
+    }
 }

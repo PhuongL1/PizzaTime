@@ -93,7 +93,7 @@ class LoginFragment : Fragment() {
                 binding.edtIdentifier.error = getString(R.string.auth_identifier_required)
             }
 
-            isLikelyEmail(identifier) && !Patterns.EMAIL_ADDRESS.matcher(identifier).matches() -> {
+            !Patterns.EMAIL_ADDRESS.matcher(identifier).matches() -> {
                 binding.edtIdentifier.error = getString(R.string.auth_invalid_email)
             }
 
@@ -144,9 +144,6 @@ class LoginFragment : Fragment() {
     }
 
 
-    private fun isLikelyEmail(value: String): Boolean {
-        return value.contains("@")
-    }
 
     override fun onDestroyView() {
         _binding = null

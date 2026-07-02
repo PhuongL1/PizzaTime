@@ -7,10 +7,13 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.databinding.FragmentRegisterBinding
 import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 
 class RegisterFragment : Fragment() {
+
+    private lateinit var viewModel: RegisterViewModel
 
     private var _binding: FragmentRegisterBinding? = null
     private val binding get() = _binding!!
@@ -25,7 +28,9 @@ class RegisterFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        viewModel = ViewModelProvider(this)[RegisterViewModel::class.java]
         setupActions()
+        observeRegisterResult()
     }
 
     private fun setupActions() {
@@ -74,12 +79,31 @@ class RegisterFragment : Fragment() {
             }
 
             else -> {
-                Toast.makeText(
-                    requireContext(),
-                    "Register success demo",
-                    Toast.LENGTH_SHORT
-                ).show()
+                binding.btnCreateAccount.isEnabled = false
+                viewModel.register(name = fullName, email = email, password = password)
             }
+        }
+    }
+
+    private fun observeRegisterResult() {
+        viewModel.registerResult.observe(viewLifecycleOwner) { result ->
+            binding.btnCreateAccount.isEnabled = true
+            result
+                .onSuccess {
+                    Toast.makeText(
+                        requireContext(),
+                        "Account created successfully!",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    openLoginScreen(addToBackStack = false)
+                }
+                .onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: "Registration failed.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
         }
     }
 

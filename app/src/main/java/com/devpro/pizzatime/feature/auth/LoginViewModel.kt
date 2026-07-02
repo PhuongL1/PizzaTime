@@ -10,9 +10,10 @@ class LoginViewModel : ViewModel() {
     val loginResult: LiveData<Result<AuthUserUiModel>> = _loginResult
 
     fun login(identifier: String, password: String) {
-        _loginResult.value = FakeAuthRepository.login(
-            identifier = identifier,
+        FirebaseAuthRepository.login(
+            email = identifier,
             password = password,
+            onResult = { result -> _loginResult.postValue(result) },
         )
     }
 }
