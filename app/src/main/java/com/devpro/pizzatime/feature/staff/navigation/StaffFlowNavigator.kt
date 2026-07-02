@@ -28,7 +28,10 @@ import com.devpro.pizzatime.feature.customer.ordersuccess.OrderSuccessFragment
 import com.devpro.pizzatime.feature.customer.promos.CustomerPromoCodesFragment
 import com.devpro.pizzatime.feature.customer.support.SupportFaqFragment
 import com.devpro.pizzatime.feature.customer.tracking.OrderTrackingFragment
+import com.devpro.pizzatime.feature.customer.detail.PizzaDetailFragment
+import com.devpro.pizzatime.feature.customer.menu.PizzaMenuFragment
 import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
+import com.devpro.pizzatime.feature.kitchen.detail.KitchenOrderDetailFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailFragment
 import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
@@ -91,6 +94,27 @@ fun Fragment.openCustomerHomeScreen() {
 fun Fragment.openKitchenBoard(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = KitchenBoardFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+
+fun Fragment.openKitchenOrderDetail(orderId: String) {
+    replaceStaffFlowFragment(
+        fragment = KitchenOrderDetailFragment.newInstance(orderId),
+        addToBackStack = true,
+    )
+}
+
+fun Fragment.openPizzaMenuScreen(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = PizzaMenuFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+
+fun Fragment.openPizzaDetailScreen(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = PizzaDetailFragment(),
         addToBackStack = addToBackStack,
     )
 }

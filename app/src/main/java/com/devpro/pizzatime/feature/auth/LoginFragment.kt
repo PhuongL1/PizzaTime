@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
 import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
@@ -110,6 +111,7 @@ class LoginFragment : Fragment() {
     }
 
     private fun openHomeByRole(role: UserRole) {
+        FakeSessionStore.login(role)
         when (role) {
             UserRole.GUEST,
             UserRole.CUSTOMER,

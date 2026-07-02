@@ -13,6 +13,7 @@ import com.devpro.pizzatime.databinding.ItemKitchenOrderFoodBinding
 
 class KitchenOrderAdapter(
     private val onPrimaryActionClick: (KitchenOrderUiModel) -> Unit,
+    private val onItemClick: (KitchenOrderUiModel) -> Unit = {},
 ) : ListAdapter<KitchenOrderUiModel, KitchenOrderAdapter.KitchenOrderViewHolder>(
     KitchenOrderDiffCallback,
 ) {
@@ -23,7 +24,7 @@ class KitchenOrderAdapter(
             parent,
             false,
         )
-        return KitchenOrderViewHolder(binding, onPrimaryActionClick)
+        return KitchenOrderViewHolder(binding, onPrimaryActionClick, onItemClick)
     }
 
     override fun onBindViewHolder(holder: KitchenOrderViewHolder, position: Int) {
@@ -33,6 +34,7 @@ class KitchenOrderAdapter(
     class KitchenOrderViewHolder(
         private val binding: ItemKitchenOrderBinding,
         private val onPrimaryActionClick: (KitchenOrderUiModel) -> Unit,
+        private val onItemClick: (KitchenOrderUiModel) -> Unit,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: KitchenOrderUiModel) = with(binding) {
@@ -42,6 +44,10 @@ class KitchenOrderAdapter(
 
             bindFoodItems(order)
             bindStatusStyle(order)
+
+            root.setOnClickListener {
+                onItemClick(order)
+            }
 
             btnPrimaryAction.setOnClickListener {
                 onPrimaryActionClick(order)

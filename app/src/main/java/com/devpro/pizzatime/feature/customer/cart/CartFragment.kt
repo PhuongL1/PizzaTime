@@ -9,9 +9,11 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCartBinding
 import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
+import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import java.util.Locale
 
 class CartFragment : Fragment() {
@@ -143,7 +145,8 @@ class CartFragment : Fragment() {
         }
 
         binding.btnProceedCheckout.setOnClickListener {
-            openCheckoutScreen()
+            if (FakeSessionStore.isLoggedIn) openCheckoutScreen()
+            else openLoginRequiredScreen()
         }
     }
 

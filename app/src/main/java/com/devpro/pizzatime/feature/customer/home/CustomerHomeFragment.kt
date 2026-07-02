@@ -8,12 +8,17 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
 import com.devpro.pizzatime.feature.customer.menu.PizzaMenuFragment
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
+import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
+import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 
 class CustomerHomeFragment : Fragment() {
 
@@ -58,26 +63,18 @@ class CustomerHomeFragment : Fragment() {
             var isFavorite = item.isFavorite
 
             itemBinding.imgFavoriteIcon.setImageResource(
-                if (isFavorite) {
-                    R.drawable.ic_heart
-                } else {
-                    R.drawable.ic_empty_heart
-                }
+                if (isFavorite) R.drawable.ic_heart else R.drawable.ic_empty_heart
             )
 
             itemBinding.root.setOnClickListener {
-                Toast.makeText(requireContext(), "Open ${item.name}", Toast.LENGTH_SHORT).show()
+                openPizzaDetailScreen()
             }
 
             itemBinding.btnFavorite.setOnClickListener {
                 isFavorite = !isFavorite
 
                 itemBinding.imgFavoriteIcon.setImageResource(
-                    if (isFavorite) {
-                        R.drawable.ic_heart
-                    } else {
-                        R.drawable.ic_empty_heart
-                    }
+                    if (isFavorite) R.drawable.ic_heart else R.drawable.ic_empty_heart
                 )
 
                 Toast.makeText(
@@ -123,7 +120,7 @@ class CustomerHomeFragment : Fragment() {
             itemBinding.tvChefRating.text = item.rating
 
             itemBinding.root.setOnClickListener {
-                Toast.makeText(requireContext(), "Open ${item.name}", Toast.LENGTH_SHORT).show()
+                openPizzaDetailScreen()
             }
 
             itemBinding.root.layoutParams = LinearLayout.LayoutParams(
@@ -152,7 +149,8 @@ class CustomerHomeFragment : Fragment() {
         }
 
         binding.bottomNav.navOrders.setOnClickListener {
-            Toast.makeText(requireContext(), "Orders coming soon", Toast.LENGTH_SHORT).show()
+            if (FakeSessionStore.isLoggedIn) openCustomerOrderHistory()
+            else openLoginRequiredScreen()
         }
 
         binding.bottomNav.navLoyalty.setOnClickListener {
@@ -160,11 +158,14 @@ class CustomerHomeFragment : Fragment() {
         }
 
         binding.bottomNav.navProfile.setOnClickListener {
-            Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
+            if (FakeSessionStore.isLoggedIn) openCustomerAccount()
+            else openLoginRequiredScreen()
         }
+
         binding.bottomNav.navMenu.setOnClickListener {
             openCustomerHome()
         }
+
         binding.tvSeeAll.setOnClickListener {
             openPizzaMenuScreen()
         }

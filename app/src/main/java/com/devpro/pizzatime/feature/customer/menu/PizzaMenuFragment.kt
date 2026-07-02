@@ -15,6 +15,11 @@ import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.detail.PizzaDetailFragment
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
+import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
+import com.devpro.pizzatime.core.session.FakeSessionStore
 
 class PizzaMenuFragment : Fragment() {
 
@@ -110,16 +115,25 @@ class PizzaMenuFragment : Fragment() {
             Toast.makeText(requireContext(), "Filter coming soon", Toast.LENGTH_SHORT).show()
         }
 
+        binding.bottomNav.navMenu.setOnClickListener {
+            openCustomerHome()
+        }
+
         binding.bottomNav.navOrders.setOnClickListener {
-            Toast.makeText(requireContext(), "Orders coming soon", Toast.LENGTH_SHORT).show()
+            if (FakeSessionStore.isLoggedIn) openCustomerOrderHistory()
+            else openLoginRequiredScreen()
         }
 
         binding.bottomNav.navLoyalty.setOnClickListener {
-            Toast.makeText(requireContext(), "Loyalty coming soon", Toast.LENGTH_SHORT).show()
+            openCustomerPromoCodes()
         }
 
         binding.bottomNav.navProfile.setOnClickListener {
-            Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
+            if (FakeSessionStore.isLoggedIn) {
+                Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
+            } else {
+                openLoginRequiredScreen()
+            }
         }
     }
 

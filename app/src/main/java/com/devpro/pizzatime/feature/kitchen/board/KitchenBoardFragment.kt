@@ -12,6 +12,7 @@ import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
 import com.devpro.pizzatime.databinding.FragmentKitchenBoardBinding
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
+import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 
 class KitchenBoardFragment : Fragment() {
@@ -24,6 +25,9 @@ class KitchenBoardFragment : Fragment() {
     private val adapter = KitchenOrderAdapter(
         onPrimaryActionClick = { order ->
             handleOrderAction(order)
+        },
+        onItemClick = { order ->
+            openKitchenOrderDetail(order.orderId)
         },
     )
 
