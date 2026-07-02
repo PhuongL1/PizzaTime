@@ -23,10 +23,18 @@ class ManageStaffFragment : Fragment() {
     private var _binding: FragmentManageStaffBinding? = null
     private val binding get() = _binding!!
 
+    private var allStaff: List<AdminStaffUiModel> = FakeAdminStaffData.staff
+
     private val staffAdapter by lazy {
         AdminStaffAdapter(
             onEditClick = { showComingSoon(getString(R.string.edit_staff_format, it.name)) },
-            onToggleStatusClick = { showComingSoon(getString(R.string.change_staff_status_format, it.name)) },
+            onToggleStatusClick = { item ->
+                val newActive = item.status == AdminStaffStatus.INACTIVE
+                AdminStaffFirestoreRepository.toggleActive(item.id, newActive) { result ->
+                    if (!isAdded) return@toggleActive
+                    if (result.isSuccess) loadFirestoreStaff()
+                }
+            },
         )
     }
 
@@ -47,6 +55,15 @@ class ManageStaffFragment : Fragment() {
         setupFilters()
         setupBottomNav()
         renderStaff()
+        loadFirestoreStaff()
+    }
+
+    private fun loadFirestoreStaff() {
+        AdminStaffFirestoreRepository.loadStaff { result ->
+            if (!isAdded) return@loadStaff
+            allStaff = result.getOrElse { FakeAdminStaffData.staff }
+            renderStaff()
+        }
     }
 
     private fun setupRecyclerView() = with(binding.rvStaff) {
@@ -98,7 +115,7 @@ class ManageStaffFragment : Fragment() {
     }
 
     private fun renderStaff() {
-        val staff = FakeAdminStaffData.staff.filter { item ->
+        val staff = allStaff.filter { item ->
             when (selectedFilter) {
                 StaffFilter.ALL -> true
                 StaffFilter.KITCHEN -> item.role == AdminStaffRole.KITCHEN
