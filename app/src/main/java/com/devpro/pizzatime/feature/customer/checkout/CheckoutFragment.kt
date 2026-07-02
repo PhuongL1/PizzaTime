@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
@@ -13,6 +14,7 @@ import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Locale
 
 class CheckoutFragment : Fragment() {
@@ -21,6 +23,8 @@ class CheckoutFragment : Fragment() {
     private val binding get() = _binding!!
 
     private var orderItems = emptyList<CheckoutOrderItemUiModel>()
+    private var appliedDiscount = 0.0
+    private var appliedPromoCode = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -70,10 +74,12 @@ class CheckoutFragment : Fragment() {
     private fun renderSummary() {
         val subtotal = orderItems.sumOf { it.price }
         val deliveryFee = DELIVERY_FEE
-        val total = subtotal + deliveryFee
+        val total = subtotal - appliedDiscount + deliveryFee
 
         binding.tvSubtotal.text = formatMoney(subtotal)
         binding.tvDeliveryFee.text = formatMoney(deliveryFee)
+        binding.promoDiscountRow.isVisible = appliedDiscount > 0
+        binding.tvDiscount.text = "-${formatMoney(appliedDiscount)}"
         binding.tvTotal.text = formatMoney(total)
     }
 
@@ -101,6 +107,60 @@ class CheckoutFragment : Fragment() {
         binding.btnPlaceOrder.setOnClickListener {
             placeOrder()
         }
+
+        binding.btnApplyPromo.setOnClickListener {
+            applyPromoCode()
+        }
+    }
+
+    private fun applyPromoCode() {
+        val code = binding.edtPromoCode.text?.toString()?.trim()?.uppercase(Locale.US).orEmpty()
+        if (code.isBlank()) {
+            Toast.makeText(requireContext(), "Enter a promo code.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        val subtotal = orderItems.sumOf { it.price }
+        binding.btnApplyPromo.isEnabled = false
+
+        FirebaseFirestore.getInstance().collection("promoCodes").document(code)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (_binding == null) return@addOnSuccessListener
+                binding.btnApplyPromo.isEnabled = true
+                if (!doc.exists()) {
+                    Toast.makeText(requireContext(), "Promo code not found.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+                val active = doc.getBoolean("active") ?: false
+                if (!active) {
+                    Toast.makeText(requireContext(), "This promo code is inactive.", Toast.LENGTH_SHORT).show()
+                    return@addOnSuccessListener
+                }
+                val minOrderAmount = doc.getDouble("minOrderAmount") ?: 0.0
+                if (subtotal < minOrderAmount) {
+                    Toast.makeText(
+                        requireContext(),
+                        String.format(Locale.US, "Minimum order $%.2f required.", minOrderAmount),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    return@addOnSuccessListener
+                }
+                val discountType = doc.getString("discountType") ?: "PERCENT"
+                val discountValue = doc.getDouble("discountValue") ?: 0.0
+                val discount = when (discountType.uppercase(Locale.US)) {
+                    "PERCENT" -> (subtotal * discountValue / 100).coerceAtMost(subtotal)
+                    "FIXED" -> discountValue.coerceAtMost(subtotal)
+                    else -> 0.0
+                }
+                appliedDiscount = discount
+                appliedPromoCode = code
+                renderSummary()
+            }
+            .addOnFailureListener {
+                if (_binding == null) return@addOnFailureListener
+                binding.btnApplyPromo.isEnabled = true
+                Toast.makeText(requireContext(), "Failed to validate promo code.", Toast.LENGTH_SHORT).show()
+            }
     }
 
     private fun placeOrder() {
@@ -119,6 +179,8 @@ class CheckoutFragment : Fragment() {
             customerEmail = user.email ?: "",
             items = CartStore.items,
             deliveryFee = DELIVERY_FEE,
+            promoCode = appliedPromoCode,
+            discount = appliedDiscount,
             onResult = { result ->
                 if (_binding == null) return@createOrder
                 binding.btnPlaceOrder.isEnabled = true
