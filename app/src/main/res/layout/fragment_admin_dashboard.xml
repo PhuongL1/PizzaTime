@@ -157,7 +157,8 @@
                 android:layout_width="match_parent"
                 android:layout_height="156dp"
                 android:layout_marginTop="24dp"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                tools:ignore="DisableBaselineAlignment">
 
                 <LinearLayout
                     android:id="@+id/todayTotalCard"
@@ -303,7 +304,8 @@
                 android:layout_height="118dp"
                 android:layout_marginTop="20dp"
                 android:gravity="center"
-                android:orientation="horizontal">
+                android:orientation="horizontal"
+                tools:ignore="DisableBaselineAlignment">
 
                 <LinearLayout
                     android:id="@+id/btnAddProduct"
@@ -311,7 +313,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="66dp"
@@ -328,7 +331,8 @@
                         android:gravity="center"
                         android:text="@string/admin_action_add_product"
                         android:textColor="@color/pt_white"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
 
                 </LinearLayout>
 
@@ -338,7 +342,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="66dp"
@@ -355,7 +360,8 @@
                         android:gravity="center"
                         android:text="@string/admin_action_manage_staff"
                         android:textColor="@color/pt_white"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
 
                 </LinearLayout>
 
@@ -365,7 +371,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="66dp"
@@ -382,7 +389,8 @@
                         android:gravity="center"
                         android:text="@string/admin_action_view_reports"
                         android:textColor="@color/pt_white"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
 
                 </LinearLayout>
 
@@ -392,7 +400,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="66dp"
@@ -409,7 +418,8 @@
                         android:gravity="center"
                         android:text="@string/admin_action_inventory"
                         android:textColor="@color/pt_white"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
 
                 </LinearLayout>
 
@@ -429,7 +439,8 @@
                     android:layout_height="match_parent"
                     android:layout_weight="1"
                     android:gravity="center"
-                    android:orientation="vertical">
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
 
                     <ImageView
                         android:layout_width="66dp"
@@ -446,7 +457,8 @@
                         android:gravity="center"
                         android:text="@string/promotions"
                         android:textColor="@color/pt_white"
-                        android:textSize="10sp" />
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
 
                 </LinearLayout>
 
