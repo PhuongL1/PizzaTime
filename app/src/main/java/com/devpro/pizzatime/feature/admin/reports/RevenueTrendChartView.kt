@@ -38,7 +38,13 @@ class RevenueTrendChartView @JvmOverloads constructor(
         style = Paint.Style.FILL
     }
 
-    private val values = listOf(0.28f, 0.34f, 0.22f, 0.58f, 0.52f, 0.75f, 0.64f, 0.86f, 0.80f)
+    private var values = listOf(0.28f, 0.34f, 0.22f, 0.58f, 0.52f, 0.75f, 0.64f, 0.86f, 0.80f)
+
+    fun setValues(newValues: List<Float>) {
+        if (newValues.size < 2) return
+        values = newValues.map { it.coerceIn(0f, 1f) }
+        invalidate()
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -61,6 +67,8 @@ class RevenueTrendChartView @JvmOverloads constructor(
     }
 
     private fun drawTrend(canvas: Canvas, left: Float, right: Float, top: Float, bottom: Float) {
+        if (values.size < 2) return
+
         val points = values.mapIndexed { index, value ->
             val x = left + (right - left) * index / (values.lastIndex)
             val y = bottom - (bottom - top) * value

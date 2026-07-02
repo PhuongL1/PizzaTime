@@ -17,7 +17,7 @@ import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
 class ReportsFragment : Fragment() {
 
     private var _binding: FragmentReportsBinding? = null
-    private val binding get() = _binding!!
+    private val binding get() = requireNotNull(_binding)
 
     private val bestSellerAdapter = BestSellerAdapter()
 
@@ -31,16 +31,43 @@ class ReportsFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupBestSellers()
+        setupReportFallback()
         setupActions()
         setupBottomNav()
+        loadReports()
     }
 
-    private fun setupBestSellers() = with(binding.rvBestSellers) {
+    private fun setupReportFallback() = with(binding.rvBestSellers) {
         layoutManager = LinearLayoutManager(requireContext())
         adapter = bestSellerAdapter
         itemAnimator = null
         bestSellerAdapter.submitList(FakeAdminReportsData.bestSellers)
+    }
+
+    private fun loadReports() {
+        AdminReportsFirestoreRepository.loadReports { result ->
+            val currentBinding = _binding ?: return@loadReports
+            result.onSuccess { report ->
+                renderReport(currentBinding, report)
+            }
+        }
+    }
+
+    private fun renderReport(
+        currentBinding: FragmentReportsBinding,
+        report: AdminReportUiModel,
+    ) = with(currentBinding) {
+        tvReportRevenueValue.text = report.totalRevenue
+        tvReportRevenueMeta.text = report.totalOrdersText
+        tvPendingLabel.text = "IN PROGRESS"
+        tvPendingValue.text = report.pendingOrdersText
+        tvTotalOrders.text = report.totalOrdersText
+        tvCompletedOrders.text = report.deliveredOrdersText
+        tvCancelledOrders.text = report.cancelledOrdersText
+        progressPendingOrders.progress = report.pendingProgress
+        donutOrderHealth.setProgressPercent(report.orderHealthPercent)
+        chartRevenueTrend.setValues(report.revenueTrendValues)
+        bestSellerAdapter.submitList(report.bestSellers)
     }
 
     private fun setupActions() {

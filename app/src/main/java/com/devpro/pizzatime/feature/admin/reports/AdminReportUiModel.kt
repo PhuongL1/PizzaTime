@@ -11,3 +11,15 @@ data class BestSellerUiModel(
     val progress: Int,
     @get:DrawableRes val imageRes: Int = R.drawable.ic_admin_view_reports,
 )
+
+data class AdminReportUiModel(
+    val totalRevenue: String,
+    val totalOrdersText: String,
+    val pendingOrdersText: String,
+    val deliveredOrdersText: String,
+    val cancelledOrdersText: String,
+    val pendingProgress: Int,
+    val orderHealthPercent: Int,
+    val revenueTrendValues: List<Float>,
+    val bestSellers: List<BestSellerUiModel>,
+)

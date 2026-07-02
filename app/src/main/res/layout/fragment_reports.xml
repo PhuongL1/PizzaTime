@@ -133,6 +133,7 @@
                         android:orientation="vertical">
 
                         <TextView
+                            android:id="@+id/tvReportRevenueValue"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:text="@string/report_revenue_value"
@@ -140,6 +141,7 @@
                             android:textSize="30sp" />
 
                         <TextView
+                            android:id="@+id/tvReportRevenueMeta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="4dp"
@@ -243,11 +245,13 @@
                         android:textStyle="bold" />
 
                     <com.devpro.pizzatime.feature.admin.reports.OrderHealthDonutView
+                        android:id="@+id/donutOrderHealth"
                         android:layout_width="120dp"
                         android:layout_height="120dp"
                         android:layout_marginTop="10dp" />
 
                     <TextView
+                        android:id="@+id/tvCompletedOrders"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/report_completed_orders"
@@ -255,6 +259,7 @@
                         android:textSize="16sp" />
 
                     <TextView
+                        android:id="@+id/tvCancelledOrders"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
@@ -274,6 +279,7 @@
                     android:padding="18dp">
 
                     <TextView
+                        android:id="@+id/tvPendingLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
@@ -283,6 +289,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tvPendingValue"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="22dp"
@@ -291,6 +298,7 @@
                         android:textSize="30sp" />
 
                     <ProgressBar
+                        android:id="@+id/progressPendingOrders"
                         style="?android:attr/progressBarStyleHorizontal"
                         android:layout_width="match_parent"
                         android:layout_height="6dp"
@@ -300,6 +308,7 @@
                         android:progressDrawable="@drawable/progress_report_bar" />
 
                     <TextView
+                        android:id="@+id/tvTotalOrders"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="18dp"

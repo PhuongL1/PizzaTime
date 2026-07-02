@@ -36,7 +36,12 @@ class OrderHealthDonutView @JvmOverloads constructor(
     }
 
     private val bounds = RectF()
-    private val progressPercent = 92f
+    private var progressPercent = 92
+
+    fun setProgressPercent(percent: Int) {
+        progressPercent = percent.coerceIn(0, 100)
+        invalidate()
+    }
 
     override fun onDraw(canvas: Canvas) {
         super.onDraw(canvas)
@@ -54,7 +59,7 @@ class OrderHealthDonutView @JvmOverloads constructor(
         canvas.drawArc(bounds, -90f, 360f * progressPercent / 100f, false, progressPaint)
 
         val centerY = height / 2f - (textPaint.descent() + textPaint.ascent()) / 2f
-        canvas.drawText("92%", width / 2f, centerY, textPaint)
+        canvas.drawText("$progressPercent%", width / 2f, centerY, textPaint)
     }
 
     private fun dp(value: Float): Float {
