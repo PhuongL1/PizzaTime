@@ -73,6 +73,7 @@ object FirebaseAuthRepository {
                 onResult(
                     Result.success(
                         AuthUserUiModel(
+                            uid = uid,
                             identifier = email,
                             displayName = displayName,
                             role = role,

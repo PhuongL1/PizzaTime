@@ -16,6 +16,7 @@ import com.devpro.pizzatime.core.notification.NotificationPermissionHelper
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
@@ -79,6 +80,7 @@ class LoginFragment : Fragment() {
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
             result
                 .onSuccess { user ->
+                    CartStore.onUserChanged(user.uid)
                     Toast.makeText(
                         requireContext(),
                         getString(R.string.auth_login_success_as, user.displayName),
@@ -89,6 +91,8 @@ class LoginFragment : Fragment() {
                     requestNotificationPermissionThenNavigate(user.role)
                 }
                 .onFailure { error ->
+                    FakeSessionStore.logout()
+                    CartStore.clearForLogout()
                     Toast.makeText(
                         requireContext(),
                         error.message ?: getString(R.string.auth_login_failed),

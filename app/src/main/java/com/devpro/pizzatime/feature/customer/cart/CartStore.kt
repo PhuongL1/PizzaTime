@@ -1,13 +1,40 @@
 package com.devpro.pizzatime.feature.customer.cart
 
+import com.google.firebase.auth.FirebaseAuth
+
 object CartStore {
 
     private val cartItems = mutableListOf<CartItemUiModel>()
+    private var ownerUserId: String? = null
 
     val items: List<CartItemUiModel>
-        get() = cartItems.toList()
+        get() {
+            syncOwnerWithCurrentUser()
+            return cartItems.toList()
+        }
+
+    fun onUserChanged(uid: String) {
+        val newOwnerId = uid.trim()
+        if (newOwnerId.isBlank()) {
+            clearForLogout()
+            return
+        }
+
+        val previousOwnerId = ownerUserId
+        if (previousOwnerId != null && previousOwnerId != newOwnerId) {
+            cartItems.clear()
+        }
+
+        ownerUserId = newOwnerId
+    }
+
+    fun clearForLogout() {
+        ownerUserId = null
+        cartItems.clear()
+    }
 
     fun addItem(item: CartItemUiModel) {
+        syncOwnerWithCurrentUser()
         val index = cartItems.indexOfFirst { it.id == item.id }
 
         if (index >= 0) {
@@ -21,6 +48,7 @@ object CartStore {
     }
 
     fun increaseQuantity(id: String) {
+        syncOwnerWithCurrentUser()
         val index = cartItems.indexOfFirst { it.id == id }
         if (index < 0) return
 
@@ -29,6 +57,7 @@ object CartStore {
     }
 
     fun decreaseQuantity(id: String) {
+        syncOwnerWithCurrentUser()
         val index = cartItems.indexOfFirst { it.id == id }
         if (index < 0) return
 
@@ -42,15 +71,24 @@ object CartStore {
     }
 
     fun removeItem(id: String) {
+        syncOwnerWithCurrentUser()
         cartItems.removeAll { it.id == id }
     }
 
     fun replaceItems(items: List<CartItemUiModel>) {
+        syncOwnerWithCurrentUser()
         cartItems.clear()
         cartItems.addAll(items)
     }
 
     fun clear() {
         cartItems.clear()
+    }
+
+    private fun syncOwnerWithCurrentUser() {
+        val currentUid = FirebaseAuth.getInstance().currentUser?.uid
+        if (!currentUid.isNullOrBlank()) {
+            onUserChanged(currentUid)
+        }
     }
 }

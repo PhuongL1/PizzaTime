@@ -90,6 +90,7 @@ fun Fragment.clearAppBackStack() {
 fun Fragment.signOutAndOpenLogin() {
     FirebaseAuth.getInstance().signOut()
     FakeSessionStore.logout()
+    com.devpro.pizzatime.feature.customer.cart.CartStore.clearForLogout()
     clearAppBackStack()
     openLoginScreen(addToBackStack = false)
 }

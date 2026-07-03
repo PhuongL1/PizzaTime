@@ -12,6 +12,7 @@ import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentSplashBinding
 import com.devpro.pizzatime.feature.auth.FirebaseAuthRepository
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
@@ -53,7 +54,10 @@ class SplashFragment : Fragment() {
     }
 
     private fun routeFromSplash() {
-        if (FirebaseAuth.getInstance().currentUser == null) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            FakeSessionStore.logout()
+            CartStore.clearForLogout()
             openWelcome()
             return
         }
@@ -63,11 +67,13 @@ class SplashFragment : Fragment() {
             result
                 .onSuccess { user ->
                     FakeSessionStore.login(user.role)
+                    CartStore.onUserChanged(user.uid)
                     openHomeByRole(user.role)
                 }
                 .onFailure {
                     FirebaseAuth.getInstance().signOut()
                     FakeSessionStore.logout()
+                    CartStore.clearForLogout()
                     openWelcome()
                 }
         }
