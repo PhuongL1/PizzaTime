@@ -59,6 +59,42 @@ object AdminPromoFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun createPromo(
+        code: String,
+        title: String,
+        description: String,
+        discountType: String,
+        discountValue: Double,
+        minOrderAmount: Double,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val promoRef = firestore.collection("promoCodes").document(code)
+        promoRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    onResult(Result.failure(Exception("Promo code already exists.")))
+                    return@addOnSuccessListener
+                }
+
+                promoRef.set(
+                    mapOf(
+                        "code" to code,
+                        "title" to title,
+                        "description" to description,
+                        "discountType" to discountType,
+                        "discountValue" to discountValue,
+                        "minOrderAmount" to minOrderAmount,
+                        "active" to true,
+                        "createdAt" to FieldValue.serverTimestamp(),
+                        "updatedAt" to FieldValue.serverTimestamp(),
+                    ),
+                )
+                    .addOnSuccessListener { onResult(Result.success(Unit)) }
+                    .addOnFailureListener { e -> onResult(Result.failure(e)) }
+            }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     private fun DocumentSnapshot.toAdminPromoUiModel(): AdminPromoUiModel {
         val active = getBoolean("active") ?: true
         val discountType = getString("discountType") ?: "PERCENT"

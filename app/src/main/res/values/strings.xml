@@ -666,6 +666,12 @@
     <string name="promo_edit_min_order_invalid">Minimum order amount must be 0 or greater.</string>
     <string name="promo_edit_saved">Promo updated.</string>
     <string name="promo_edit_failed">Could not update promo.</string>
+    <string name="promo_create_dialog_title">Add Promo Code</string>
+    <string name="promo_create_save">Create</string>
+    <string name="promo_create_code_hint">Code</string>
+    <string name="promo_create_code_required">Code is required.</string>
+    <string name="promo_create_saved">Promo code created.</string>
+    <string name="promo_create_failed">Could not create promo. Check if the code already exists.</string>
 
     <!-- Manage Staff -->
     <string name="staff_roster">Staff Roster</string>

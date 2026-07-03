@@ -81,6 +81,73 @@ class ManagePromoCodesFragment : Fragment() {
         }
     }
 
+    private fun showCreatePromoDialog() {
+        val codeInput = createDialogInput(
+            hint = getString(R.string.promo_create_code_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
+        )
+        val titleInput = createDialogInput(
+            hint = getString(R.string.promo_edit_title_hint),
+            text = "",
+        )
+        val descriptionInput = createDialogInput(
+            hint = getString(R.string.promo_edit_description_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+        )
+        val discountTypeInput = createDialogInput(
+            hint = getString(R.string.promo_edit_discount_type_hint),
+            text = "PERCENT",
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
+        )
+        val discountValueInput = createDialogInput(
+            hint = getString(R.string.promo_edit_discount_value_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL,
+        )
+        val minOrderInput = createDialogInput(
+            hint = getString(R.string.promo_edit_min_order_hint),
+            text = "0.00",
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL,
+        )
+
+        val form = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.promo_edit_dialog_padding)
+            setPadding(horizontalPadding, 0, horizontalPadding, 0)
+            addView(codeInput)
+            addView(titleInput)
+            addView(descriptionInput)
+            addView(discountTypeInput)
+            addView(discountValueInput)
+            addView(minOrderInput)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.promo_create_dialog_title)
+            .setView(form)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.promo_create_save, null)
+            .create()
+            .apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        savePromoCreate(
+                            rawCode = codeInput.text.toString(),
+                            title = titleInput.text.toString().trim(),
+                            description = descriptionInput.text.toString().trim(),
+                            discountType = discountTypeInput.text.toString().trim().uppercase(Locale.US),
+                            discountValueText = discountValueInput.text.toString().trim(),
+                            minOrderAmountText = minOrderInput.text.toString().trim(),
+                            onSaved = { dismiss() },
+                        )
+                    }
+                }
+            }
+            .show()
+    }
+
     private fun showEditPromoDialog(promo: AdminPromoUiModel) {
         val titleInput = createDialogInput(
             hint = getString(R.string.promo_edit_title_hint),
@@ -218,6 +285,67 @@ class ManagePromoCodesFragment : Fragment() {
         }
     }
 
+    private fun savePromoCreate(
+        rawCode: String,
+        title: String,
+        description: String,
+        discountType: String,
+        discountValueText: String,
+        minOrderAmountText: String,
+        onSaved: () -> Unit,
+    ) {
+        val code = rawCode.trim().uppercase(Locale.US)
+        val discountValue = discountValueText.toDoubleOrNull()
+        val minOrderAmount = minOrderAmountText.toDoubleOrNull()
+
+        when {
+            code.isBlank() -> {
+                showToast(R.string.promo_create_code_required)
+                return
+            }
+
+            title.isBlank() -> {
+                showToast(R.string.promo_edit_title_required)
+                return
+            }
+
+            discountType != "PERCENT" && discountType != "FIXED" -> {
+                showToast(R.string.promo_edit_discount_type_invalid)
+                return
+            }
+
+            discountValue == null || discountValue <= 0.0 -> {
+                showToast(R.string.promo_edit_discount_value_required)
+                return
+            }
+
+            minOrderAmount == null || minOrderAmount < 0.0 -> {
+                showToast(R.string.promo_edit_min_order_invalid)
+                return
+            }
+        }
+
+        AdminPromoFirestoreRepository.createPromo(
+            code = code,
+            title = title,
+            description = description,
+            discountType = discountType,
+            discountValue = discountValue,
+            minOrderAmount = minOrderAmount,
+        ) { result ->
+            if (!isAdded) return@createPromo
+            result
+                .onSuccess {
+                    showToast(R.string.promo_create_saved)
+                    onSaved()
+                    loadFirestorePromos()
+                }
+                .onFailure {
+                    showToast(R.string.promo_create_failed)
+                }
+        }
+    }
+
     private fun setupRecyclerView() = with(binding.rvPromos) {
         layoutManager = LinearLayoutManager(requireContext())
         adapter = promoAdapter
@@ -226,11 +354,7 @@ class ManagePromoCodesFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         btnAddPromo.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.promo_action_coming_soon, getString(R.string.add_promo)),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showCreatePromoDialog()
         }
 
         btnMenu.setOnClickListener {
