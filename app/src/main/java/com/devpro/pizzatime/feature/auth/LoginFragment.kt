@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
@@ -72,6 +73,7 @@ class LoginFragment : Fragment() {
                         Toast.LENGTH_SHORT,
                     ).show()
 
+                    FcmTokenRegistrar.registerCurrentToken()
                     openHomeByRole(user.role)
                 }
                 .onFailure { error ->
