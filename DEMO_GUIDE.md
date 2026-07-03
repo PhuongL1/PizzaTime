@@ -4,7 +4,7 @@
 
 PizzaTime is an Android Kotlin pizza ordering app built with XML layouts, Fragments, and ViewBinding. The app uses Firebase Auth for role-based login and Cloud Firestore for product, promo, order, user, and admin data.
 
-Core demo flows include customer ordering, promo application, realtime order tracking, staff/kitchen/shipper status updates, customer order history, customer profile, and admin management screens.
+Core demo flows include customer ordering, promo application, realtime order tracking, realtime staff/kitchen/shipper dashboards, customer order history, customer profile, and admin management screens.
 
 ## Firebase Setup Summary
 
@@ -36,13 +36,16 @@ Each account should have a matching `users/{uid}` Firestore document with `activ
 4. Apply an active promo code.
 5. Checkout and create a Firestore order.
 6. Open realtime customer order tracking.
-7. Login as `staff@pizzatime.com` and confirm the pending order.
-8. Login as `kitchen@pizzatime.com` and move the order through kitchen statuses to `READY`.
-9. Login as `shipper@pizzatime.com` and move the order to `DELIVERED`.
-10. Return to the customer tracking screen and verify status updates.
-11. Open customer order history and order detail.
-12. Login as `admin@pizzatime.com` and open dashboard/reports.
-13. Edit product, promo, and staff status from admin screens.
+7. Login as `staff@pizzatime.com`; the Staff Dashboard should update automatically when the pending order appears.
+8. Confirm the pending order from Staff Dashboard.
+9. Login as `kitchen@pizzatime.com`; the Kitchen Board should update automatically when the order becomes `CONFIRMED`.
+10. Move the order through kitchen statuses to `READY`.
+11. Login as `shipper@pizzatime.com`; the Shipper Dashboard should update automatically when the order becomes `READY`.
+12. Move the order to `DELIVERED`.
+13. Return to the customer tracking screen and verify realtime status updates throughout the lifecycle.
+14. Open customer order history and order detail.
+15. Login as `admin@pizzatime.com` and open dashboard/reports.
+16. Edit product, promo, and staff status from admin screens.
 
 ## Firestore Collections
 
@@ -68,9 +71,10 @@ Expected order lifecycle:
 Role handoff:
 
 - Customer creates `PENDING` orders.
-- Staff confirms `PENDING -> CONFIRMED`.
-- Kitchen updates `CONFIRMED -> PREPARING -> BAKING -> READY`.
-- Shipper updates `READY -> ASSIGNED_TO_SHIPPER -> DELIVERING -> DELIVERED`.
+- Staff Dashboard listens realtime and confirms `PENDING -> CONFIRMED`.
+- Kitchen Board listens realtime and updates `CONFIRMED -> PREPARING -> BAKING -> READY`.
+- Shipper Dashboard listens realtime and updates `READY -> ASSIGNED_TO_SHIPPER -> DELIVERING -> DELIVERED`.
+- Customer Order Tracking listens realtime and reflects status changes throughout the full lifecycle.
 
 ## Known Limitations
 
@@ -79,7 +83,7 @@ Role handoff:
 - No push notifications or FCM yet.
 - Staff account creation from the app is not implemented.
 - Some UI screens still use fallback fake data if Firestore fails.
-- Realtime is implemented for customer order tracking, but not all list screens.
+- Realtime is implemented for customer order tracking and the active Staff, Kitchen, and Shipper order dashboards. Some secondary list screens may still use one-time reads.
 
 ## Manual QA Checklist
 
@@ -100,6 +104,19 @@ Role handoff:
 - Admin can view and update staff status.
 - Firestore security rules block unauthenticated access.
 - Staff, kitchen, shipper, and admin logins route to the correct screens.
+
+## Final Realtime QA Checklist
+
+1. Login as customer and create an order.
+2. Verify Staff Dashboard updates automatically with the new `PENDING` order.
+3. Staff confirms the order.
+4. Verify Kitchen Board updates automatically with the `CONFIRMED` order.
+5. Kitchen updates the order to `READY`.
+6. Verify Shipper Dashboard updates automatically with the `READY` order.
+7. Shipper updates the order to `DELIVERED`.
+8. Verify Customer Order Tracking updates realtime throughout the lifecycle.
+9. Verify Admin dashboard/reports still load.
+10. Verify Firestore security rules do not block valid role actions.
 
 ## Build Check
 
