@@ -9,7 +9,8 @@ data class PizzaMenuUiModel(
     val description: String,
     val price: String,
     val rating: String,
-    @DrawableRes val imageRes: Int,
+    @param:DrawableRes val imageRes: Int,
+    val imageUrl: String = "",
 )
 
 object FakePizzaMenuData {

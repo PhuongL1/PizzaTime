@@ -8,6 +8,8 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
+import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentPizzaMenuBinding
 import com.devpro.pizzatime.databinding.ItemPizzaMenuBinding
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
@@ -18,12 +20,14 @@ import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
-import com.devpro.pizzatime.core.session.FakeSessionStore
 
 class PizzaMenuFragment : Fragment() {
 
     private var _binding: FragmentPizzaMenuBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentPizzaMenuBinding
+        get() = checkNotNull(_binding) {
+            "FragmentPizzaMenuBinding is only valid between onCreateView and onDestroyView."
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,7 +66,7 @@ class PizzaMenuFragment : Fragment() {
                 false
             )
 
-            itemBinding.imgPizza.setImageResource(item.imageRes)
+            itemBinding.imgPizza.loadProductImage(item.imageUrl, item.imageRes)
             itemBinding.imgPizza.contentDescription = item.name
             itemBinding.tvPizzaName.text = item.name
             itemBinding.tvPizzaDescription.text = item.description
@@ -76,6 +80,7 @@ class PizzaMenuFragment : Fragment() {
                     productDescription = item.description,
                     productPrice = item.price,
                     productRating = item.rating,
+                    productImageUrl = item.imageUrl,
                 )
             }
 
@@ -171,5 +176,6 @@ class PizzaMenuFragment : Fragment() {
         price = "$${String.format("%.2f", basePrice)}",
         rating = String.format("%.1f", rating),
         imageRes = R.drawable.img_welcome_hero,
+        imageUrl = imageUrl,
     )
 }

@@ -131,6 +131,7 @@ object CustomerFavoritesFirestoreRepository {
             price = getDouble("basePrice") ?: 0.0,
             badge = null,
             imageRes = R.drawable.img_pizza_time,
+            imageUrl = getString("imageUrl").orEmpty(),
             cardType = CustomerFavoriteCardType.COMPACT,
         )
     }

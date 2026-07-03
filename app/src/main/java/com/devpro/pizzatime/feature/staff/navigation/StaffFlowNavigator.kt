@@ -133,6 +133,7 @@ fun Fragment.openPizzaDetailScreen(
     productDescription: String = "",
     productPrice: String = "",
     productRating: String = "",
+    productImageUrl: String = "",
     addToBackStack: Boolean = true,
 ) {
     replaceStaffFlowFragment(
@@ -142,6 +143,7 @@ fun Fragment.openPizzaDetailScreen(
             description = productDescription,
             price = productPrice,
             rating = productRating,
+            imageUrl = productImageUrl,
         ),
         addToBackStack = addToBackStack,
     )

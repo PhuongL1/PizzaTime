@@ -17,6 +17,7 @@ data class CustomerFavoriteItemUiModel(
     val badge: String?,
     @param:DrawableRes val imageRes: Int?,
     val cardType: CustomerFavoriteCardType,
+    val imageUrl: String = "",
 )
 
 data class CustomerFavoritePairingUiModel(

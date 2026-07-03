@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerFavoritesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteCompactBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteFeaturedBinding
@@ -95,8 +97,9 @@ class CustomerFavoritesFragment : Fragment() {
         itemBinding.tvBadge.text = item.badge.orEmpty()
 
         bindImage(
+            imageView = itemBinding.ivFavoriteImage,
+            imageUrl = item.imageUrl,
             imageRes = item.imageRes,
-            setImage = itemBinding.ivFavoriteImage::setImageResource,
             showPlaceholder = { itemBinding.tvImagePlaceholder.isVisible = it },
         )
 
@@ -118,8 +121,9 @@ class CustomerFavoritesFragment : Fragment() {
         itemBinding.tvFavoritePrice.text = formatPrice(item.price)
 
         bindImage(
+            imageView = itemBinding.ivFavoriteImage,
+            imageUrl = item.imageUrl,
             imageRes = item.imageRes,
-            setImage = itemBinding.ivFavoriteImage::setImageResource,
             showPlaceholder = { itemBinding.tvImagePlaceholder.isVisible = it },
         )
 
@@ -155,12 +159,13 @@ class CustomerFavoritesFragment : Fragment() {
     }
 
     private fun bindImage(
+        imageView: ImageView,
+        imageUrl: String,
         imageRes: Int?,
-        setImage: (Int) -> Unit,
         showPlaceholder: (Boolean) -> Unit,
     ) {
         if (imageRes != null) {
-            setImage(imageRes)
+            imageView.loadProductImage(imageUrl, imageRes)
             showPlaceholder(false)
         } else {
             showPlaceholder(true)

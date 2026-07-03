@@ -13,6 +13,7 @@ data class PizzaDetailUiModel(
     val kcal: String,
     @param:DrawableRes val imageRes: Int,
     val toppings: List<ExtraToppingUiModel>,
+    val imageUrl: String = "",
 )
 
 data class ExtraToppingUiModel(

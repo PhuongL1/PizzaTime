@@ -9,7 +9,8 @@ data class BestSellerPizzaUiModel(
     val description: String,
     val price: String,
     val rating: String = "",
-    @DrawableRes val imageRes: Int,
+    @param:DrawableRes val imageRes: Int,
+    val imageUrl: String = "",
     val isFavorite: Boolean = false,
 )
 
@@ -20,7 +21,8 @@ data class ChefPizzaUiModel(
     val price: String,
     val label: String,
     val rating: String,
-    @DrawableRes val imageRes: Int,
+    @param:DrawableRes val imageRes: Int,
+    val imageUrl: String = "",
 )
 
 object FakeHomeData {

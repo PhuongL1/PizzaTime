@@ -8,6 +8,7 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
@@ -25,7 +26,10 @@ import com.devpro.pizzatime.feature.staff.navigation.openPizzaMenuScreen
 class CustomerHomeFragment : Fragment() {
 
     private var _binding: FragmentCustomerHomeBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentCustomerHomeBinding
+        get() = checkNotNull(_binding) {
+            "FragmentCustomerHomeBinding is only valid between onCreateView and onDestroyView."
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,7 +65,7 @@ class CustomerHomeFragment : Fragment() {
                 false
             )
 
-            itemBinding.imgPizza.setImageResource(item.imageRes)
+            itemBinding.imgPizza.loadProductImage(item.imageUrl, item.imageRes)
             itemBinding.imgPizza.contentDescription = item.name
             itemBinding.tvPizzaName.text = item.name
             itemBinding.tvPizzaDescription.text = item.description
@@ -80,6 +84,7 @@ class CustomerHomeFragment : Fragment() {
                     productDescription = item.description,
                     productPrice = item.price,
                     productRating = item.rating,
+                    productImageUrl = item.imageUrl,
                 )
             }
 
@@ -124,7 +129,7 @@ class CustomerHomeFragment : Fragment() {
                 false
             )
 
-            itemBinding.imgChefPizza.setImageResource(item.imageRes)
+            itemBinding.imgChefPizza.loadProductImage(item.imageUrl, item.imageRes)
             itemBinding.imgChefPizza.contentDescription = item.name
             itemBinding.tvChefLabel.text = item.label
             itemBinding.tvChefName.text = item.name
@@ -139,6 +144,7 @@ class CustomerHomeFragment : Fragment() {
                     productDescription = item.description,
                     productPrice = item.price,
                     productRating = item.rating,
+                    productImageUrl = item.imageUrl,
                 )
             }
 
@@ -200,6 +206,7 @@ class CustomerHomeFragment : Fragment() {
         price = "$${String.format("%.2f", basePrice)}",
         rating = String.format("%.1f", rating),
         imageRes = R.drawable.img_welcome_hero,
+        imageUrl = imageUrl,
     )
 
     private fun ProductUiModel.toChefPizzaUiModel() = ChefPizzaUiModel(
@@ -210,6 +217,7 @@ class CustomerHomeFragment : Fragment() {
         label = "CHEF'S PICK",
         rating = "★ ${String.format("%.1f", rating)}",
         imageRes = R.drawable.img_welcome_hero,
+        imageUrl = imageUrl,
     )
 
     override fun onDestroyView() {

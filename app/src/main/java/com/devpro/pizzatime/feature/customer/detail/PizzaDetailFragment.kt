@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentPizzaDetailBinding
 import com.devpro.pizzatime.databinding.ItemExtraToppingBinding
 import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
@@ -58,12 +59,13 @@ class PizzaDetailFragment : Fragment() {
             time = "25-30 MIN",
             kcal = "840 KCAL",
             imageRes = R.drawable.img_welcome_hero,
+            imageUrl = args.getString(ARG_IMAGE_URL, ""),
             toppings = FakePizzaDetailData.truffleNoir.toppings,
         )
     }
 
     private fun bindPizzaDetail(item: PizzaDetailUiModel) {
-        binding.imgPizzaHero.setImageResource(item.imageRes)
+        binding.imgPizzaHero.loadProductImage(item.imageUrl, item.imageRes)
         binding.imgPizzaHero.contentDescription = item.name
         binding.tvPizzaName.text = item.name
         binding.tvPizzaDescription.text = item.description
@@ -242,6 +244,7 @@ class PizzaDetailFragment : Fragment() {
         private const val ARG_DESCRIPTION = "description"
         private const val ARG_PRICE = "price"
         private const val ARG_RATING = "rating"
+        private const val ARG_IMAGE_URL = "image_url"
 
         fun newInstance(
             productId: String,
@@ -249,6 +252,7 @@ class PizzaDetailFragment : Fragment() {
             description: String,
             price: String,
             rating: String,
+            imageUrl: String = "",
         ) = PizzaDetailFragment().apply {
             arguments = Bundle().apply {
                 putString(ARG_PRODUCT_ID, productId)
@@ -256,6 +260,7 @@ class PizzaDetailFragment : Fragment() {
                 putString(ARG_DESCRIPTION, description)
                 putString(ARG_PRICE, price)
                 putString(ARG_RATING, rating)
+                putString(ARG_IMAGE_URL, imageUrl)
             }
         }
     }
