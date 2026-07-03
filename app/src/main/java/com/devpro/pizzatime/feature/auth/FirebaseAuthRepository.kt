@@ -26,6 +26,21 @@ object FirebaseAuthRepository {
             }
     }
 
+    fun loadCurrentUserProfile(onResult: (Result<AuthUserUiModel>) -> Unit) {
+        val currentUser = auth.currentUser
+        val uid = currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            onResult(Result.failure(Exception("No authenticated user.")))
+            return
+        }
+
+        fetchUserProfile(
+            uid = uid,
+            email = currentUser.email.orEmpty(),
+            onResult = onResult,
+        )
+    }
+
     private fun fetchUserProfile(
         uid: String,
         email: String,

@@ -7,6 +7,7 @@ import android.widget.Toast
 import androidx.fragment.app.FragmentManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.BottomSheetCustomerMenuBinding
+import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
 
@@ -61,7 +62,8 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
         }
 
         rowLogout.setOnClickListener {
-            showComingSoon(getString(R.string.customer_menu_title_logout))
+            dismiss()
+            signOutAndOpenLogin()
         }
     }
 

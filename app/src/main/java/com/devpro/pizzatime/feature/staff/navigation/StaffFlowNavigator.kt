@@ -3,8 +3,10 @@ package com.devpro.pizzatime.feature.staff.navigation
 import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
+import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
 import com.devpro.pizzatime.feature.admin.menu.ManageMenuFragment
 import com.devpro.pizzatime.feature.admin.orders.ManageOrdersFragment
@@ -38,6 +40,7 @@ import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailFragment
 import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
 import com.devpro.pizzatime.shared.drawer.StaffNavigationDrawerDialogFragment
+import com.google.firebase.auth.FirebaseAuth
 
 fun Fragment.openStaffDashboard(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
@@ -79,6 +82,18 @@ fun Fragment.openLoginScreen(addToBackStack: Boolean = true) {
         }
         .commit()
 }
+
+fun Fragment.clearAppBackStack() {
+    parentFragmentManager.popBackStack(null, FragmentManager.POP_BACK_STACK_INCLUSIVE)
+}
+
+fun Fragment.signOutAndOpenLogin() {
+    FirebaseAuth.getInstance().signOut()
+    FakeSessionStore.logout()
+    clearAppBackStack()
+    openLoginScreen(addToBackStack = false)
+}
+
 fun Fragment.openCustomerHomeScreen() {
     parentFragmentManager.beginTransaction()
         .setCustomAnimations(
@@ -375,6 +390,7 @@ private fun Fragment.handleStaffDrawerItem(item: StaffDrawerItem) {
                 getString(R.string.staff_drawer_logout_toast),
                 Toast.LENGTH_SHORT,
             ).show()
+            signOutAndOpenLogin()
         }
     }
 }

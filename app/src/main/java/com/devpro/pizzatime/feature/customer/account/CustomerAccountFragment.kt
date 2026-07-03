@@ -15,6 +15,7 @@ import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
 import java.util.Locale
@@ -111,6 +112,7 @@ class CustomerAccountFragment : Fragment() {
 
         logoutCard.setOnClickListener {
             showToast(getString(R.string.customer_account_logout_toast))
+            signOutAndOpenLogin()
         }
     }
 

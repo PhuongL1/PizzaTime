@@ -1,18 +1,22 @@
 package com.devpro.pizzatime.feature.auth
 
+import android.Manifest
 import android.os.Bundle
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
+import com.devpro.pizzatime.core.notification.NotificationPermissionHelper
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
+import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
@@ -28,6 +32,14 @@ class LoginFragment : Fragment() {
     private val binding: FragmentLoginBinding
         get() = checkNotNull(_binding) {
             "FragmentLoginBinding is only valid between onCreateView and onDestroyView."
+        }
+
+    private var pendingLoginRole: UserRole? = null
+    private var notificationPermissionRequestedForLogin = false
+
+    private val notificationPermissionLauncher =
+        registerForActivityResult(ActivityResultContracts.RequestPermission()) {
+            continueLoginNavigation()
         }
 
     override fun onCreateView(
@@ -74,7 +86,7 @@ class LoginFragment : Fragment() {
                     ).show()
 
                     FcmTokenRegistrar.registerCurrentToken()
-                    openHomeByRole(user.role)
+                    requestNotificationPermissionThenNavigate(user.role)
                 }
                 .onFailure { error ->
                     Toast.makeText(
@@ -112,8 +124,30 @@ class LoginFragment : Fragment() {
         }
     }
 
+    private fun requestNotificationPermissionThenNavigate(role: UserRole) {
+        pendingLoginRole = role
+        val shouldRequestPermission = NotificationPermissionHelper
+            .shouldRequestNotificationPermission(requireContext())
+
+        if (shouldRequestPermission && !notificationPermissionRequestedForLogin) {
+            notificationPermissionRequestedForLogin = true
+            notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+            return
+        }
+
+        continueLoginNavigation()
+    }
+
+    private fun continueLoginNavigation() {
+        val role = pendingLoginRole ?: return
+        if (!isAdded) return
+        pendingLoginRole = null
+        openHomeByRole(role)
+    }
+
     private fun openHomeByRole(role: UserRole) {
         FakeSessionStore.login(role)
+        clearAppBackStack()
         when (role) {
             UserRole.GUEST,
             UserRole.CUSTOMER,
