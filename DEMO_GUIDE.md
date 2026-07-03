@@ -35,17 +35,18 @@ Each account should have a matching `users/{uid}` Firestore document with `activ
 3. Add a product to the cart.
 4. Apply an active promo code.
 5. Checkout and create a Firestore order.
-6. Open realtime customer order tracking.
-7. Login as `staff@pizzatime.com`; the Staff Dashboard should update automatically when the pending order appears.
-8. Confirm the pending order from Staff Dashboard.
-9. Login as `kitchen@pizzatime.com`; the Kitchen Board should update automatically when the order becomes `CONFIRMED`.
-10. Move the order through kitchen statuses to `READY`.
-11. Login as `shipper@pizzatime.com`; the Shipper Dashboard should update automatically when the order becomes `READY`.
-12. Move the order to `DELIVERED`.
-13. Return to the customer tracking screen and verify realtime status updates throughout the lifecycle.
-14. Open customer order history and order detail.
-15. Login as `admin@pizzatime.com` and open dashboard/reports.
-16. Edit product, promo, and staff status from admin screens.
+6. Verify the Firestore order includes `customerId`, `deliveryAddress`, `promoCode`, `discount`, `status = PENDING`, and a `statusHistory` item for `PENDING`.
+7. Open realtime customer order tracking.
+8. Login as `staff@pizzatime.com`; the Staff Dashboard should update automatically when the pending order appears.
+9. Confirm the pending order from Staff Dashboard.
+10. Login as `kitchen@pizzatime.com`; the Kitchen Board should update automatically when the order becomes `CONFIRMED`.
+11. Move the order through kitchen statuses to `READY`.
+12. Login as `shipper@pizzatime.com`; the Shipper Dashboard should update automatically when the order becomes `READY`.
+13. Move the order to `DELIVERED`.
+14. Return to the customer tracking screen and verify realtime status updates throughout the lifecycle.
+15. Open customer order history and order detail.
+16. Login as `admin@pizzatime.com` and open dashboard/reports.
+17. Edit product, promo, and staff status from admin screens.
 
 ## Firestore Collections
 
@@ -59,14 +60,16 @@ Each account should have a matching `users/{uid}` Firestore document with `activ
 
 Expected order lifecycle:
 
-1. `PENDING`
-2. `CONFIRMED`
-3. `PREPARING`
-4. `BAKING`
-5. `READY`
-6. `ASSIGNED_TO_SHIPPER`
-7. `DELIVERING`
-8. `DELIVERED`
+| Status | Responsible role |
+| --- | --- |
+| `PENDING` | `CUSTOMER` |
+| `CONFIRMED` | `STAFF` |
+| `PREPARING` | `KITCHEN` |
+| `BAKING` | `KITCHEN` |
+| `READY` | `KITCHEN` |
+| `ASSIGNED_TO_SHIPPER` | `SHIPPER` |
+| `DELIVERING` | `SHIPPER` |
+| `DELIVERED` | `SHIPPER` |
 
 Role handoff:
 
@@ -75,6 +78,45 @@ Role handoff:
 - Kitchen Board listens realtime and updates `CONFIRMED -> PREPARING -> BAKING -> READY`.
 - Shipper Dashboard listens realtime and updates `READY -> ASSIGNED_TO_SHIPPER -> DELIVERING -> DELIVERED`.
 - Customer Order Tracking listens realtime and reflects status changes throughout the full lifecycle.
+
+## Order Status History
+
+Each order stores the current status in the `status` field. Each order also stores a `statusHistory` array as an audit trail for major lifecycle updates.
+
+Every status transition appends a history item so the demo can show who changed the order and when. The app currently records history in Firestore; it does not redesign the customer tracking UI to display the full audit list.
+
+Status history item shape:
+
+```json
+{
+  "status": "PENDING",
+  "actorRole": "CUSTOMER",
+  "actorId": "firebase-auth-uid",
+  "note": "Order placed",
+  "createdAt": "timestamp"
+}
+```
+
+Recorded history behavior:
+
+- Checkout creates the initial `PENDING` item with `actorRole = CUSTOMER`.
+- Staff confirmation appends `CONFIRMED` with `actorRole = STAFF`.
+- Kitchen updates append `PREPARING`, `BAKING`, and `READY` with `actorRole = KITCHEN`.
+- Shipper updates append `ASSIGNED_TO_SHIPPER`, `DELIVERING`, and `DELIVERED` with `actorRole = SHIPPER`.
+
+## Firestore Rules Note
+
+Firestore security rules restrict order status updates by role:
+
+- `STAFF`: `PENDING -> CONFIRMED`
+- `KITCHEN`: `CONFIRMED -> PREPARING -> BAKING -> READY`
+- `SHIPPER`: `READY -> ASSIGNED_TO_SHIPPER -> DELIVERING -> DELIVERED`
+
+The rules were updated so `statusHistory` can be changed only during valid role status transitions. After pulling the latest rules, deploy them manually:
+
+```powershell
+firebase deploy --only firestore:rules --project pizzatime-de04c
+```
 
 ## Known Limitations
 
@@ -117,6 +159,51 @@ Role handoff:
 8. Verify Customer Order Tracking updates realtime throughout the lifecycle.
 9. Verify Admin dashboard/reports still load.
 10. Verify Firestore security rules do not block valid role actions.
+
+## Status History QA Checklist
+
+1. Deploy the latest Firestore Rules.
+2. Login as `customer@pizzatime.com / 123456`.
+3. Create a new order from Checkout.
+4. Open Firebase Console -> Firestore -> `orders/{orderId}`.
+5. Verify `status = PENDING`.
+6. Verify `statusHistory` contains a `PENDING` item with `actorRole = CUSTOMER`.
+7. Login as `staff@pizzatime.com / 123456`.
+8. Confirm the order.
+9. Verify `status = CONFIRMED`.
+10. Verify `statusHistory` contains a `CONFIRMED` item with `actorRole = STAFF`.
+11. Login as `kitchen@pizzatime.com / 123456`.
+12. Update `CONFIRMED -> PREPARING`.
+13. Update `PREPARING -> BAKING`.
+14. Update `BAKING -> READY`.
+15. Verify `statusHistory` contains `PREPARING`, `BAKING`, and `READY` items with `actorRole = KITCHEN`.
+16. Login as `shipper@pizzatime.com / 123456`.
+17. Update `READY -> ASSIGNED_TO_SHIPPER`.
+18. Update `ASSIGNED_TO_SHIPPER -> DELIVERING`.
+19. Update `DELIVERING -> DELIVERED`.
+20. Verify `statusHistory` contains `ASSIGNED_TO_SHIPPER`, `DELIVERING`, and `DELIVERED` items with `actorRole = SHIPPER`.
+21. Keep Customer Tracking open and verify realtime UI updates.
+22. Verify invalid role transitions are blocked after rules deploy.
+
+## Final Full Demo Flow
+
+1. Customer login.
+2. Customer edits `deliveryAddress` in Account.
+3. Customer opens Pizza Menu.
+4. Customer adds product to cart.
+5. Customer applies promo code.
+6. Customer places order.
+7. Firestore order is created with `customerId`, `deliveryAddress`, `promoCode`, `discount`, `status = PENDING`, and `statusHistory` with `PENDING`.
+8. Staff Dashboard receives the order realtime.
+9. Staff confirms the order.
+10. Kitchen Board receives the order realtime.
+11. Kitchen updates the order to `READY`.
+12. Shipper Dashboard receives the order realtime.
+13. Shipper updates the order to `DELIVERED`.
+14. Customer Tracking updates realtime.
+15. Customer Order History/Detail shows the order.
+16. Admin Dashboard/Reports reflect the order.
+17. Admin can manage products, promos, and staff.
 
 ## Build Check
 
