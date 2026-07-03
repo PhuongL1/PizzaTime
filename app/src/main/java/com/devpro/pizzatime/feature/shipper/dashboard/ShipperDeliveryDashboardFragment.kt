@@ -13,6 +13,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.google.firebase.firestore.ListenerRegistration
 
 class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_delivery_dashboard) {
 
@@ -30,6 +31,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
             openShipperDeliveryDetail(order.orderId)
         },
     )
+    private var ordersListener: ListenerRegistration? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -39,7 +41,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         bindActiveDelivery(FakeShipperDeliveryData.getActiveDelivery())
         setupAssignedDeliveries()
         setupBottomNav()
-        loadFirestoreOrders()
+        listenFirestoreOrders()
     }
 
     private fun bindActiveDelivery(activeDelivery: ShipperDeliveryUiModel) = with(binding) {
@@ -70,9 +72,10 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         deliveryAdapter.submitList(FakeShipperDeliveryData.getAssignedDeliveries())
     }
 
-    private fun loadFirestoreOrders() {
-        ShipperOrderFirestoreRepository.loadOrders { result ->
-            if (!isAdded) return@loadOrders
+    private fun listenFirestoreOrders() {
+        ordersListener?.remove()
+        ordersListener = ShipperOrderFirestoreRepository.listenOrders { result ->
+            if (!isAdded) return@listenOrders
             result.onSuccess { orders ->
                 val activeDelivery = orders.firstOrNull { it.status == ShipperDeliveryStatus.ACTIVE }
                 if (activeDelivery != null) {
@@ -111,6 +114,8 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
     }
 
     override fun onDestroyView() {
+        ordersListener?.remove()
+        ordersListener = null
         _binding = null
         super.onDestroyView()
     }

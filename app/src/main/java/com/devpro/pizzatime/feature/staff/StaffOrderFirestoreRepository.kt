@@ -11,6 +11,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -29,6 +30,21 @@ object StaffOrderFirestoreRepository {
             }
             .addOnFailureListener { e ->
                 onResult(Result.failure(e))
+            }
+    }
+
+    fun listenOrders(onResult: (Result<List<StaffOrderUiModel>>) -> Unit): ListenerRegistration {
+        return firestore.collection("orders")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onResult(Result.failure(error))
+                    return@addSnapshotListener
+                }
+
+                val orders = snapshot?.documents
+                    ?.mapNotNull { doc -> doc.toStaffOrderUiModel() }
+                    ?: emptyList()
+                onResult(Result.success(orders))
             }
     }
 

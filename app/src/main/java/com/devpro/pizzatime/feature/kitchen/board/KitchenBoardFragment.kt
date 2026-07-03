@@ -14,6 +14,7 @@ import com.devpro.pizzatime.databinding.FragmentKitchenBoardBinding
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
+import com.google.firebase.firestore.ListenerRegistration
 
 class KitchenBoardFragment : Fragment() {
 
@@ -23,6 +24,7 @@ class KitchenBoardFragment : Fragment() {
     }
 
     private var firestoreOrders: List<KitchenOrderUiModel>? = null
+    private var ordersListener: ListenerRegistration? = null
 
     private val adapter = KitchenOrderAdapter(
         onPrimaryActionClick = { order ->
@@ -45,7 +47,7 @@ class KitchenBoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupOrders()
         setupBottomNav()
-        loadFirestoreOrders()
+        listenFirestoreOrders()
     }
 
     private fun setupOrders() = with(binding.rvKitchenOrders) {
@@ -54,9 +56,10 @@ class KitchenBoardFragment : Fragment() {
         this@KitchenBoardFragment.adapter.submitList(FakeKitchenBoardData.getOrders())
     }
 
-    private fun loadFirestoreOrders() {
-        KitchenOrderFirestoreRepository.loadOrders { result ->
-            if (!isAdded) return@loadOrders
+    private fun listenFirestoreOrders() {
+        ordersListener?.remove()
+        ordersListener = KitchenOrderFirestoreRepository.listenOrders { result ->
+            if (!isAdded) return@listenOrders
             result.onSuccess { orders ->
                 firestoreOrders = orders
                 adapter.submitList(orders)
@@ -101,7 +104,6 @@ class KitchenBoardFragment : Fragment() {
             result
                 .onSuccess {
                     Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
-                    loadFirestoreOrders()
                 }
                 .onFailure {
                     Toast.makeText(requireContext(), "Failed to update order.", Toast.LENGTH_SHORT).show()
@@ -127,6 +129,8 @@ class KitchenBoardFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        ordersListener?.remove()
+        ordersListener = null
         _binding = null
         super.onDestroyView()
     }

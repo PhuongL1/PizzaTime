@@ -16,6 +16,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.google.firebase.firestore.ListenerRegistration
 
 class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
 
@@ -28,6 +29,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     private lateinit var staffOrderAdapter: StaffOrderAdapter
     private var selectedStatus = StaffOrderStatus.PENDING
     private var firestoreOrders: List<StaffOrderUiModel>? = null
+    private var ordersListener: ListenerRegistration? = null
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -38,7 +40,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         setupStatusChips()
         setupBottomNav()
         renderOrders()
-        loadFirestoreOrders()
+        listenFirestoreOrders()
     }
 
     private fun setupRecyclerView() {
@@ -67,7 +69,6 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                 result
                     .onSuccess {
                         showConfirmedToast(order.orderId)
-                        loadFirestoreOrders()
                     }
                     .onFailure {
                         Toast.makeText(requireContext(), "Failed to confirm order.", Toast.LENGTH_SHORT).show()
@@ -138,9 +139,10 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         updateChipState()
     }
 
-    private fun loadFirestoreOrders() {
-        StaffOrderFirestoreRepository.loadOrders { result ->
-            if (!isAdded) return@loadOrders
+    private fun listenFirestoreOrders() {
+        ordersListener?.remove()
+        ordersListener = StaffOrderFirestoreRepository.listenOrders { result ->
+            if (!isAdded) return@listenOrders
             result.onSuccess { orders ->
                 firestoreOrders = orders
                 renderOrders()
@@ -174,6 +176,8 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     }
 
     override fun onDestroyView() {
+        ordersListener?.remove()
+        ordersListener = null
         _binding = null
         super.onDestroyView()
     }

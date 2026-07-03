@@ -4,6 +4,7 @@ import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
 import java.util.concurrent.TimeUnit
 
@@ -22,6 +23,22 @@ object KitchenOrderFirestoreRepository {
                 onResult(Result.success(orders))
             }
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
+    fun listenOrders(onResult: (Result<List<KitchenOrderUiModel>>) -> Unit): ListenerRegistration {
+        return firestore.collection("orders")
+            .whereIn("status", kitchenStatuses)
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onResult(Result.failure(error))
+                    return@addSnapshotListener
+                }
+
+                val orders = snapshot?.documents
+                    ?.mapNotNull { it.toKitchenOrderUiModel() }
+                    ?: emptyList()
+                onResult(Result.success(orders))
+            }
     }
 
     fun updateOrderStatus(
