@@ -8,8 +8,10 @@ import android.widget.LinearLayout
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
+import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
@@ -20,11 +22,15 @@ import java.util.Locale
 class CheckoutFragment : Fragment() {
 
     private var _binding: FragmentCheckoutBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentCheckoutBinding
+        get() = checkNotNull(_binding) {
+            "FragmentCheckoutBinding is only valid between onCreateView and onDestroyView."
+        }
 
     private var orderItems = emptyList<CheckoutOrderItemUiModel>()
     private var appliedDiscount = 0.0
     private var appliedPromoCode = ""
+    private var selectedDeliveryAddress = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -37,9 +43,44 @@ class CheckoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         orderItems = CartStore.items.map { it.toCheckoutItem() }
+        selectedDeliveryAddress = getString(R.string.checkout_delivery_address)
+        renderDeliveryDetails(
+            name = getString(R.string.checkout_delivery_name),
+            phone = getString(R.string.checkout_delivery_phone),
+            address = selectedDeliveryAddress,
+        )
         renderOrderItems(orderItems)
         renderSummary()
         setupActions()
+        loadCustomerDeliveryDetails()
+    }
+
+    private fun loadCustomerDeliveryDetails() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
+            if (_binding == null) return@loadProfile
+            result.onSuccess { profile ->
+                val profileAddress = profile.deliveryAddress.trim()
+                if (profileAddress.isNotBlank()) {
+                    selectedDeliveryAddress = profileAddress
+                }
+                renderDeliveryDetails(
+                    name = profile.fullName,
+                    phone = profile.phone.ifBlank { getString(R.string.checkout_delivery_phone) },
+                    address = selectedDeliveryAddress,
+                )
+            }
+        }
+    }
+
+    private fun renderDeliveryDetails(
+        name: String,
+        phone: String,
+        address: String,
+    ) = with(binding) {
+        tvDeliveryName.text = name
+        tvDeliveryPhone.text = phone
+        tvDeliveryAddress.text = address
     }
 
     private fun renderOrderItems(items: List<CheckoutOrderItemUiModel>) {
@@ -179,6 +220,7 @@ class CheckoutFragment : Fragment() {
             customerEmail = user.email ?: "",
             items = CartStore.items,
             deliveryFee = DELIVERY_FEE,
+            deliveryAddress = selectedDeliveryAddress,
             promoCode = appliedPromoCode,
             discount = appliedDiscount,
             onResult = { result ->
