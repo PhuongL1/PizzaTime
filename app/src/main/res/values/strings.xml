@@ -887,6 +887,16 @@
     <string name="customer_account_orders_toast">Orders coming soon</string>
     <string name="customer_account_loyalty_toast">Loyalty coming soon</string>
     <string name="customer_account_edit_profile_toast">Edit profile coming soon</string>
+    <string name="customer_account_edit_profile_title">Edit profile</string>
+    <string name="customer_account_edit_profile_save">Save</string>
+    <string name="customer_account_edit_name_hint">Name</string>
+    <string name="customer_account_edit_phone_hint">Phone</string>
+    <string name="customer_account_edit_address_hint">Delivery address</string>
+    <string name="customer_account_login_required_toast">Please log in to view your profile.</string>
+    <string name="customer_account_profile_load_failed">Using saved fallback profile.</string>
+    <string name="customer_account_name_required_toast">Name is required.</string>
+    <string name="customer_account_profile_saved_toast">Profile updated.</string>
+    <string name="customer_account_profile_save_failed">Could not update profile.</string>
     <string name="customer_account_order_history_toast">Order history coming soon</string>
     <string name="customer_account_payment_methods_toast">Payment methods coming soon</string>
     <string name="customer_account_delivery_addresses_toast">Delivery addresses coming soon</string>

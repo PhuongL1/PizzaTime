@@ -11,6 +11,8 @@ object FakeCustomerAccountData {
             doughPoints = 1250,
             email = "j.vane@artisan.mail",
             phone = "+1 (555) 012-3456",
+            deliveryAddress = "",
+            avatarUrl = "",
             avatarRes = R.drawable.ic_customer_account_avatar_placeholder,
         )
     }

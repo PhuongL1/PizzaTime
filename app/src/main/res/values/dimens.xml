@@ -28,4 +28,6 @@
     <dimen name="pt_text_section">18sp</dimen>
     <dimen name="pt_text_title">24sp</dimen>
     <dimen name="pt_text_display">28sp</dimen>
+
+    <dimen name="customer_account_dialog_padding">24dp</dimen>
 </resources>

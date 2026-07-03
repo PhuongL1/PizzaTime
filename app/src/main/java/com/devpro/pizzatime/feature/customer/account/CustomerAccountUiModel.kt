@@ -8,5 +8,7 @@ data class CustomerAccountUiModel(
     val doughPoints: Int,
     val email: String,
     val phone: String,
+    val deliveryAddress: String,
+    val avatarUrl: String,
     @param:DrawableRes val avatarRes: Int,
 )
