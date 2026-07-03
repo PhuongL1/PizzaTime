@@ -1,9 +1,15 @@
 package com.devpro.pizzatime.feature.admin.staff
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.ArrayAdapter
+import android.widget.EditText
+import android.widget.LinearLayout
+import android.widget.Spinner
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.content.ContextCompat
@@ -21,7 +27,10 @@ import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
 class ManageStaffFragment : Fragment() {
 
     private var _binding: FragmentManageStaffBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentManageStaffBinding
+        get() = checkNotNull(_binding) {
+            "FragmentManageStaffBinding is only valid between onCreateView and onDestroyView."
+        }
 
     private var allStaff: List<AdminStaffUiModel> = FakeAdminStaffData.staff
 
@@ -32,7 +41,15 @@ class ManageStaffFragment : Fragment() {
                 val newActive = item.status == AdminStaffStatus.INACTIVE
                 AdminStaffFirestoreRepository.toggleActive(item.id, newActive) { result ->
                     if (!isAdded) return@toggleActive
-                    if (result.isSuccess) loadFirestoreStaff()
+                    result
+                        .onSuccess { loadFirestoreStaff() }
+                        .onFailure {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.admin_staff_toggle_failed,
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
                 }
             },
         )
@@ -74,11 +91,129 @@ class ManageStaffFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         btnAddStaff.setOnClickListener {
-            showComingSoon(getString(R.string.add_staff))
+            showCreateStaffDialog()
         }
 
         tvMenu.setOnClickListener {
             showComingSoon(getString(R.string.menu))
+        }
+    }
+
+    private fun showCreateStaffDialog() {
+        val nameInput = createDialogInput(
+            hint = getString(R.string.admin_staff_create_name_hint),
+        )
+        val emailInput = createDialogInput(
+            hint = getString(R.string.admin_staff_create_email_hint),
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_EMAIL_ADDRESS,
+        )
+        val phoneInput = createDialogInput(
+            hint = getString(R.string.admin_staff_create_phone_hint),
+            inputType = InputType.TYPE_CLASS_PHONE,
+        )
+        val passwordInput = createDialogInput(
+            hint = getString(R.string.admin_staff_create_password_hint),
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_PASSWORD,
+        )
+        val roleSpinner = Spinner(requireContext()).apply {
+            adapter = ArrayAdapter(
+                requireContext(),
+                android.R.layout.simple_spinner_dropdown_item,
+                STAFF_CREATION_ROLES,
+            )
+        }
+
+        val form = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.customer_account_dialog_padding)
+            setPadding(horizontalPadding, 0, horizontalPadding, 0)
+            addView(nameInput)
+            addView(emailInput)
+            addView(phoneInput)
+            addView(passwordInput)
+            addView(roleSpinner)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.admin_staff_create_title)
+            .setView(form)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.admin_staff_create_action, null)
+            .create()
+            .apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        createStaffAccount(
+                            name = nameInput.text.toString().trim(),
+                            email = emailInput.text.toString().trim(),
+                            phone = phoneInput.text.toString().trim(),
+                            password = passwordInput.text.toString(),
+                            role = roleSpinner.selectedItem.toString(),
+                            onCreated = { dismiss() },
+                        )
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun createDialogInput(
+        hint: String,
+        inputType: Int = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+    ): EditText {
+        return EditText(requireContext()).apply {
+            this.hint = hint
+            this.inputType = inputType
+            setSingleLine(true)
+        }
+    }
+
+    private fun createStaffAccount(
+        name: String,
+        email: String,
+        phone: String,
+        password: String,
+        role: String,
+        onCreated: () -> Unit,
+    ) {
+        when {
+            name.isBlank() -> {
+                showToast(R.string.admin_staff_create_name_required)
+                return
+            }
+
+            !email.contains("@") -> {
+                showToast(R.string.admin_staff_create_email_invalid)
+                return
+            }
+
+            password.length < 6 -> {
+                showToast(R.string.admin_staff_create_password_invalid)
+                return
+            }
+        }
+
+        AdminStaffFunctionsRepository.createStaffAccount(
+            name = name,
+            email = email,
+            phone = phone,
+            password = password,
+            role = role,
+        ) { result ->
+            if (!isAdded) return@createStaffAccount
+            result
+                .onSuccess {
+                    showToast(R.string.admin_staff_create_success)
+                    loadFirestoreStaff()
+                    onCreated()
+                }
+                .onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: getString(R.string.admin_staff_create_failed),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
         }
     }
 
@@ -166,6 +301,10 @@ class ManageStaffFragment : Fragment() {
         ).show()
     }
 
+    private fun showToast(messageRes: Int) {
+        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    }
+
     override fun onDestroyView() {
         super.onDestroyView()
         _binding = null
@@ -176,5 +315,9 @@ class ManageStaffFragment : Fragment() {
         KITCHEN,
         SHIPPER,
         ADMIN,
+    }
+
+    private companion object {
+        val STAFF_CREATION_ROLES = listOf("STAFF", "KITCHEN", "SHIPPER")
     }
 }

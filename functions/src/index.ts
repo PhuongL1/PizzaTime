@@ -1,4 +1,5 @@
 import {initializeApp} from "firebase-admin/app";
+import {getAuth} from "firebase-admin/auth";
 import {getFirestore, FieldValue} from "firebase-admin/firestore";
 import {getMessaging, MulticastMessage} from "firebase-admin/messaging";
 import {logger} from "firebase-functions";
@@ -6,13 +7,16 @@ import {
   onDocumentCreated,
   onDocumentUpdated,
 } from "firebase-functions/v2/firestore";
+import {HttpsError, onCall} from "firebase-functions/v2/https";
 
 initializeApp();
 
 const db = getFirestore();
+const auth = getAuth();
 const messaging = getMessaging();
 
 const ORDER_STATUS_TYPE = "ORDER_STATUS";
+const STAFF_ACCOUNT_ROLES = new Set(["STAFF", "KITCHEN", "SHIPPER"]);
 const CUSTOMER_STATUSES = new Set([
   "CONFIRMED",
   "PREPARING",
@@ -33,6 +37,73 @@ type TokenRecipient = {
   uid: string;
   tokens: string[];
 };
+
+type CreateStaffAccountInput = {
+  email?: unknown;
+  password?: unknown;
+  name?: unknown;
+  phone?: unknown;
+  role?: unknown;
+};
+
+export const createStaffAccount = onCall(async (request) => {
+  const callerUid = request.auth?.uid;
+  if (!callerUid) {
+    throw new HttpsError("unauthenticated", "Please sign in as an admin.");
+  }
+
+  await assertActiveAdmin(callerUid);
+  const input = parseCreateStaffAccountInput(request.data);
+
+  let createdUid: string | null = null;
+  try {
+    const userRecord = await auth.createUser({
+      email: input.email,
+      password: input.password,
+      displayName: input.name,
+      disabled: false,
+    });
+    createdUid = userRecord.uid;
+
+    await db.collection("users").doc(userRecord.uid).set({
+      id: userRecord.uid,
+      name: input.name,
+      email: input.email,
+      phone: input.phone,
+      role: input.role,
+      active: true,
+      avatarUrl: "",
+      createdAt: FieldValue.serverTimestamp(),
+      updatedAt: FieldValue.serverTimestamp(),
+    });
+
+    logger.info("Created staff account", {
+      createdUid: userRecord.uid,
+      role: input.role,
+      createdBy: callerUid,
+    });
+
+    return {uid: userRecord.uid};
+  } catch (error) {
+    if (createdUid) {
+      try {
+        await auth.deleteUser(createdUid);
+      } catch (deleteError) {
+        logger.error("Failed to roll back Auth user after Firestore error", {
+          createdUid,
+          deleteError,
+        });
+      }
+    }
+
+    if (isAuthEmailExistsError(error)) {
+      throw new HttpsError("already-exists", "An account with this email already exists.");
+    }
+
+    logger.error("Failed to create staff account", {error});
+    throw new HttpsError("internal", "Could not create staff account.");
+  }
+});
 
 export const notifyStaffOnNewOrder = onDocumentCreated(
   "orders/{orderId}",
@@ -136,6 +207,56 @@ export const notifyOnOrderStatusChanged = onDocumentUpdated(
     await Promise.all(tasks);
   },
 );
+
+async function assertActiveAdmin(uid: string): Promise<void> {
+  const snapshot = await db.collection("users").doc(uid).get();
+  const role = snapshot.get("role");
+  const active = snapshot.get("active");
+
+  if (role !== "ADMIN" || active !== true) {
+    throw new HttpsError("permission-denied", "Only active admins can create staff accounts.");
+  }
+}
+
+function parseCreateStaffAccountInput(data: CreateStaffAccountInput): {
+  email: string;
+  password: string;
+  name: string;
+  phone: string;
+  role: string;
+} {
+  const email = readString(data.email).toLowerCase();
+  const password = readString(data.password);
+  const name = readString(data.name);
+  const phone = readString(data.phone);
+  const role = readString(data.role).toUpperCase();
+
+  if (!email.includes("@")) {
+    throw new HttpsError("invalid-argument", "Enter a valid email address.");
+  }
+  if (password.length < 6) {
+    throw new HttpsError("invalid-argument", "Password must be at least 6 characters.");
+  }
+  if (!name) {
+    throw new HttpsError("invalid-argument", "Name is required.");
+  }
+  if (!STAFF_ACCOUNT_ROLES.has(role)) {
+    throw new HttpsError("invalid-argument", "Role must be STAFF, KITCHEN, or SHIPPER.");
+  }
+
+  return {email, password, name, phone, role};
+}
+
+function readString(value: unknown): string {
+  return typeof value === "string" ? value.trim() : "";
+}
+
+function isAuthEmailExistsError(error: unknown): boolean {
+  return typeof error === "object" &&
+    error !== null &&
+    "code" in error &&
+    error.code === "auth/email-already-exists";
+}
 
 function shortOrderId(orderId: string): string {
   return orderId.length <= 8 ? orderId : orderId.slice(-8).toUpperCase();
