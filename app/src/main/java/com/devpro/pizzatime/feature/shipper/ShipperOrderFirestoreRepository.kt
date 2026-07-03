@@ -15,6 +15,7 @@ object ShipperOrderFirestoreRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val shipperStatuses = listOf("READY", "ASSIGNED_TO_SHIPPER", "DELIVERING")
+    private const val POINT_VALUE_VND = 10_000.0
 
     fun loadOrders(onResult: (Result<List<ShipperDeliveryUiModel>>) -> Unit) {
         firestore.collection("orders")
@@ -66,6 +67,11 @@ object ShipperOrderFirestoreRepository {
         shipperId: String?,
         onResult: (Result<Unit>) -> Unit,
     ) {
+        if (newStatus == "DELIVERED") {
+            deliverOrderWithLoyaltyAward(orderId, shipperId, onResult)
+            return
+        }
+
         val updates = mutableMapOf<String, Any>(
             "status" to newStatus,
             "updatedAt" to FieldValue.serverTimestamp(),
@@ -83,6 +89,68 @@ object ShipperOrderFirestoreRepository {
         }
         firestore.collection("orders").document(orderId)
             .update(updates)
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
+    private fun deliverOrderWithLoyaltyAward(
+        orderId: String,
+        shipperId: String?,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val orderRef = firestore.collection("orders").document(orderId)
+
+        firestore.runTransaction { transaction ->
+            val order = transaction.get(orderRef)
+            if (!order.exists()) {
+                throw IllegalStateException("Order $orderId not found")
+            }
+
+            val currentStatus = order.getString("status").orEmpty()
+            val alreadyAwarded = order.getBoolean("loyaltyAwarded") == true
+            if (currentStatus == "DELIVERED" && alreadyAwarded) {
+                return@runTransaction
+            }
+            if (currentStatus != "DELIVERING") {
+                throw IllegalStateException("Order $orderId is not ready for delivery completion")
+            }
+
+            val total = order.getDouble("total") ?: 0.0
+            val customerId = order.getString("customerId").orEmpty()
+            if (customerId.isBlank()) {
+                throw IllegalStateException("Order $orderId has no customer")
+            }
+
+            val earnedPoints = (total / POINT_VALUE_VND).toInt()
+            transaction.update(
+                orderRef,
+                mapOf(
+                    "status" to "DELIVERED",
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = "DELIVERED",
+                            actorRole = "SHIPPER",
+                            actorId = shipperId.orEmpty(),
+                            note = "Shipper delivered order",
+                        ),
+                    ),
+                    "loyaltyAwarded" to true,
+                    "earnedPoints" to earnedPoints,
+                ),
+            )
+
+            val userRef = firestore.collection("users").document(customerId)
+            transaction.update(
+                userRef,
+                mapOf(
+                    "doughPoints" to FieldValue.increment(earnedPoints.toLong()),
+                    "lifetimeSpend" to FieldValue.increment(total),
+                    "completedOrders" to FieldValue.increment(1L),
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+        }
             .addOnSuccessListener { onResult(Result.success(Unit)) }
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }

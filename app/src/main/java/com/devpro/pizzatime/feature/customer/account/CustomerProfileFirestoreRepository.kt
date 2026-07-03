@@ -4,6 +4,8 @@ import com.devpro.pizzatime.R
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.NumberFormat
+import java.util.Locale
 
 object CustomerProfileFirestoreRepository {
 
@@ -50,12 +52,20 @@ object CustomerProfileFirestoreRepository {
         return CustomerAccountUiModel(
             fullName = getString("name").orEmpty().ifBlank { fallback.fullName },
             tierName = fallback.tierName,
-            doughPoints = fallback.doughPoints,
+            doughPoints = getLong("doughPoints")?.toInt() ?: fallback.doughPoints,
             email = getString("email").orEmpty().ifBlank { fallback.email },
             phone = getString("phone").orEmpty(),
             deliveryAddress = getString("deliveryAddress").orEmpty(),
             avatarUrl = getString("avatarUrl").orEmpty(),
             avatarRes = R.drawable.ic_customer_account_avatar_placeholder,
+            lifetimeSpendText = getDouble("lifetimeSpend")?.let(::formatCurrency)
+                ?: fallback.lifetimeSpendText,
+            completedOrdersText = getLong("completedOrders")?.toString()
+                ?: fallback.completedOrdersText,
         )
+    }
+
+    private fun formatCurrency(value: Double): String {
+        return NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN")).format(value)
     }
 }

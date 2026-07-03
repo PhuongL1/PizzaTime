@@ -51,7 +51,10 @@ service cloud.firestore {
         "id",
         "role",
         "active",
-        "createdAt"
+        "createdAt",
+        "doughPoints",
+        "lifetimeSpend",
+        "completedOrders"
       ]);
     }
 
@@ -91,8 +94,43 @@ service cloud.firestore {
         "status",
         "updatedAt",
         "statusHistory",
-        "shipperId"
+        "shipperId",
+        "loyaltyAwarded",
+        "earnedPoints"
       ]);
+    }
+
+    function shipperLoyaltyOrderFieldsValid() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "loyaltyAwarded",
+        "earnedPoints"
+      ])
+        || (
+          statusTransition("DELIVERING", "DELIVERED")
+          && resource.data.loyaltyAwarded != true
+          && request.resource.data.loyaltyAwarded == true
+          && request.resource.data.earnedPoints is number
+          && request.resource.data.earnedPoints >= 0
+        );
+    }
+
+    function shipperLoyaltyUserUpdate() {
+      return isShipper()
+        && resource.data.role == "CUSTOMER"
+        && resource.data.active == true
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "doughPoints",
+          "lifetimeSpend",
+          "completedOrders",
+          "updatedAt"
+        ])
+        && request.resource.data.doughPoints is number
+        && request.resource.data.lifetimeSpend is number
+        && request.resource.data.completedOrders is number
+        && request.resource.data.doughPoints >= resource.data.get("doughPoints", 0)
+        && request.resource.data.lifetimeSpend >= resource.data.get("lifetimeSpend", 0)
+        && request.resource.data.completedOrders == resource.data.get("completedOrders", 0) + 1
+        && request.resource.data.updatedAt == request.time;
     }
 
     function validStatusHistoryField() {
@@ -142,7 +180,8 @@ service cloud.firestore {
       allow list: if isAdmin();
       allow create: if isAdmin() || validCustomerProfileCreate(userId);
       allow update: if isAdmin()
-        || (isOwner(userId) && isActiveUser() && protectedUserFieldsUnchanged());
+        || (isOwner(userId) && isActiveUser() && protectedUserFieldsUnchanged())
+        || shipperLoyaltyUserUpdate();
       allow delete: if isAdmin();
     }
 
@@ -156,7 +195,13 @@ service cloud.firestore {
       allow update: if isAdmin()
         || (isStaff() && orderStatusOnlyUpdate() && validStatusHistoryField() && staffStatusTransition())
         || (isKitchen() && orderStatusOnlyUpdate() && validStatusHistoryField() && kitchenStatusTransition())
-        || (isShipper() && shipperStatusUpdate() && validStatusHistoryField() && shipperStatusTransition());
+        || (
+          isShipper()
+          && shipperStatusUpdate()
+          && shipperLoyaltyOrderFieldsValid()
+          && validStatusHistoryField()
+          && shipperStatusTransition()
+        );
       allow delete: if isAdmin();
     }
 

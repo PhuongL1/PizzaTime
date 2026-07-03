@@ -11,4 +11,6 @@ data class CustomerAccountUiModel(
     val deliveryAddress: String,
     val avatarUrl: String,
     @param:DrawableRes val avatarRes: Int,
+    val lifetimeSpendText: String = "",
+    val completedOrdersText: String = "",
 )

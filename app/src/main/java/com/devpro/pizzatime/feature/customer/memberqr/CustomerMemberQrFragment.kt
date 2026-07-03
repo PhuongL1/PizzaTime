@@ -8,9 +8,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerMemberQrBinding
+import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -22,7 +24,7 @@ class CustomerMemberQrFragment : Fragment() {
             "FragmentCustomerMemberQrBinding is only valid between onCreateView and onDestroyView."
         }
 
-    private val memberQrData: CustomerMemberQrUiModel = FakeCustomerMemberQrData.getMemberQr()
+    private var memberQrData: CustomerMemberQrUiModel = FakeCustomerMemberQrData.getMemberQr()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -38,6 +40,7 @@ class CustomerMemberQrFragment : Fragment() {
         setupTopBar()
         setupBottomNav()
         setupActions()
+        loadMemberProfile()
     }
 
     private fun bindMemberQr() = with(binding) {
@@ -92,6 +95,27 @@ class CustomerMemberQrFragment : Fragment() {
 
         rewardsCard.setOnClickListener {
             showToast(getString(R.string.customer_member_qr_rewards_toast))
+        }
+    }
+
+    private fun loadMemberProfile() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            return
+        }
+
+        CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
+            if (!isAdded) return@loadProfile
+            result.onSuccess { profile ->
+                memberQrData = memberQrData.copy(
+                    memberTitle = profile.fullName,
+                    currentPoints = profile.doughPoints,
+                    targetPoints = maxOf(memberQrData.targetPoints, profile.doughPoints),
+                    memberSinceLabel = "CUSTOMER ID",
+                    memberSinceValue = uid.take(12),
+                )
+                bindMemberQr()
+            }
         }
     }
 
