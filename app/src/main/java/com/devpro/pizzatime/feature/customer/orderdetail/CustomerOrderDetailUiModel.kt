@@ -13,6 +13,7 @@ data class CustomerOrderDetailUiModel(
     val deliveryAddressTitle: String,
     val deliveryAddressLine1: String,
     val deliveryAddressLine2: String,
+    val statusHistory: List<CustomerOrderStatusHistoryUiModel> = emptyList(),
 )
 
 data class CustomerOrderItemUiModel(

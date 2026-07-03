@@ -768,6 +768,7 @@
     <string name="customer_order_detail_item_placeholder">▱</string>
 
     <string name="customer_order_detail_bill_details">BILL DETAILS</string>
+    <string name="customer_order_detail_timeline_title">Order Timeline</string>
     <string name="customer_order_detail_subtotal">Subtotal</string>
     <string name="customer_order_detail_delivery_fee">Delivery Fee</string>
     <string name="customer_order_detail_taxes">Taxes (NY State)</string>

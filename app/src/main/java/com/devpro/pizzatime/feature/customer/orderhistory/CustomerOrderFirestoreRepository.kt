@@ -4,6 +4,7 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerBillUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderItemUiModel
+import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderStatusHistoryUiModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -71,6 +72,7 @@ object CustomerOrderFirestoreRepository {
         val discount = getDouble("discount") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val rawItems = get("items") as? List<*>
+        val rawStatusHistory = get("statusHistory") as? List<*>
 
         return CustomerOrderDetailUiModel(
             orderId = id,
@@ -90,6 +92,7 @@ object CustomerOrderFirestoreRepository {
             deliveryAddressTitle = if (statusStr == "DELIVERED") "DELIVERED TO" else "DELIVERING TO",
             deliveryAddressLine1 = getString("deliveryAddress") ?: "",
             deliveryAddressLine2 = "",
+            statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
         )
     }
 
@@ -145,5 +148,47 @@ object CustomerOrderFirestoreRepository {
     private fun Timestamp.toDisplayTime(): String {
         return SimpleDateFormat("MMM dd, hh:mm a", Locale.US).format(Date(seconds * 1000))
     }
+
+    private fun List<*>?.toStatusHistoryUiModels(): List<CustomerOrderStatusHistoryUiModel> {
+        if (this.isNullOrEmpty()) return emptyList()
+
+        val entries = mapNotNull { item ->
+            val map = item as? Map<*, *> ?: return@mapNotNull null
+            val createdAt = map["createdAt"] as? Timestamp
+            OrderStatusHistoryEntry(
+                status = (map["status"] as? String).orUnknownStatus(),
+                actorRole = (map["actorRole"] as? String).orSystemRole(),
+                note = (map["note"] as? String).orEmpty(),
+                createdAt = createdAt,
+            )
+        }
+
+        return entries
+            .sortedWith(
+                compareBy<OrderStatusHistoryEntry>(
+                    { it.createdAt?.seconds ?: Long.MIN_VALUE },
+                    { it.createdAt?.nanoseconds ?: 0 },
+                ),
+            )
+            .map { entry ->
+                CustomerOrderStatusHistoryUiModel(
+                    status = entry.status,
+                    actorRole = entry.actorRole,
+                    note = entry.note,
+                    timeText = entry.createdAt?.toHistoryDateString().orEmpty(),
+                )
+            }
+    }
+
+    private fun String?.orUnknownStatus(): String = this?.takeIf { it.isNotBlank() } ?: "Unknown"
+
+    private fun String?.orSystemRole(): String = this?.takeIf { it.isNotBlank() } ?: "System"
+
+    private data class OrderStatusHistoryEntry(
+        val status: String,
+        val actorRole: String,
+        val note: String,
+        val createdAt: Timestamp?,
+    )
 }
 

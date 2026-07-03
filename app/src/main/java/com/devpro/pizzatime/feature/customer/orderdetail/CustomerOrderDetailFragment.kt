@@ -4,7 +4,9 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.LinearLayout
 import android.widget.Toast
+import android.widget.TextView
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
@@ -65,6 +67,7 @@ class CustomerOrderDetailFragment : Fragment() {
         bindItems(detail.items)
         bindBill(detail.bill)
         bindAddress(detail)
+        bindStatusHistory(detail.statusHistory)
     }
 
     private fun bindItems(items: List<CustomerOrderItemUiModel>) = with(binding.orderItemsContainer) {
@@ -108,6 +111,20 @@ class CustomerOrderDetailFragment : Fragment() {
         tvAddressLine2.text = detail.deliveryAddressLine2
     }
 
+    private fun bindStatusHistory(items: List<CustomerOrderStatusHistoryUiModel>) = with(binding) {
+        statusHistoryCard.isVisible = items.isNotEmpty()
+        statusHistoryContainer.removeAllViews()
+
+        items.forEachIndexed { index, item ->
+            statusHistoryContainer.addView(
+                createStatusHistoryRow(
+                    item = item,
+                    isLast = index == items.lastIndex,
+                ),
+            )
+        }
+    }
+
     private fun setupActions() = with(binding) {
         btnReorder.setOnClickListener {
             Toast.makeText(
@@ -136,6 +153,105 @@ class CustomerOrderDetailFragment : Fragment() {
         } else {
             String.format(Locale.US, "$%.2f", value)
         }
+    }
+
+    private val Int.dp: Int
+        get() = (this * resources.displayMetrics.density).toInt()
+
+    private fun createStatusHistoryRow(
+        item: CustomerOrderStatusHistoryUiModel,
+        isLast: Boolean,
+    ): View {
+        val row = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+        }
+
+        val indicator = TextView(requireContext()).apply {
+            text = "•"
+            setTextColor(requireContext().getColor(R.color.pt_gold))
+            textSize = 22f
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                marginEnd = 14.dp
+            }
+        }
+
+        val content = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            layoutParams = LinearLayout.LayoutParams(
+                0,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                1f,
+            )
+        }
+
+        val title = TextView(requireContext()).apply {
+            text = formatStatusLabel(item.status)
+            setTextColor(requireContext().getColor(R.color.pt_text_primary_dark_bg))
+            textSize = 17f
+        }
+
+        val meta = TextView(requireContext()).apply {
+            text = buildHistoryMeta(item)
+            setTextColor(requireContext().getColor(R.color.pt_text_secondary_dark_bg))
+            textSize = 13f
+        }
+
+        val note = TextView(requireContext()).apply {
+            text = item.note
+            setTextColor(requireContext().getColor(R.color.pt_text_secondary_dark_bg))
+            textSize = 15f
+            isVisible = item.note.isNotBlank()
+        }
+
+        content.addView(title)
+        content.addView(meta)
+        content.addView(note)
+
+        row.addView(indicator)
+        row.addView(content)
+
+        val params = LinearLayout.LayoutParams(
+            LinearLayout.LayoutParams.MATCH_PARENT,
+            LinearLayout.LayoutParams.WRAP_CONTENT,
+        )
+        if (!isLast) {
+            params.bottomMargin = 18.dp
+        }
+        row.layoutParams = params
+        return row
+    }
+
+    private fun formatStatusLabel(status: String): String {
+        return when (status.uppercase(Locale.US)) {
+            "PENDING" -> "Order Placed"
+            "CONFIRMED" -> "Confirmed"
+            "PREPARING" -> "Preparing"
+            "BAKING" -> "Baking"
+            "READY" -> "Ready"
+            "ASSIGNED_TO_SHIPPER" -> "Assigned to Shipper"
+            "DELIVERING" -> "Out for Delivery"
+            "DELIVERED" -> "Delivered"
+            else -> status.ifBlank { "Unknown" }
+        }
+    }
+
+    private fun formatActorRole(role: String): String {
+        return when (role.uppercase(Locale.US)) {
+            "CUSTOMER" -> "Customer"
+            "STAFF" -> "Staff"
+            "KITCHEN" -> "Kitchen"
+            "SHIPPER" -> "Shipper"
+            "ADMIN" -> "Admin"
+            else -> role.ifBlank { "System" }
+        }
+    }
+
+    private fun buildHistoryMeta(item: CustomerOrderStatusHistoryUiModel): String {
+        val actor = formatActorRole(item.actorRole)
+        return if (item.timeText.isBlank()) actor else "$actor · ${item.timeText}"
     }
 
     override fun onDestroyView() {
