@@ -62,6 +62,22 @@ object AdminMenuFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun updateProductImageUrl(
+        productId: String,
+        imageUrl: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        firestore.collection("products").document(productId)
+            .update(
+                mapOf(
+                    "imageUrl" to imageUrl,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     fun createProduct(
         productId: String,
         name: String,

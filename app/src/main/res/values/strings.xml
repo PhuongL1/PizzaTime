@@ -614,6 +614,9 @@
     <string name="manage_menu_edit_category_required">Category ID is required.</string>
     <string name="manage_menu_edit_product_saved">Product updated.</string>
     <string name="manage_menu_edit_product_failed">Could not update product.</string>
+    <string name="manage_menu_upload_image">Upload image</string>
+    <string name="manage_menu_upload_image_saved">Product image uploaded.</string>
+    <string name="manage_menu_upload_image_failed">Could not upload product image.</string>
     <string name="manage_menu_create_product_title">Add Product</string>
     <string name="manage_menu_create_product_save">Create</string>
     <string name="manage_menu_create_id_hint">Product ID</string>

@@ -1,14 +1,17 @@
 package com.devpro.pizzatime.feature.admin.menu
 
 import android.app.AlertDialog
+import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.View
+import android.widget.Button
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.graphics.toColorInt
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -27,6 +30,25 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     private val binding: FragmentManageMenuBinding
         get() = checkNotNull(_binding) {
             "FragmentManageMenuBinding is only valid between onViewCreated and onDestroyView."
+        }
+
+    private var pendingImageUploadProductId: String? = null
+
+    private val pickProductImageLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            val productId = pendingImageUploadProductId
+            pendingImageUploadProductId = null
+
+            if (uri == null) {
+                return@registerForActivityResult
+            }
+
+            if (productId.isNullOrBlank()) {
+                showToast(R.string.manage_menu_upload_image_failed)
+                return@registerForActivityResult
+            }
+
+            uploadProductImage(productId, uri)
         }
 
     private var selectedCategory = AdminMenuCategory.SIGNATURE
@@ -93,6 +115,13 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             text = getString(R.string.manage_menu_edit_available)
             isChecked = item.isAvailable
         }
+        val uploadImageButton = Button(requireContext()).apply {
+            text = getString(R.string.manage_menu_upload_image)
+            setOnClickListener {
+                pendingImageUploadProductId = item.id
+                pickProductImageLauncher.launch("image/*")
+            }
+        }
 
         val form = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
@@ -103,6 +132,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             addView(priceInput)
             addView(categoryInput)
             addView(availableInput)
+            addView(uploadImageButton)
         }
 
         AlertDialog.Builder(requireContext())
@@ -187,6 +217,38 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                 }
             }
             .show()
+    }
+
+    private fun uploadProductImage(
+        productId: String,
+        imageUri: Uri,
+    ) {
+        AdminProductImageStorageRepository.uploadProductImage(
+            productId = productId,
+            imageUri = imageUri,
+        ) { uploadResult ->
+            if (!isAdded) return@uploadProductImage
+            uploadResult
+                .onSuccess { downloadUrl ->
+                    AdminMenuFirestoreRepository.updateProductImageUrl(
+                        productId = productId,
+                        imageUrl = downloadUrl,
+                    ) { updateResult ->
+                        if (!isAdded) return@updateProductImageUrl
+                        updateResult
+                            .onSuccess {
+                                showToast(R.string.manage_menu_upload_image_saved)
+                                loadFirestoreProducts()
+                            }
+                            .onFailure {
+                                showToast(R.string.manage_menu_upload_image_failed)
+                            }
+                    }
+                }
+                .onFailure {
+                    showToast(R.string.manage_menu_upload_image_failed)
+                }
+        }
     }
 
     private fun createDialogInput(
@@ -405,6 +467,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     }
 
     override fun onDestroyView() {
+        pendingImageUploadProductId = null
         _binding = null
         super.onDestroyView()
     }
