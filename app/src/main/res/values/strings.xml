@@ -196,6 +196,11 @@
     <string name="checkout_delivery_fee">Delivery Fee</string>
     <string name="checkout_total">Total</string>
     <string name="checkout_place_order">Place Order</string>
+    <string name="checkout_placing_order">Placing...</string>
+    <string name="checkout_items_unavailable">Some items are no longer available. Please update your cart.</string>
+    <string name="checkout_prices_changed">Prices have changed. Please review your order again.</string>
+    <string name="checkout_promo_invalid">Promo code is no longer valid. Please review your order again.</string>
+    <string name="checkout_verify_failed">Could not verify your order. Please try again.</string>
     <string name="checkout_secure">SECURE CHECKOUT BY PIZZATIME</string>
     <string name="tracking_order_number">ORDER #PT-9823</string>
     <string name="tracking_eta">15-20 Mins</string>

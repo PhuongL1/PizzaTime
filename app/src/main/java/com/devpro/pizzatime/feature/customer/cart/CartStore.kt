@@ -45,6 +45,11 @@ object CartStore {
         cartItems.removeAll { it.id == id }
     }
 
+    fun replaceItems(items: List<CartItemUiModel>) {
+        cartItems.clear()
+        cartItems.addAll(items)
+    }
+
     fun clear() {
         cartItems.clear()
     }

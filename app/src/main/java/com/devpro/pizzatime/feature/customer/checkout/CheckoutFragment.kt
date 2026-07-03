@@ -31,6 +31,7 @@ class CheckoutFragment : Fragment() {
     private var appliedDiscount = 0.0
     private var appliedPromoCode = ""
     private var selectedDeliveryAddress = ""
+    private var isPlacingOrder = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -205,6 +206,10 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun placeOrder() {
+        if (isPlacingOrder) {
+            return
+        }
+
         if (orderItems.isEmpty()) {
             Toast.makeText(requireContext(), "Your cart is empty.", Toast.LENGTH_SHORT).show()
             return
@@ -214,24 +219,99 @@ class CheckoutFragment : Fragment() {
             Toast.makeText(requireContext(), "Please log in to place an order.", Toast.LENGTH_SHORT).show()
             return
         }
-        binding.btnPlaceOrder.isEnabled = false
-        FirebaseOrderRepository.createOrder(
-            customerId = user.uid,
-            customerEmail = user.email ?: "",
+
+        setPlaceOrderLoading(true)
+        CheckoutConsistencyRepository.validateCheckout(
             items = CartStore.items,
+            promoCode = appliedPromoCode,
+        ) { result ->
+            if (_binding == null) return@validateCheckout
+            result
+                .onSuccess { validationResult ->
+                    handleCheckoutValidationResult(
+                        validationResult = validationResult,
+                        customerId = user.uid,
+                        customerEmail = user.email ?: "",
+                    )
+                }
+                .onFailure {
+                    setPlaceOrderLoading(false)
+                    showToast(R.string.checkout_verify_failed)
+                }
+        }
+    }
+
+    private fun handleCheckoutValidationResult(
+        validationResult: CheckoutConsistencyResult,
+        customerId: String,
+        customerEmail: String,
+    ) {
+        when (validationResult) {
+            CheckoutConsistencyResult.ItemsUnavailable -> {
+                setPlaceOrderLoading(false)
+                showToast(R.string.checkout_items_unavailable)
+            }
+
+            is CheckoutConsistencyResult.PriceChanged -> {
+                CartStore.replaceItems(validationResult.items)
+                orderItems = CartStore.items.map { it.toCheckoutItem() }
+                appliedDiscount = 0.0
+                appliedPromoCode = ""
+                renderOrderItems(orderItems)
+                renderSummary()
+                setPlaceOrderLoading(false)
+                showToast(R.string.checkout_prices_changed)
+            }
+
+            CheckoutConsistencyResult.PromoInvalid -> {
+                appliedDiscount = 0.0
+                appliedPromoCode = ""
+                renderSummary()
+                setPlaceOrderLoading(false)
+                showToast(R.string.checkout_promo_invalid)
+            }
+
+            is CheckoutConsistencyResult.Valid -> {
+                CartStore.replaceItems(validationResult.items)
+                orderItems = CartStore.items.map { it.toCheckoutItem() }
+                appliedDiscount = validationResult.discount
+                appliedPromoCode = validationResult.promoCode
+                renderSummary()
+                createValidatedOrder(
+                    customerId = customerId,
+                    customerEmail = customerEmail,
+                    items = validationResult.items,
+                    promoCode = validationResult.promoCode,
+                    discount = validationResult.discount,
+                )
+            }
+        }
+    }
+
+    private fun createValidatedOrder(
+        customerId: String,
+        customerEmail: String,
+        items: List<CartItemUiModel>,
+        promoCode: String,
+        discount: Double,
+    ) {
+        FirebaseOrderRepository.createOrder(
+            customerId = customerId,
+            customerEmail = customerEmail,
+            items = items,
             deliveryFee = DELIVERY_FEE,
             deliveryAddress = selectedDeliveryAddress,
-            promoCode = appliedPromoCode,
-            discount = appliedDiscount,
+            promoCode = promoCode,
+            discount = discount,
             onResult = { result ->
                 if (_binding == null) return@createOrder
-                binding.btnPlaceOrder.isEnabled = true
                 result
                     .onSuccess { orderId ->
                         CartStore.clear()
                         openOrderSuccess(orderId = orderId, addToBackStack = false)
                     }
                     .onFailure { error ->
+                        setPlaceOrderLoading(false)
                         Toast.makeText(
                             requireContext(),
                             error.message ?: "Failed to place order.",
@@ -240,6 +320,18 @@ class CheckoutFragment : Fragment() {
                     }
             },
         )
+    }
+
+    private fun setPlaceOrderLoading(loading: Boolean) {
+        isPlacingOrder = loading
+        binding.btnPlaceOrder.isEnabled = !loading
+        binding.btnPlaceOrder.text = getString(
+            if (loading) R.string.checkout_placing_order else R.string.checkout_place_order,
+        )
+    }
+
+    private fun showToast(messageRes: Int) {
+        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
     }
 
     private fun formatMoney(value: Double): String {

@@ -25,6 +25,7 @@ object FirebaseOrderRepository {
         val orderItems = items.map { item ->
             hashMapOf(
                 "productId" to item.id,
+                "productName" to item.name,
                 "name" to item.name,
                 "quantity" to item.quantity,
                 "unitPrice" to item.price,
