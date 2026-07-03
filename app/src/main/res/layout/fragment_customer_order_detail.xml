@@ -437,10 +437,11 @@
                 android:foreground="?attr/selectableItemBackground"
                 android:gravity="center"
                 android:letterSpacing="0.12"
-                android:text="CANCEL ORDER"
+                android:text="@string/customer_order_detail_cancel_order"
                 android:textColor="@color/pt_primary_tomato"
                 android:textSize="14sp"
-                android:textStyle="bold" />
+                android:textStyle="bold"
+                android:visibility="gone" />
 
             <View
                 android:layout_width="match_parent"

@@ -75,6 +75,7 @@ class CancelOrderConfirmationDialogFragment : DialogFragment() {
             }
 
             parentFragmentManager.setFragmentResult(REQUEST_KEY, result)
+            dismiss()
         }
     }
 

@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.customer.orderdetail
 
+import android.app.AlertDialog
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -22,6 +23,7 @@ class CustomerOrderDetailFragment : Fragment() {
         get() = checkNotNull(_binding) {
             "FragmentCustomerOrderDetailBinding is only valid between onCreateView and onDestroyView."
         }
+    private var currentOrderId: String = ""
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -39,6 +41,7 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     private fun loadOrder(orderId: String) {
+        currentOrderId = orderId
         if (isFirestoreOrderId(orderId)) {
             CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
                 if (!isAdded) return@loadOrderDetail
@@ -68,6 +71,7 @@ class CustomerOrderDetailFragment : Fragment() {
         bindBill(detail.bill)
         bindAddress(detail)
         bindStatusHistory(detail.statusHistory)
+        btnCancelOrder.isVisible = detail.canCancel && isFirestoreOrderId(detail.orderId)
     }
 
     private fun bindItems(items: List<CustomerOrderItemUiModel>) = with(binding.orderItemsContainer) {
@@ -140,6 +144,47 @@ class CustomerOrderDetailFragment : Fragment() {
                 getString(R.string.customer_order_detail_support_toast),
                 Toast.LENGTH_SHORT,
             ).show()
+        }
+
+        btnCancelOrder.setOnClickListener {
+            showCancelOrderDialog()
+        }
+    }
+
+    private fun showCancelOrderDialog() {
+        if (!isFirestoreOrderId(currentOrderId)) {
+            return
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.customer_order_detail_cancel_title)
+            .setMessage(R.string.customer_order_detail_cancel_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.customer_order_detail_cancel_confirm) { _, _ ->
+                cancelOrder()
+            }
+            .show()
+    }
+
+    private fun cancelOrder() {
+        CustomerOrderFirestoreRepository.cancelOrder(currentOrderId) { result ->
+            if (!isAdded) return@cancelOrder
+            result
+                .onSuccess {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.customer_order_detail_cancel_success,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    loadOrder(currentOrderId)
+                }
+                .onFailure {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.customer_order_detail_cancel_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
         }
     }
 
@@ -234,6 +279,7 @@ class CustomerOrderDetailFragment : Fragment() {
             "ASSIGNED_TO_SHIPPER" -> "Assigned to Shipper"
             "DELIVERING" -> "Out for Delivery"
             "DELIVERED" -> "Delivered"
+            "CANCELLED" -> "Cancelled"
             else -> status.ifBlank { "Unknown" }
         }
     }

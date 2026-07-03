@@ -20,7 +20,10 @@ import java.util.Locale
 class OrderTrackingFragment : Fragment() {
 
     private var _binding: FragmentOrderTrackingBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentOrderTrackingBinding
+        get() = checkNotNull(_binding) {
+            "FragmentOrderTrackingBinding is only valid between onCreateView and onDestroyView."
+        }
     private var listenerRegistration: ListenerRegistration? = null
 
     override fun onCreateView(
@@ -75,6 +78,16 @@ class OrderTrackingFragment : Fragment() {
     }
 
     private fun buildStepsFromStatus(status: String): List<TrackingStepUiModel> {
+        if (status.uppercase(Locale.US) == "CANCELLED") {
+            return listOf(
+                TrackingStepUiModel(
+                    title = "Order Cancelled",
+                    subtitle = "This order will not be prepared",
+                    state = TrackingStepState.CURRENT,
+                ),
+            )
+        }
+
         val stepDefs = listOf(
             "Order Placed" to "Successfully received",
             "Preparing" to "Artisans at work",

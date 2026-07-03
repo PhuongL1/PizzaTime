@@ -6,7 +6,9 @@ import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailUiMo
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderItemUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderStatusHistoryUiModel
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
+import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -45,6 +47,35 @@ object CustomerOrderFirestoreRepository {
                 }
                 onResult(Result.success(doc.toOrderDetail()))
             }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
+    fun cancelOrder(
+        orderId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            onResult(Result.failure(Exception("Please log in to cancel this order.")))
+            return
+        }
+
+        firestore.collection("orders").document(orderId)
+            .update(
+                mapOf(
+                    "status" to STATUS_CANCELLED,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = STATUS_CANCELLED,
+                            actorRole = "CUSTOMER",
+                            actorId = uid,
+                            note = "Order cancelled",
+                        ),
+                    ),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
@@ -89,10 +120,15 @@ object CustomerOrderFirestoreRepository {
                 discount = if (discount > 0) -discount else 0.0,
                 total = total,
             ),
-            deliveryAddressTitle = if (statusStr == "DELIVERED") "DELIVERED TO" else "DELIVERING TO",
+            deliveryAddressTitle = when (statusStr) {
+                "DELIVERED" -> "DELIVERED TO"
+                STATUS_CANCELLED -> "DELIVERY ADDRESS"
+                else -> "DELIVERING TO"
+            },
             deliveryAddressLine1 = getString("deliveryAddress") ?: "",
             deliveryAddressLine2 = "",
             statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
+            canCancel = statusStr == STATUS_PENDING,
         )
     }
 
@@ -126,7 +162,7 @@ object CustomerOrderFirestoreRepository {
             "BAKING" -> "In the oven"
             "PREPARING" -> "Being prepared"
             "CONFIRMED" -> "Order confirmed"
-            "CANCELLED" -> "Order cancelled"
+            STATUS_CANCELLED -> "Order cancelled"
             else -> "Order received"
         }
     }
@@ -184,11 +220,29 @@ object CustomerOrderFirestoreRepository {
 
     private fun String?.orSystemRole(): String = this?.takeIf { it.isNotBlank() } ?: "System"
 
+    private fun buildHistoryItem(
+        status: String,
+        actorRole: String,
+        actorId: String,
+        note: String,
+    ): HashMap<String, Any> {
+        return hashMapOf(
+            "status" to status,
+            "actorRole" to actorRole,
+            "actorId" to actorId,
+            "note" to note,
+            "createdAt" to Timestamp.now(),
+        )
+    }
+
     private data class OrderStatusHistoryEntry(
         val status: String,
         val actorRole: String,
         val note: String,
         val createdAt: Timestamp?,
     )
+
+    private const val STATUS_PENDING = "PENDING"
+    private const val STATUS_CANCELLED = "CANCELLED"
 }
 

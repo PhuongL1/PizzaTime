@@ -147,6 +147,17 @@ service cloud.firestore {
       return statusTransition("PENDING", "CONFIRMED");
     }
 
+    function customerCancelTransition() {
+      return isCustomer()
+        && resource.data.customerId == request.auth.uid
+        && statusTransition("PENDING", "CANCELLED");
+    }
+
+    function staffCancelTransition() {
+      return statusTransition("PENDING", "CANCELLED")
+        || statusTransition("CONFIRMED", "CANCELLED");
+    }
+
     function kitchenStatusTransition() {
       return statusTransition("CONFIRMED", "PREPARING")
         || statusTransition("PREPARING", "BAKING")
@@ -193,7 +204,13 @@ service cloud.firestore {
         || isShipper()
         || (isCustomer() && resource.data.customerId == request.auth.uid);
       allow update: if isAdmin()
-        || (isStaff() && orderStatusOnlyUpdate() && validStatusHistoryField() && staffStatusTransition())
+        || (isCustomer() && orderStatusOnlyUpdate() && validStatusHistoryField() && customerCancelTransition())
+        || (
+          isStaff()
+          && orderStatusOnlyUpdate()
+          && validStatusHistoryField()
+          && (staffStatusTransition() || staffCancelTransition())
+        )
         || (isKitchen() && orderStatusOnlyUpdate() && validStatusHistoryField() && kitchenStatusTransition())
         || (
           isShipper()

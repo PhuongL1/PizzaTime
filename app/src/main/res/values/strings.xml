@@ -340,6 +340,7 @@
     <string name="staff_order_detail_delay_toast">Delay notice sent.</string>
     <string name="staff_order_detail_cancelled_toast">%1$s cancelled.</string>
     <string name="staff_order_detail_cancelled_with_reason_toast">%1$s cancelled. Reason: %2$s</string>
+    <string name="staff_order_detail_cancel_failed">Failed to cancel order.</string>
     <string name="staff_order_detail_assigned_to_shipper_toast">%1$s assigned to %2$s.</string>
 
     <string name="staff_order_detail_customer_details">CUSTOMER DETAILS</string>
@@ -780,6 +781,12 @@
     <string name="customer_order_detail_location_icon">⌖</string>
     <string name="customer_order_detail_reorder">↻  REORDER NOW</string>
     <string name="customer_order_detail_support">☏  GET SUPPORT</string>
+    <string name="customer_order_detail_cancel_order">CANCEL ORDER</string>
+    <string name="customer_order_detail_cancel_title">Cancel order?</string>
+    <string name="customer_order_detail_cancel_message">This action cannot be undone.</string>
+    <string name="customer_order_detail_cancel_confirm">Cancel Order</string>
+    <string name="customer_order_detail_cancel_success">Order cancelled.</string>
+    <string name="customer_order_detail_cancel_failed">Could not cancel this order.</string>
     <string name="customer_order_detail_reorder_toast">Reorder coming soon</string>
     <string name="customer_order_detail_support_toast">Support coming soon</string>
 

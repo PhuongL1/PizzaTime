@@ -73,6 +73,29 @@ object StaffOrderFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun cancelOrder(
+        orderId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        firestore.collection("orders").document(orderId)
+            .update(
+                mapOf(
+                    "status" to STATUS_CANCELLED,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = STATUS_CANCELLED,
+                            actorRole = "STAFF",
+                            actorId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+                            note = "Order cancelled",
+                        ),
+                    ),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     fun loadOrderDetail(
         orderId: String,
         onResult: (Result<StaffOrderDetailUiModel>) -> Unit,
@@ -89,10 +112,13 @@ object StaffOrderFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
-    private fun DocumentSnapshot.toStaffOrderUiModel(): StaffOrderUiModel {
+    private fun DocumentSnapshot.toStaffOrderUiModel(): StaffOrderUiModel? {
         val customerEmail = getString("customerEmail") ?: ""
         val customerName = resolveCustomerName(getString("customerName"), customerEmail)
         val statusStr = getString("status") ?: "PENDING"
+        if (statusStr == STATUS_CANCELLED) {
+            return null
+        }
         val total = getDouble("total") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val orderType = getString("orderType") ?: "DELIVERY"
@@ -164,6 +190,7 @@ object StaffOrderFirestoreRepository {
             "CONFIRMED" -> StaffOrderStatus.CONFIRMED
             "PREPARING" -> StaffOrderStatus.PREPARING
             "READY", "DELIVERING", "DELIVERED" -> StaffOrderStatus.READY
+            STATUS_CANCELLED -> StaffOrderStatus.CANCELLED
             else -> StaffOrderStatus.PENDING
         }
     }
@@ -215,5 +242,7 @@ object StaffOrderFirestoreRepository {
             "createdAt" to Timestamp.now(),
         )
     }
+
+    private const val STATUS_CANCELLED = "CANCELLED"
 }
 

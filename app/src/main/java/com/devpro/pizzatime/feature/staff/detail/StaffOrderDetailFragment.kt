@@ -134,8 +134,10 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
 
     private fun bindActionVisibility(status: StaffOrderStatus) = with(binding) {
         btnAssignShipper.isVisible = status == StaffOrderStatus.READY
-        btnDelay10.isVisible = status != StaffOrderStatus.READY
-        btnCancelOrder.isVisible = status != StaffOrderStatus.READY
+        btnDelay10.isVisible = status == StaffOrderStatus.PENDING ||
+            status == StaffOrderStatus.CONFIRMED ||
+            status == StaffOrderStatus.PREPARING
+        btnCancelOrder.isVisible = status == StaffOrderStatus.PENDING || status == StaffOrderStatus.CONFIRMED
     }
 
     private fun setupActions() = with(binding) {
@@ -211,18 +213,31 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     }
 
     private fun cancelOrder(orderId: String, reason: String) = with(binding) {
-        tvStatus.text = ORDER_STATUS_CANCELLED
-        btnCancelOrder.isVisible = false
-        btnAssignShipper.isVisible = false
-        btnDelay10.isVisible = false
+        StaffOrderFirestoreRepository.cancelOrder(orderId) { result ->
+            if (!isAdded) return@cancelOrder
+            result
+                .onSuccess {
+                    tvStatus.text = ORDER_STATUS_CANCELLED
+                    btnCancelOrder.isVisible = false
+                    btnAssignShipper.isVisible = false
+                    btnDelay10.isVisible = false
 
-        val message = if (reason.isBlank()) {
-            getString(R.string.staff_order_detail_cancelled_toast, orderId)
-        } else {
-            getString(R.string.staff_order_detail_cancelled_with_reason_toast, orderId, reason)
+                    val message = if (reason.isBlank()) {
+                        getString(R.string.staff_order_detail_cancelled_toast, orderId)
+                    } else {
+                        getString(R.string.staff_order_detail_cancelled_with_reason_toast, orderId, reason)
+                    }
+
+                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                }
+                .onFailure {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.staff_order_detail_cancel_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
         }
-
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
     }
 
     private fun assignShipper(orderId: String, shipperName: String) = with(binding) {
@@ -242,6 +257,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
             StaffOrderStatus.CONFIRMED -> getString(R.string.staff_order_detail_order_confirmed)
             StaffOrderStatus.PREPARING -> getString(R.string.staff_order_detail_preparing)
             StaffOrderStatus.READY -> getString(R.string.staff_order_detail_ready)
+            StaffOrderStatus.CANCELLED -> ORDER_STATUS_CANCELLED
         }
     }
 

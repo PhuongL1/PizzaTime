@@ -20,4 +20,5 @@ enum class StaffOrderStatus {
     CONFIRMED,
     PREPARING,
     READY,
+    CANCELLED,
 }

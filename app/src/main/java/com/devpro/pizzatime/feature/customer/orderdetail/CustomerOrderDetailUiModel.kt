@@ -14,6 +14,7 @@ data class CustomerOrderDetailUiModel(
     val deliveryAddressLine1: String,
     val deliveryAddressLine2: String,
     val statusHistory: List<CustomerOrderStatusHistoryUiModel> = emptyList(),
+    val canCancel: Boolean = false,
 )
 
 data class CustomerOrderItemUiModel(

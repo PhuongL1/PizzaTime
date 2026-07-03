@@ -27,7 +27,7 @@ enum class CustomerOrderHistoryStatus(
     val label: String,
 ) {
     DELIVERED("DELIVERED"),
-    CANCELED("CANCELED"),
+    CANCELED("CANCELLED"),
     IN_PROGRESS("IN PROGRESS"),
 }
 
