@@ -602,6 +602,18 @@
     <string name="manage_menu_image_content_description">Menu item image</string>
     <string name="manage_menu_edit_content_description">Edit menu item</string>
     <string name="manage_menu_edit_message">Editing %1$s</string>
+    <string name="manage_menu_edit_product_title">Edit %1$s</string>
+    <string name="manage_menu_edit_product_save">Save</string>
+    <string name="manage_menu_edit_name_hint">Name</string>
+    <string name="manage_menu_edit_description_hint">Description</string>
+    <string name="manage_menu_edit_price_hint">Base price</string>
+    <string name="manage_menu_edit_category_hint">Category ID</string>
+    <string name="manage_menu_edit_available">Available</string>
+    <string name="manage_menu_edit_name_required">Name is required.</string>
+    <string name="manage_menu_edit_price_required">Base price must be greater than 0.</string>
+    <string name="manage_menu_edit_category_required">Category ID is required.</string>
+    <string name="manage_menu_edit_product_saved">Product updated.</string>
+    <string name="manage_menu_edit_product_failed">Could not update product.</string>
     <!-- promo menu -->
     <string name="midnight_artisan">Midnight Artisan</string>
     <string name="promotions">PROMOTIONS</string>

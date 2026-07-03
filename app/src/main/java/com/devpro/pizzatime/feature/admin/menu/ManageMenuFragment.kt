@@ -1,7 +1,12 @@
 package com.devpro.pizzatime.feature.admin.menu
 
+import android.app.AlertDialog
 import android.os.Bundle
+import android.text.InputType
 import android.view.View
+import android.widget.CheckBox
+import android.widget.EditText
+import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.graphics.toColorInt
@@ -14,6 +19,7 @@ import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import java.util.Locale
 
 class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
 
@@ -37,11 +43,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             }
         },
         onEditClick = { item ->
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.manage_menu_edit_message, item.name),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showEditProductDialog(item)
         },
     )
 
@@ -63,6 +65,127 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             if (!isAdded) return@loadProducts
             allProducts = result.getOrElse { FakeAdminMenuData.getItems() }
             renderMenuItems()
+        }
+    }
+
+    private fun showEditProductDialog(item: AdminMenuUiModel) {
+        val nameInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_name_hint),
+            text = item.name,
+        )
+        val descriptionInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_description_hint),
+            text = item.description,
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+        )
+        val priceInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_price_hint),
+            text = String.format(Locale.US, "%.2f", item.basePrice),
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL,
+        )
+        val categoryInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_category_hint),
+            text = item.categoryId.ifBlank { item.category.name },
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
+        )
+        val availableInput = CheckBox(requireContext()).apply {
+            text = getString(R.string.manage_menu_edit_available)
+            isChecked = item.isAvailable
+        }
+
+        val form = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.manage_menu_dialog_padding)
+            setPadding(horizontalPadding, 0, horizontalPadding, 0)
+            addView(nameInput)
+            addView(descriptionInput)
+            addView(priceInput)
+            addView(categoryInput)
+            addView(availableInput)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(getString(R.string.manage_menu_edit_product_title, item.name))
+            .setView(form)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.manage_menu_edit_product_save, null)
+            .create()
+            .apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        saveProductEdit(
+                            productId = item.id,
+                            name = nameInput.text.toString().trim(),
+                            description = descriptionInput.text.toString().trim(),
+                            basePriceText = priceInput.text.toString().trim(),
+                            categoryId = categoryInput.text.toString().trim().uppercase(Locale.US),
+                            available = availableInput.isChecked,
+                            onSaved = { dismiss() },
+                        )
+                    }
+                }
+            }
+            .show()
+    }
+
+    private fun createDialogInput(
+        hint: String,
+        text: String,
+        inputType: Int = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_WORDS,
+    ): EditText {
+        return EditText(requireContext()).apply {
+            this.hint = hint
+            this.inputType = inputType
+            setText(text)
+            setSelectAllOnFocus(false)
+        }
+    }
+
+    private fun saveProductEdit(
+        productId: String,
+        name: String,
+        description: String,
+        basePriceText: String,
+        categoryId: String,
+        available: Boolean,
+        onSaved: () -> Unit,
+    ) {
+        val basePrice = basePriceText.toDoubleOrNull()
+        when {
+            name.isBlank() -> {
+                showToast(R.string.manage_menu_edit_name_required)
+                return
+            }
+
+            basePrice == null || basePrice <= 0.0 -> {
+                showToast(R.string.manage_menu_edit_price_required)
+                return
+            }
+
+            categoryId.isBlank() -> {
+                showToast(R.string.manage_menu_edit_category_required)
+                return
+            }
+        }
+
+        AdminMenuFirestoreRepository.updateProduct(
+            productId = productId,
+            name = name,
+            description = description,
+            basePrice = basePrice,
+            categoryId = categoryId,
+            available = available,
+        ) { result ->
+            if (!isAdded) return@updateProduct
+            result
+                .onSuccess {
+                    showToast(R.string.manage_menu_edit_product_saved)
+                    onSaved()
+                    loadFirestoreProducts()
+                }
+                .onFailure {
+                    showToast(R.string.manage_menu_edit_product_failed)
+                }
         }
     }
 
@@ -150,6 +273,10 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             getString(R.string.staff_coming_soon_message, getString(titleRes)),
             Toast.LENGTH_SHORT,
         ).show()
+    }
+
+    private fun showToast(messageRes: Int) {
+        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {

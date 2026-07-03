@@ -30,4 +30,5 @@
     <dimen name="pt_text_display">28sp</dimen>
 
     <dimen name="customer_account_dialog_padding">24dp</dimen>
+    <dimen name="manage_menu_dialog_padding">24dp</dimen>
 </resources>

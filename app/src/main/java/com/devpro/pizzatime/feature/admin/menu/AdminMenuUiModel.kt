@@ -17,6 +17,8 @@ data class AdminMenuUiModel(
     val name: String,
     val description: String,
     val price: String,
+    val basePrice: Double,
+    val categoryId: String,
     val category: AdminMenuCategory,
     @get:DrawableRes val imageRes: Int,
     val isAvailable: Boolean,

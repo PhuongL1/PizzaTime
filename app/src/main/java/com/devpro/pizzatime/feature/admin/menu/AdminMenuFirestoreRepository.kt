@@ -38,14 +38,41 @@ object AdminMenuFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun updateProduct(
+        productId: String,
+        name: String,
+        description: String,
+        basePrice: Double,
+        categoryId: String,
+        available: Boolean,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        firestore.collection("products").document(productId)
+            .update(
+                mapOf(
+                    "name" to name,
+                    "description" to description,
+                    "basePrice" to basePrice,
+                    "categoryId" to categoryId,
+                    "available" to available,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     private fun DocumentSnapshot.toAdminMenuUiModel(): AdminMenuUiModel {
         val basePrice = getDouble("basePrice") ?: 0.0
+        val categoryId = getString("categoryId") ?: ""
         return AdminMenuUiModel(
             id = id,
             name = getString("name") ?: "",
             description = getString("description") ?: "",
             price = String.format(Locale.US, "$%.2f", basePrice),
-            category = mapCategory(getString("categoryId") ?: ""),
+            basePrice = basePrice,
+            categoryId = categoryId,
+            category = mapCategory(categoryId),
             imageRes = R.drawable.img_pizza_time,
             isAvailable = getBoolean("available") ?: true,
         )
