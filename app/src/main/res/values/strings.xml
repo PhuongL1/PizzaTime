@@ -646,6 +646,20 @@
     <string name="delete">Delete</string>
     <string name="share">Share</string>
     <string name="promo_action_coming_soon">%1$s coming soon</string>
+    <string name="promo_edit_dialog_title">Edit %1$s</string>
+    <string name="promo_edit_save">Save</string>
+    <string name="promo_edit_title_hint">Title</string>
+    <string name="promo_edit_description_hint">Description</string>
+    <string name="promo_edit_discount_type_hint">Discount type: PERCENT or FIXED</string>
+    <string name="promo_edit_discount_value_hint">Discount value</string>
+    <string name="promo_edit_min_order_hint">Minimum order amount</string>
+    <string name="promo_edit_active">Active</string>
+    <string name="promo_edit_title_required">Title is required.</string>
+    <string name="promo_edit_discount_type_invalid">Discount type must be PERCENT or FIXED.</string>
+    <string name="promo_edit_discount_value_required">Discount value must be greater than 0.</string>
+    <string name="promo_edit_min_order_invalid">Minimum order amount must be 0 or greater.</string>
+    <string name="promo_edit_saved">Promo updated.</string>
+    <string name="promo_edit_failed">Could not update promo.</string>
 
     <!-- Manage Staff -->
     <string name="staff_roster">Staff Roster</string>

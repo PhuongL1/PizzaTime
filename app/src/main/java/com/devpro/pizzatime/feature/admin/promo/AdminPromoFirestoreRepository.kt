@@ -33,6 +33,32 @@ object AdminPromoFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun updatePromo(
+        promoId: String,
+        title: String,
+        description: String,
+        discountType: String,
+        discountValue: Double,
+        minOrderAmount: Double,
+        active: Boolean,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        firestore.collection("promoCodes").document(promoId)
+            .update(
+                mapOf(
+                    "title" to title,
+                    "description" to description,
+                    "discountType" to discountType,
+                    "discountValue" to discountValue,
+                    "minOrderAmount" to minOrderAmount,
+                    "active" to active,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     private fun DocumentSnapshot.toAdminPromoUiModel(): AdminPromoUiModel {
         val active = getBoolean("active") ?: true
         val discountType = getString("discountType") ?: "PERCENT"
@@ -42,6 +68,10 @@ object AdminPromoFirestoreRepository {
             id = id,
             code = getString("code") ?: id,
             title = getString("title") ?: "",
+            description = getString("description") ?: "",
+            discountType = discountType,
+            discountValue = discountValue,
+            minOrderAmount = minOrderAmount,
             status = if (active) AdminPromoStatus.ACTIVE else AdminPromoStatus.INACTIVE,
             discountText = formatDiscount(discountType, discountValue),
             minSpendText = if (minOrderAmount > 0) String.format(Locale.US, "$%.2f", minOrderAmount) else null,
