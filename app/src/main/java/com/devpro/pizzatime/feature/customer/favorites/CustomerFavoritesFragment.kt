@@ -15,6 +15,7 @@ import com.devpro.pizzatime.databinding.ItemCustomerFavoriteFeaturedBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
 
@@ -26,7 +27,7 @@ class CustomerFavoritesFragment : Fragment() {
             "FragmentCustomerFavoritesBinding is only valid between onCreateView and onDestroyView."
         }
 
-    private val favoritesData: CustomerFavoritesUiModel = FakeCustomerFavoritesData.getFavorites()
+    private var favoritesData: CustomerFavoritesUiModel = FakeCustomerFavoritesData.getFavorites()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -43,6 +44,18 @@ class CustomerFavoritesFragment : Fragment() {
         bindPairing()
         setupTopBar()
         setupBottomNav()
+        loadFirestoreFavorites()
+    }
+
+    private fun loadFirestoreFavorites() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        CustomerFavoritesFirestoreRepository.loadFavoriteProducts(uid) { result ->
+            if (_binding == null) return@loadFavoriteProducts
+            result.onSuccess { favorites ->
+                favoritesData = favoritesData.copy(favorites = favorites)
+                renderFavorites()
+            }
+        }
     }
 
     private fun bindHeader() = with(binding) {
@@ -92,7 +105,7 @@ class CustomerFavoritesFragment : Fragment() {
         }
 
         itemBinding.btnHeart.setOnClickListener {
-            showToast(getString(R.string.customer_favorites_saved_toast, item.name))
+            removeFavorite(item)
         }
 
         return itemBinding.root
@@ -115,10 +128,30 @@ class CustomerFavoritesFragment : Fragment() {
         }
 
         itemBinding.btnHeart.setOnClickListener {
-            showToast(getString(R.string.customer_favorites_saved_toast, item.name))
+            removeFavorite(item)
         }
 
         return itemBinding.root
+    }
+
+    private fun removeFavorite(item: CustomerFavoriteItemUiModel) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid == null) {
+            showToast(getString(R.string.customer_favorites_login_required))
+            return
+        }
+
+        CustomerFavoritesFirestoreRepository.removeFavorite(uid, item.id) { result ->
+            if (_binding == null) return@removeFavorite
+            result
+                .onSuccess {
+                    showToast(getString(R.string.customer_favorites_removed_toast, item.name))
+                    loadFirestoreFavorites()
+                }
+                .onFailure {
+                    showToast(getString(R.string.customer_favorites_update_failed))
+                }
+        }
     }
 
     private fun bindImage(

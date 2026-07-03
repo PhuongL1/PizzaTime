@@ -825,7 +825,10 @@
     <string name="customer_favorites_pairing_icon">✦</string>
 
     <string name="customer_favorites_add_to_cart_toast">%1$s added to cart</string>
-    <string name="customer_favorites_saved_toast">%1$s is already in favorites</string>
+    <string name="customer_favorites_saved_toast">%1$s saved to favorites</string>
+    <string name="customer_favorites_removed_toast">%1$s removed from favorites</string>
+    <string name="customer_favorites_update_failed">Could not update favorites.</string>
+    <string name="customer_favorites_login_required">Please log in to update favorites.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 
     <string name="customer_favorites_nav_menu">Menu</string>

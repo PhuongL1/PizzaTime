@@ -11,12 +11,17 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentPizzaDetailBinding
 import com.devpro.pizzatime.databinding.ItemExtraToppingBinding
+import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
+import com.google.firebase.auth.FirebaseAuth
 
 class PizzaDetailFragment : Fragment() {
 
     private var _binding: FragmentPizzaDetailBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentPizzaDetailBinding
+        get() = checkNotNull(_binding) {
+            "FragmentPizzaDetailBinding is only valid between onCreateView and onDestroyView."
+        }
 
     private var quantity = 1
     private var isFavorite = false
@@ -37,6 +42,7 @@ class PizzaDetailFragment : Fragment() {
         bindPizzaDetail(pizzaDetail)
         renderToppings(pizzaDetail.toppings)
         setupActions()
+        loadFavoriteState()
     }
 
     private fun buildPizzaDetail(): PizzaDetailUiModel {
@@ -133,15 +139,7 @@ class PizzaDetailFragment : Fragment() {
         }
 
         binding.btnFavorite.setOnClickListener {
-            isFavorite = !isFavorite
-
-            binding.imgFavorite.setImageResource(
-                if (isFavorite) {
-                    R.drawable.ic_heart
-                } else {
-                    R.drawable.ic_empty_heart
-                }
-            )
+            toggleFavorite()
         }
 
         binding.btnMinus.setOnClickListener {
@@ -167,6 +165,67 @@ class PizzaDetailFragment : Fragment() {
         binding.btnCustomizeToppings.setOnClickListener {
             Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
         }
+    }
+
+    private fun loadFavoriteState() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val productId = pizzaDetail.id
+        if (productId.isBlank()) return
+
+        CustomerFavoritesFirestoreRepository.isFavorite(uid, productId) { result ->
+            if (_binding == null) return@isFavorite
+            result.onSuccess { favorite ->
+                isFavorite = favorite
+                bindFavoriteIcon()
+            }
+        }
+    }
+
+    private fun toggleFavorite() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        val productId = pizzaDetail.id
+        if (uid == null) {
+            Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (productId.isBlank()) {
+            Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val nextFavorite = !isFavorite
+        val updateCallback: (Result<Unit>) -> Unit = callback@{ result ->
+            if (_binding == null) return@callback
+            result
+                .onSuccess {
+                    isFavorite = nextFavorite
+                    bindFavoriteIcon()
+                    Toast.makeText(
+                        requireContext(),
+                        if (isFavorite) {
+                            getString(R.string.customer_favorites_saved_toast, pizzaDetail.name)
+                        } else {
+                            getString(R.string.customer_favorites_removed_toast, pizzaDetail.name)
+                        },
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+                .onFailure {
+                    Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+                }
+        }
+
+        if (nextFavorite) {
+            CustomerFavoritesFirestoreRepository.addFavorite(uid, productId, updateCallback)
+        } else {
+            CustomerFavoritesFirestoreRepository.removeFavorite(uid, productId, updateCallback)
+        }
+    }
+
+    private fun bindFavoriteIcon() {
+        binding.imgFavorite.setImageResource(
+            if (isFavorite) R.drawable.ic_heart else R.drawable.ic_empty_heart,
+        )
     }
 
     private val Int.dp: Int
