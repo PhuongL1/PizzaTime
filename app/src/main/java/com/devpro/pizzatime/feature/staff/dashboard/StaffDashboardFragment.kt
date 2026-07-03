@@ -70,8 +70,12 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                     .onSuccess {
                         showConfirmedToast(order.orderId)
                     }
-                    .onFailure {
-                        Toast.makeText(requireContext(), "Failed to confirm order.", Toast.LENGTH_SHORT).show()
+                    .onFailure { error ->
+                        Toast.makeText(
+                            requireContext(),
+                            error.message ?: "Failed to confirm order.",
+                            Toast.LENGTH_SHORT,
+                        ).show()
                     }
             }
         } else {

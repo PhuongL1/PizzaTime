@@ -105,8 +105,12 @@ class KitchenBoardFragment : Fragment() {
                 .onSuccess {
                     Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
                 }
-                .onFailure {
-                    Toast.makeText(requireContext(), "Failed to update order.", Toast.LENGTH_SHORT).show()
+                .onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: "Failed to update order.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
                 }
         }
     }

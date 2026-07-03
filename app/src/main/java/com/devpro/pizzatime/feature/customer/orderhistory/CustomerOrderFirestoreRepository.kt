@@ -5,10 +5,10 @@ import com.devpro.pizzatime.feature.customer.orderdetail.CustomerBillUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderItemUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderStatusHistoryUiModel
+import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import java.text.SimpleDateFormat
 import java.util.Date
@@ -60,23 +60,11 @@ object CustomerOrderFirestoreRepository {
             return
         }
 
-        firestore.collection("orders").document(orderId)
-            .update(
-                mapOf(
-                    "status" to STATUS_CANCELLED,
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                    "statusHistory" to FieldValue.arrayUnion(
-                        buildHistoryItem(
-                            status = STATUS_CANCELLED,
-                            actorRole = "CUSTOMER",
-                            actorId = uid,
-                            note = "Order cancelled",
-                        ),
-                    ),
-                ),
-            )
-            .addOnSuccessListener { onResult(Result.success(Unit)) }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+        OrderTransitionRepository.cancelByCustomer(
+            orderId = orderId,
+            customerId = uid,
+            onResult = onResult,
+        )
     }
 
     private fun DocumentSnapshot.toHistoryItem(): CustomerOrderHistoryItemUiModel {
@@ -219,21 +207,6 @@ object CustomerOrderFirestoreRepository {
     private fun String?.orUnknownStatus(): String = this?.takeIf { it.isNotBlank() } ?: "Unknown"
 
     private fun String?.orSystemRole(): String = this?.takeIf { it.isNotBlank() } ?: "System"
-
-    private fun buildHistoryItem(
-        status: String,
-        actorRole: String,
-        actorId: String,
-        note: String,
-    ): HashMap<String, Any> {
-        return hashMapOf(
-            "status" to status,
-            "actorRole" to actorRole,
-            "actorId" to actorId,
-            "note" to note,
-            "createdAt" to Timestamp.now(),
-        )
-    }
 
     private data class OrderStatusHistoryEntry(
         val status: String,

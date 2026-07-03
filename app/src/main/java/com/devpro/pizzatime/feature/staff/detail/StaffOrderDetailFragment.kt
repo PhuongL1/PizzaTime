@@ -22,6 +22,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         }
 
     private lateinit var currentOrder: StaffOrderDetailUiModel
+    private var isCancellingOrder = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -213,10 +214,17 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     }
 
     private fun cancelOrder(orderId: String, reason: String) = with(binding) {
+        if (isCancellingOrder) {
+            return@with
+        }
+
+        isCancellingOrder = true
+        btnCancelOrder.isEnabled = false
         StaffOrderFirestoreRepository.cancelOrder(orderId) { result ->
             if (!isAdded) return@cancelOrder
             result
                 .onSuccess {
+                    isCancellingOrder = false
                     tvStatus.text = ORDER_STATUS_CANCELLED
                     btnCancelOrder.isVisible = false
                     btnAssignShipper.isVisible = false
@@ -230,10 +238,12 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
 
                     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
                 }
-                .onFailure {
+                .onFailure { error ->
+                    isCancellingOrder = false
+                    btnCancelOrder.isEnabled = true
                     Toast.makeText(
                         requireContext(),
-                        R.string.staff_order_detail_cancel_failed,
+                        error.message ?: getString(R.string.staff_order_detail_cancel_failed),
                         Toast.LENGTH_SHORT,
                     ).show()
                 }

@@ -22,8 +22,9 @@ class CustomerOrderDetailFragment : Fragment() {
     private val binding: FragmentCustomerOrderDetailBinding
         get() = checkNotNull(_binding) {
             "FragmentCustomerOrderDetailBinding is only valid between onCreateView and onDestroyView."
-        }
+    }
     private var currentOrderId: String = ""
+    private var isCancellingOrder = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -167,10 +168,17 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     private fun cancelOrder() {
+        if (isCancellingOrder) {
+            return
+        }
+
+        isCancellingOrder = true
+        binding.btnCancelOrder.isEnabled = false
         CustomerOrderFirestoreRepository.cancelOrder(currentOrderId) { result ->
             if (!isAdded) return@cancelOrder
             result
                 .onSuccess {
+                    isCancellingOrder = false
                     Toast.makeText(
                         requireContext(),
                         R.string.customer_order_detail_cancel_success,
@@ -178,10 +186,12 @@ class CustomerOrderDetailFragment : Fragment() {
                     ).show()
                     loadOrder(currentOrderId)
                 }
-                .onFailure {
+                .onFailure { error ->
+                    isCancellingOrder = false
+                    binding.btnCancelOrder.isEnabled = true
                     Toast.makeText(
                         requireContext(),
-                        R.string.customer_order_detail_cancel_failed,
+                        error.message ?: getString(R.string.customer_order_detail_cancel_failed),
                         Toast.LENGTH_SHORT,
                     ).show()
                 }

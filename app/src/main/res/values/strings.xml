@@ -806,6 +806,7 @@
     <string name="customer_order_detail_cancel_confirm">Cancel Order</string>
     <string name="customer_order_detail_cancel_success">Order cancelled.</string>
     <string name="customer_order_detail_cancel_failed">Could not cancel this order.</string>
+    <string name="order_status_stale">Order has already been updated. Please refresh.</string>
     <string name="customer_order_detail_reorder_toast">Reorder coming soon</string>
     <string name="customer_order_detail_support_toast">Support coming soon</string>
 

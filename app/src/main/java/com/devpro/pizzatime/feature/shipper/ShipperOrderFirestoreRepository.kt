@@ -1,12 +1,11 @@
 package com.devpro.pizzatime.feature.shipper
 
+import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryStatus
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperPaymentItemUiModel
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
@@ -15,7 +14,6 @@ object ShipperOrderFirestoreRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
     private val shipperStatuses = listOf("READY", "ASSIGNED_TO_SHIPPER", "DELIVERING")
-    private const val POINT_VALUE_VND = 10_000.0
 
     fun loadOrders(onResult: (Result<List<ShipperDeliveryUiModel>>) -> Unit) {
         firestore.collection("orders")
@@ -67,92 +65,18 @@ object ShipperOrderFirestoreRepository {
         shipperId: String?,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        if (newStatus == "DELIVERED") {
-            deliverOrderWithLoyaltyAward(orderId, shipperId, onResult)
+        val currentShipperId = shipperId
+        if (currentShipperId.isNullOrBlank()) {
+            onResult(Result.failure(Exception(OrderTransitionRepository.STALE_ORDER_MESSAGE)))
             return
         }
 
-        val updates = mutableMapOf<String, Any>(
-            "status" to newStatus,
-            "updatedAt" to FieldValue.serverTimestamp(),
-            "statusHistory" to FieldValue.arrayUnion(
-                buildHistoryItem(
-                    status = newStatus,
-                    actorRole = "SHIPPER",
-                    actorId = shipperId.orEmpty(),
-                    note = "Shipper updated order to $newStatus",
-                ),
-            ),
+        OrderTransitionRepository.updateByShipper(
+            orderId = orderId,
+            newStatus = newStatus,
+            shipperId = currentShipperId,
+            onResult = onResult,
         )
-        if (shipperId != null && newStatus == "ASSIGNED_TO_SHIPPER") {
-            updates["shipperId"] = shipperId
-        }
-        firestore.collection("orders").document(orderId)
-            .update(updates)
-            .addOnSuccessListener { onResult(Result.success(Unit)) }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
-    }
-
-    private fun deliverOrderWithLoyaltyAward(
-        orderId: String,
-        shipperId: String?,
-        onResult: (Result<Unit>) -> Unit,
-    ) {
-        val orderRef = firestore.collection("orders").document(orderId)
-
-        firestore.runTransaction { transaction ->
-            val order = transaction.get(orderRef)
-            if (!order.exists()) {
-                throw IllegalStateException("Order $orderId not found")
-            }
-
-            val currentStatus = order.getString("status").orEmpty()
-            val alreadyAwarded = order.getBoolean("loyaltyAwarded") == true
-            if (currentStatus == "DELIVERED" && alreadyAwarded) {
-                return@runTransaction
-            }
-            if (currentStatus != "DELIVERING") {
-                throw IllegalStateException("Order $orderId is not ready for delivery completion")
-            }
-
-            val total = order.getDouble("total") ?: 0.0
-            val customerId = order.getString("customerId").orEmpty()
-            if (customerId.isBlank()) {
-                throw IllegalStateException("Order $orderId has no customer")
-            }
-
-            val earnedPoints = (total / POINT_VALUE_VND).toInt()
-            transaction.update(
-                orderRef,
-                mapOf(
-                    "status" to "DELIVERED",
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                    "statusHistory" to FieldValue.arrayUnion(
-                        buildHistoryItem(
-                            status = "DELIVERED",
-                            actorRole = "SHIPPER",
-                            actorId = shipperId.orEmpty(),
-                            note = "Shipper delivered order",
-                        ),
-                    ),
-                    "loyaltyAwarded" to true,
-                    "earnedPoints" to earnedPoints,
-                ),
-            )
-
-            val userRef = firestore.collection("users").document(customerId)
-            transaction.update(
-                userRef,
-                mapOf(
-                    "doughPoints" to FieldValue.increment(earnedPoints.toLong()),
-                    "lifetimeSpend" to FieldValue.increment(total),
-                    "completedOrders" to FieldValue.increment(1L),
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                ),
-            )
-        }
-            .addOnSuccessListener { onResult(Result.success(Unit)) }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
     private fun DocumentSnapshot.toShipperDeliveryUiModel(): ShipperDeliveryUiModel {
@@ -205,19 +129,5 @@ object ShipperOrderFirestoreRepository {
         )
     }
 
-    private fun buildHistoryItem(
-        status: String,
-        actorRole: String,
-        actorId: String,
-        note: String,
-    ): HashMap<String, Any> {
-        return hashMapOf(
-            "status" to status,
-            "actorRole" to actorRole,
-            "actorId" to actorId,
-            "note" to note,
-            "createdAt" to Timestamp.now(),
-        )
-    }
 }
 

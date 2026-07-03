@@ -24,6 +24,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         }
 
     private var firestoreStatus: String? = null
+    private var isUpdatingStatus = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -132,11 +133,19 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     private fun updateFirestoreStatus(orderId: String, nextStatus: String) {
+        if (isUpdatingStatus) {
+            return
+        }
+
         val shipperId = FirebaseAuth.getInstance().currentUser?.uid
+        isUpdatingStatus = true
+        binding.btnConfirmDelivery.isEnabled = false
         ShipperOrderFirestoreRepository.updateOrderStatus(orderId, nextStatus, shipperId) { result ->
             if (!isAdded) return@updateOrderStatus
             result
                 .onSuccess {
+                    isUpdatingStatus = false
+                    binding.btnConfirmDelivery.isEnabled = nextStatus != "DELIVERED"
                     firestoreStatus = nextStatus
                     Toast.makeText(
                         requireContext(),
@@ -144,8 +153,14 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                         Toast.LENGTH_SHORT,
                     ).show()
                 }
-                .onFailure {
-                    Toast.makeText(requireContext(), "Failed to update order.", Toast.LENGTH_SHORT).show()
+                .onFailure { error ->
+                    isUpdatingStatus = false
+                    binding.btnConfirmDelivery.isEnabled = true
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: "Failed to update order.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
                 }
         }
     }

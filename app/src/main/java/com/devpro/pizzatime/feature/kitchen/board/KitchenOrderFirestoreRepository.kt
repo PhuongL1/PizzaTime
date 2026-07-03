@@ -1,9 +1,9 @@
 package com.devpro.pizzatime.feature.kitchen.board
 
+import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
@@ -47,23 +47,12 @@ object KitchenOrderFirestoreRepository {
         newStatus: String,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        firestore.collection("orders").document(orderId)
-            .update(
-                mapOf(
-                    "status" to newStatus,
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                    "statusHistory" to FieldValue.arrayUnion(
-                        buildHistoryItem(
-                            status = newStatus,
-                            actorRole = "KITCHEN",
-                            actorId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
-                            note = "Kitchen updated order to $newStatus",
-                        ),
-                    ),
-                ),
-            )
-            .addOnSuccessListener { onResult(Result.success(Unit)) }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+        OrderTransitionRepository.updateByKitchen(
+            orderId = orderId,
+            newStatus = newStatus,
+            kitchenId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+            onResult = onResult,
+        )
     }
 
     private fun DocumentSnapshot.toKitchenOrderUiModel(): KitchenOrderUiModel {
@@ -127,19 +116,5 @@ object KitchenOrderFirestoreRepository {
         return "${diffMins}m"
     }
 
-    private fun buildHistoryItem(
-        status: String,
-        actorRole: String,
-        actorId: String,
-        note: String,
-    ): HashMap<String, Any> {
-        return hashMapOf(
-            "status" to status,
-            "actorRole" to actorRole,
-            "actorId" to actorId,
-            "note" to note,
-            "createdAt" to Timestamp.now(),
-        )
-    }
 }
 

@@ -7,10 +7,10 @@ import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailItemUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailTimelineUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailUiModel
+import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
-import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
@@ -54,46 +54,27 @@ object StaffOrderFirestoreRepository {
         newStatus: String,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        firestore.collection("orders").document(orderId)
-            .update(
-                mapOf(
-                    "status" to newStatus,
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                    "statusHistory" to FieldValue.arrayUnion(
-                        buildHistoryItem(
-                            status = newStatus,
-                            actorRole = "STAFF",
-                            actorId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
-                            note = "Order confirmed",
-                        ),
-                    ),
-                ),
-            )
-            .addOnSuccessListener { onResult(Result.success(Unit)) }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+        if (newStatus != "CONFIRMED") {
+            onResult(Result.failure(Exception(OrderTransitionRepository.STALE_ORDER_MESSAGE)))
+            return
+        }
+
+        OrderTransitionRepository.confirmByStaff(
+            orderId = orderId,
+            staffId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+            onResult = onResult,
+        )
     }
 
     fun cancelOrder(
         orderId: String,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        firestore.collection("orders").document(orderId)
-            .update(
-                mapOf(
-                    "status" to STATUS_CANCELLED,
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                    "statusHistory" to FieldValue.arrayUnion(
-                        buildHistoryItem(
-                            status = STATUS_CANCELLED,
-                            actorRole = "STAFF",
-                            actorId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
-                            note = "Order cancelled",
-                        ),
-                    ),
-                ),
-            )
-            .addOnSuccessListener { onResult(Result.success(Unit)) }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+        OrderTransitionRepository.cancelByStaff(
+            orderId = orderId,
+            staffId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+            onResult = onResult,
+        )
     }
 
     fun loadOrderDetail(
@@ -226,21 +207,6 @@ object StaffOrderFirestoreRepository {
 
     private fun Timestamp.toDisplayTime(): String {
         return SimpleDateFormat("hh:mm a", Locale.US).format(Date(seconds * 1000))
-    }
-
-    private fun buildHistoryItem(
-        status: String,
-        actorRole: String,
-        actorId: String,
-        note: String,
-    ): HashMap<String, Any> {
-        return hashMapOf(
-            "status" to status,
-            "actorRole" to actorRole,
-            "actorId" to actorId,
-            "note" to note,
-            "createdAt" to Timestamp.now(),
-        )
     }
 
     private const val STATUS_CANCELLED = "CANCELLED"
