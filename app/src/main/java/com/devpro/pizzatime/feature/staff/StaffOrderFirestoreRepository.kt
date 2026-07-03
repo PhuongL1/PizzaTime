@@ -8,6 +8,7 @@ import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailItemUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailTimelineUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailUiModel
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -58,6 +59,14 @@ object StaffOrderFirestoreRepository {
                 mapOf(
                     "status" to newStatus,
                     "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = newStatus,
+                            actorRole = "STAFF",
+                            actorId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+                            note = "Order confirmed",
+                        ),
+                    ),
                 ),
             )
             .addOnSuccessListener { onResult(Result.success(Unit)) }
@@ -190,6 +199,21 @@ object StaffOrderFirestoreRepository {
 
     private fun Timestamp.toDisplayTime(): String {
         return SimpleDateFormat("hh:mm a", Locale.US).format(Date(seconds * 1000))
+    }
+
+    private fun buildHistoryItem(
+        status: String,
+        actorRole: String,
+        actorId: String,
+        note: String,
+    ): HashMap<String, Any> {
+        return hashMapOf(
+            "status" to status,
+            "actorRole" to actorRole,
+            "actorId" to actorId,
+            "note" to note,
+            "createdAt" to Timestamp.now(),
+        )
     }
 }
 

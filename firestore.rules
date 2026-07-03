@@ -82,15 +82,22 @@ service cloud.firestore {
     function orderStatusOnlyUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         "status",
-        "updatedAt"
+        "updatedAt",
+        "statusHistory"
       ]);
     }
     function shipperStatusUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         "status",
         "updatedAt",
+        "statusHistory",
         "shipperId"
       ]);
+    }
+
+    function validStatusHistoryField() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny(["statusHistory"])
+        || request.resource.data.statusHistory is list;
     }
 
     function statusTransition(fromStatus, toStatus) {
@@ -147,9 +154,9 @@ service cloud.firestore {
         || isShipper()
         || (isCustomer() && resource.data.customerId == request.auth.uid);
       allow update: if isAdmin()
-        || (isStaff() && orderStatusOnlyUpdate() && staffStatusTransition())
-        || (isKitchen() && orderStatusOnlyUpdate() && kitchenStatusTransition())
-        || (isShipper() && shipperStatusUpdate() && shipperStatusTransition());
+        || (isStaff() && orderStatusOnlyUpdate() && validStatusHistoryField() && staffStatusTransition())
+        || (isKitchen() && orderStatusOnlyUpdate() && validStatusHistoryField() && kitchenStatusTransition())
+        || (isShipper() && shipperStatusUpdate() && validStatusHistoryField() && shipperStatusTransition());
       allow delete: if isAdmin();
     }
 

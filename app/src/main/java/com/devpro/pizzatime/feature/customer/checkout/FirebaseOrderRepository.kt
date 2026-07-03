@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.checkout
 
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 
@@ -47,6 +48,14 @@ object FirebaseOrderRepository {
             "total" to total,
             "note" to "",
             "items" to orderItems,
+            "statusHistory" to listOf(
+                buildHistoryItem(
+                    status = "PENDING",
+                    actorRole = "CUSTOMER",
+                    actorId = customerId,
+                    note = "Order placed",
+                ),
+            ),
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp(),
         )
@@ -59,6 +68,21 @@ object FirebaseOrderRepository {
             .addOnFailureListener { e ->
                 onResult(Result.failure(Exception(e.message ?: "Failed to create order.")))
             }
+    }
+
+    private fun buildHistoryItem(
+        status: String,
+        actorRole: String,
+        actorId: String,
+        note: String,
+    ): HashMap<String, Any> {
+        return hashMapOf(
+            "status" to status,
+            "actorRole" to actorRole,
+            "actorId" to actorId,
+            "note" to note,
+            "createdAt" to Timestamp.now(),
+        )
     }
 }
 

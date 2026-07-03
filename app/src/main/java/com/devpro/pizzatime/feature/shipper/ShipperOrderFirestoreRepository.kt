@@ -4,6 +4,7 @@ import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryStatus
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperPaymentItemUiModel
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -68,6 +69,14 @@ object ShipperOrderFirestoreRepository {
         val updates = mutableMapOf<String, Any>(
             "status" to newStatus,
             "updatedAt" to FieldValue.serverTimestamp(),
+            "statusHistory" to FieldValue.arrayUnion(
+                buildHistoryItem(
+                    status = newStatus,
+                    actorRole = "SHIPPER",
+                    actorId = shipperId.orEmpty(),
+                    note = "Shipper updated order to $newStatus",
+                ),
+            ),
         )
         if (shipperId != null && newStatus == "ASSIGNED_TO_SHIPPER") {
             updates["shipperId"] = shipperId
@@ -125,6 +134,21 @@ object ShipperOrderFirestoreRepository {
         return ShipperPaymentItemUiModel(
             name = "${quantity}x $name",
             price = String.format(Locale.US, "$%.2f", unitPrice * quantity),
+        )
+    }
+
+    private fun buildHistoryItem(
+        status: String,
+        actorRole: String,
+        actorId: String,
+        note: String,
+    ): HashMap<String, Any> {
+        return hashMapOf(
+            "status" to status,
+            "actorRole" to actorRole,
+            "actorId" to actorId,
+            "note" to note,
+            "createdAt" to Timestamp.now(),
         )
     }
 }

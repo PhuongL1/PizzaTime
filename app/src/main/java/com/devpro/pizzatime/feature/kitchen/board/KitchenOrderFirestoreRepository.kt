@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.kitchen.board
 
 import com.google.firebase.Timestamp
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -51,6 +52,14 @@ object KitchenOrderFirestoreRepository {
                 mapOf(
                     "status" to newStatus,
                     "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = newStatus,
+                            actorRole = "KITCHEN",
+                            actorId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+                            note = "Kitchen updated order to $newStatus",
+                        ),
+                    ),
                 ),
             )
             .addOnSuccessListener { onResult(Result.success(Unit)) }
@@ -116,6 +125,21 @@ object KitchenOrderFirestoreRepository {
             System.currentTimeMillis() - seconds * 1000,
         )
         return "${diffMins}m"
+    }
+
+    private fun buildHistoryItem(
+        status: String,
+        actorRole: String,
+        actorId: String,
+        note: String,
+    ): HashMap<String, Any> {
+        return hashMapOf(
+            "status" to status,
+            "actorRole" to actorRole,
+            "actorId" to actorId,
+            "note" to note,
+            "createdAt" to Timestamp.now(),
+        )
     }
 }
 
