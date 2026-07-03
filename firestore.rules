@@ -1,0 +1,155 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function userDoc() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid));
+    }
+
+    function role() {
+      return userDoc().data.role;
+    }
+
+    function isActiveUser() {
+      return isSignedIn() && userDoc().data.active == true;
+    }
+
+    function isAdmin() {
+      return isActiveUser() && role() == "ADMIN";
+    }
+
+    function isStaff() {
+      return isActiveUser() && role() == "STAFF";
+    }
+
+    function isKitchen() {
+      return isActiveUser() && role() == "KITCHEN";
+    }
+
+    function isShipper() {
+      return isActiveUser() && role() == "SHIPPER";
+    }
+
+    function isCustomer() {
+      return isActiveUser() && role() == "CUSTOMER";
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isStaffRole() {
+      return isStaff() || isKitchen() || isShipper() || isAdmin();
+    }
+
+    function protectedUserFieldsUnchanged() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "id",
+        "role",
+        "active",
+        "createdAt"
+      ]);
+    }
+
+    function validCustomerProfileCreate(userId) {
+      return isOwner(userId)
+        && request.resource.data.id == userId
+        && request.resource.data.role == "CUSTOMER"
+        && request.resource.data.active == true
+        && request.resource.data.keys().hasOnly([
+          "id",
+          "name",
+          "email",
+          "phone",
+          "role",
+          "active",
+          "avatarUrl",
+          "createdAt",
+          "updatedAt"
+        ]);
+    }
+
+    function validOrderCreate() {
+      return isCustomer()
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.status == "PENDING";
+    }
+
+    function orderStatusOnlyUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        "status",
+        "updatedAt"
+      ]);
+    }
+
+    function statusTransition(fromStatus, toStatus) {
+      return resource.data.status == fromStatus
+        && request.resource.data.status == toStatus;
+    }
+
+    function staffStatusTransition() {
+      return statusTransition("PENDING", "CONFIRMED");
+    }
+
+    function kitchenStatusTransition() {
+      return statusTransition("CONFIRMED", "PREPARING")
+        || statusTransition("PREPARING", "BAKING")
+        || statusTransition("BAKING", "READY");
+    }
+
+    function shipperStatusTransition() {
+      return statusTransition("READY", "ASSIGNED_TO_SHIPPER")
+        || statusTransition("ASSIGNED_TO_SHIPPER", "DELIVERING")
+        || statusTransition("DELIVERING", "DELIVERED");
+    }
+
+    match /categories/{categoryId} {
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
+    }
+
+    match /products/{productId} {
+      allow read: if isActiveUser();
+      allow write: if isAdmin();
+    }
+
+    match /promoCodes/{promoCodeId} {
+      allow read: if isStaffRole()
+        || (isCustomer() && resource.data.active == true);
+      allow write: if isAdmin();
+    }
+
+    match /users/{userId} {
+      allow get: if (isOwner(userId) && isActiveUser()) || isAdmin();
+      allow list: if isAdmin();
+      allow create: if isAdmin() || validCustomerProfileCreate(userId);
+      allow update: if isAdmin()
+        || (isOwner(userId) && isActiveUser() && protectedUserFieldsUnchanged());
+      allow delete: if isAdmin();
+    }
+
+    match /orders/{orderId} {
+      allow create: if validOrderCreate();
+      allow get, list: if isAdmin()
+        || isStaff()
+        || isKitchen()
+        || isShipper()
+        || (isCustomer() && resource.data.customerId == request.auth.uid);
+      allow update: if isAdmin()
+        || (orderStatusOnlyUpdate() && (
+          (isStaff() && staffStatusTransition())
+          || (isKitchen() && kitchenStatusTransition())
+          || (isShipper() && shipperStatusTransition())
+        ));
+      allow delete: if isAdmin();
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
