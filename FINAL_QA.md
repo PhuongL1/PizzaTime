@@ -6,7 +6,9 @@
 - Confirm `.idea/` is not staged.
 - Confirm `serviceAccountKey.json` is not present.
 - Confirm `node_modules/` and `functions/node_modules/` are not committed.
-- Confirm Android and Functions builds pass.
+- Confirm Android builds pass.
+- Confirm Firestore rules are deployed and active.
+- Confirm no-Blaze demo mode is enabled with Storage upload and Cloud Functions disabled.
 
 ## Demo Accounts
 
@@ -68,10 +70,12 @@
 
 - Admin routes to Admin Dashboard.
 - Manage Menu loads products from Firestore.
-- Product image upload stores a download URL.
+- Product add, edit, and availability toggle still work with Firestore.
+- Product image upload shows: "Image upload is temporarily disabled. Firebase Storage is not set up yet."
 - Manage Promo loads and edits promo data.
 - Manage Staff loads staff records.
-- Staff create flow works through Cloud Functions.
+- Manage Staff active toggle still works with Firestore.
+- Staff create flow shows: "Staff account creation is temporarily disabled. Cloud Functions are not deployed yet."
 - Reports load successfully.
 - Admin logout returns to guest/login flow.
 
@@ -79,9 +83,9 @@
 
 - `users/{uid}` has the expected role and `active = true`.
 - `orders/{orderId}` has status history entries.
-- `products/{id}.imageUrl` is present after upload.
+- Existing `products/{id}.imageUrl` values display when valid; blank or invalid URLs use fallback drawables.
 - Firestore rules still block invalid role transitions.
-- Storage rules still require authenticated access.
+- Storage upload is disabled in no-Blaze demo mode.
 
 ## Required Deploy Commands
 
@@ -95,7 +99,8 @@ firebase deploy --only functions --project pizzatime-de04c
 
 ## Known Risks
 
-- Notifications require device permission and deployed Functions.
-- Staff account creation requires the deployed callable Function.
+- Main order flow works with Firebase Auth and Firestore.
+- Android FCM token registration remains enabled, but server-side notifications require deployed Functions.
+- Staff account creation is disabled until the callable Function is deployed.
 - Payment remains demo-only without a real gateway.
-- Image rendering depends on a valid Storage URL and network access.
+- Image upload is disabled until Firebase Storage is set up; image rendering still supports valid existing URLs and fallback drawables.

@@ -17,6 +17,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
 import com.devpro.pizzatime.databinding.FragmentManageStaffBinding
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
@@ -91,6 +92,11 @@ class ManageStaffFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         btnAddStaff.setOnClickListener {
+            if (!FirebaseFeatureFlags.CLOUD_FUNCTIONS_ENABLED) {
+                showToast(R.string.admin_staff_create_disabled)
+                return@setOnClickListener
+            }
+
             showCreateStaffDialog()
         }
 
@@ -176,6 +182,11 @@ class ManageStaffFragment : Fragment() {
         role: String,
         onCreated: () -> Unit,
     ) {
+        if (!FirebaseFeatureFlags.CLOUD_FUNCTIONS_ENABLED) {
+            showToast(R.string.admin_staff_create_disabled)
+            return
+        }
+
         when {
             name.isBlank() -> {
                 showToast(R.string.admin_staff_create_name_required)

@@ -17,6 +17,7 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
 import com.devpro.pizzatime.databinding.FragmentManageMenuBinding
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
@@ -118,6 +119,11 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         val uploadImageButton = Button(requireContext()).apply {
             text = getString(R.string.manage_menu_upload_image)
             setOnClickListener {
+                if (!FirebaseFeatureFlags.STORAGE_UPLOAD_ENABLED) {
+                    showToast(R.string.manage_menu_upload_image_disabled)
+                    return@setOnClickListener
+                }
+
                 pendingImageUploadProductId = item.id
                 pickProductImageLauncher.launch("image/*")
             }
@@ -223,6 +229,11 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         productId: String,
         imageUri: Uri,
     ) {
+        if (!FirebaseFeatureFlags.STORAGE_UPLOAD_ENABLED) {
+            showToast(R.string.manage_menu_upload_image_disabled)
+            return
+        }
+
         AdminProductImageStorageRepository.uploadProductImage(
             productId = productId,
             imageUri = imageUri,

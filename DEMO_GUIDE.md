@@ -2,7 +2,7 @@
 
 ## Overview
 
-PizzaTime is an Android Kotlin app built with XML layouts, Fragments, ViewBinding, Firebase Auth, Firestore, Storage, FCM, and Cloud Functions.
+PizzaTime is an Android Kotlin app built with XML layouts, Fragments, ViewBinding, Firebase Auth, Firestore, Storage-ready image code, FCM, and Cloud Functions-ready admin code.
 
 Main demo areas:
 
@@ -35,10 +35,10 @@ Expected role routing after login or app relaunch:
 ## Firebase Setup
 
 - Firebase Auth handles login.
-- Firestore stores users, categories, products, promo codes, and orders.
-- Storage stores product images and returns download URLs saved to `products/{id}.imageUrl`.
+- Firestore is deployed and active for users, categories, products, promo codes, and orders.
+- Storage upload is disabled in no-Blaze demo mode until the Firebase Storage bucket is set up.
 - FCM token registration is saved to `users/{uid}.fcmTokens`.
-- Cloud Functions send order-status notifications and create staff accounts.
+- Cloud Function staff creation and server-side FCM notifications are disabled until Blaze/Billing is fixed and Functions are deployed.
 
 Firebase config in the repo:
 
@@ -115,7 +115,7 @@ Customer screens used in the demo:
 2. Open Admin Dashboard.
 3. Manage Menu:
    - edit products
-   - upload product images
+   - image upload shows the no-Blaze disabled message
    - toggle availability
 4. Manage Promo:
    - edit promo fields
@@ -123,7 +123,7 @@ Customer screens used in the demo:
 5. Manage Staff:
    - view users
    - toggle active state
-   - create staff/kitchen/shipper accounts through the Cloud Function flow
+   - staff creation shows the no-Blaze disabled message
 6. Open Reports.
 7. Log out.
 
@@ -167,9 +167,10 @@ firebase deploy --only functions --project pizzatime-de04c
 ## Known Limitations
 
 - Payment is demo only if no real payment gateway is connected.
-- Notification delivery depends on device notification permission and deployed Cloud Functions.
-- Admin-created staff accounts require deployed Cloud Functions.
-- Product images depend on a valid `Storage` download URL in Firestore.
+- Main order flow works with Firebase Auth and deployed Firestore.
+- Android FCM token registration and notification permission behavior remain enabled, but server-side notification delivery requires deployed Cloud Functions.
+- Admin-created staff accounts are temporarily disabled until Cloud Functions are deployed.
+- Product image upload is temporarily disabled until Firebase Storage is set up; existing `imageUrl` values still display, with fallback drawables for blank or invalid URLs.
 - Some secondary screens still use fallback demo data if Firestore is unavailable.
 
 ## Submission Notes

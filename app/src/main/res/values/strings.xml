@@ -616,6 +616,7 @@
     <string name="manage_menu_edit_product_saved">Product updated.</string>
     <string name="manage_menu_edit_product_failed">Could not update product.</string>
     <string name="manage_menu_upload_image">Upload image</string>
+    <string name="manage_menu_upload_image_disabled">Image upload is temporarily disabled. Firebase Storage is not set up yet.</string>
     <string name="manage_menu_upload_image_saved">Product image uploaded.</string>
     <string name="manage_menu_upload_image_failed">Could not upload product image.</string>
     <string name="manage_menu_create_product_title">Add Product</string>
@@ -690,6 +691,7 @@
     <string name="admin_staff_create_name_required">Name is required.</string>
     <string name="admin_staff_create_email_invalid">Enter a valid email address.</string>
     <string name="admin_staff_create_password_invalid">Password must be at least 6 characters.</string>
+    <string name="admin_staff_create_disabled">Staff account creation is temporarily disabled. Cloud Functions are not deployed yet.</string>
     <string name="admin_staff_create_success">Staff account created.</string>
     <string name="admin_staff_create_failed">Could not create staff account.</string>
     <string name="admin_staff_toggle_failed">Could not update staff status.</string>
