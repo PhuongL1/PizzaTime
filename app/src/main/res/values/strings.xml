@@ -614,6 +614,12 @@
     <string name="manage_menu_edit_category_required">Category ID is required.</string>
     <string name="manage_menu_edit_product_saved">Product updated.</string>
     <string name="manage_menu_edit_product_failed">Could not update product.</string>
+    <string name="manage_menu_create_product_title">Add Product</string>
+    <string name="manage_menu_create_product_save">Create</string>
+    <string name="manage_menu_create_id_hint">Product ID</string>
+    <string name="manage_menu_create_id_required">Product ID is required.</string>
+    <string name="manage_menu_create_product_saved">Product created.</string>
+    <string name="manage_menu_create_product_failed">Could not create product. Check if the ID already exists.</string>
     <!-- promo menu -->
     <string name="midnight_artisan">Midnight Artisan</string>
     <string name="promotions">PROMOTIONS</string>

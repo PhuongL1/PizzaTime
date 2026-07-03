@@ -62,6 +62,42 @@ object AdminMenuFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun createProduct(
+        productId: String,
+        name: String,
+        description: String,
+        basePrice: Double,
+        categoryId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val productRef = firestore.collection("products").document(productId)
+        productRef.get()
+            .addOnSuccessListener { document ->
+                if (document.exists()) {
+                    onResult(Result.failure(Exception("Product already exists.")))
+                    return@addOnSuccessListener
+                }
+
+                productRef.set(
+                    mapOf(
+                        "id" to productId,
+                        "name" to name,
+                        "description" to description,
+                        "categoryId" to categoryId,
+                        "basePrice" to basePrice,
+                        "imageUrl" to "",
+                        "rating" to 0.0,
+                        "available" to true,
+                        "createdAt" to FieldValue.serverTimestamp(),
+                        "updatedAt" to FieldValue.serverTimestamp(),
+                    ),
+                )
+                    .addOnSuccessListener { onResult(Result.success(Unit)) }
+                    .addOnFailureListener { e -> onResult(Result.failure(e)) }
+            }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     private fun DocumentSnapshot.toAdminMenuUiModel(): AdminMenuUiModel {
         val basePrice = getDouble("basePrice") ?: 0.0
         val categoryId = getString("categoryId") ?: ""

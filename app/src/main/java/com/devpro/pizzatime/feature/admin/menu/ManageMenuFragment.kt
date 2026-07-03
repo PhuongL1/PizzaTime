@@ -56,6 +56,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         setupCategoryChips()
         setupMenuList()
         setupBottomNav()
+        setupActions()
         renderMenuItems()
         loadFirestoreProducts()
     }
@@ -128,6 +129,66 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             .show()
     }
 
+    private fun showCreateProductDialog() {
+        val idInput = createDialogInput(
+            hint = getString(R.string.manage_menu_create_id_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_TEXT,
+        )
+        val nameInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_name_hint),
+            text = "",
+        )
+        val descriptionInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_description_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_MULTI_LINE,
+        )
+        val priceInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_price_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_NUMBER or InputType.TYPE_NUMBER_FLAG_DECIMAL,
+        )
+        val categoryInput = createDialogInput(
+            hint = getString(R.string.manage_menu_edit_category_hint),
+            text = selectedCategory.name,
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
+        )
+
+        val form = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            val horizontalPadding = resources.getDimensionPixelSize(R.dimen.manage_menu_dialog_padding)
+            setPadding(horizontalPadding, 0, horizontalPadding, 0)
+            addView(idInput)
+            addView(nameInput)
+            addView(descriptionInput)
+            addView(priceInput)
+            addView(categoryInput)
+        }
+
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.manage_menu_create_product_title)
+            .setView(form)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.manage_menu_create_product_save, null)
+            .create()
+            .apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        saveProductCreate(
+                            rawProductId = idInput.text.toString(),
+                            name = nameInput.text.toString().trim(),
+                            description = descriptionInput.text.toString().trim(),
+                            basePriceText = priceInput.text.toString().trim(),
+                            categoryId = categoryInput.text.toString().trim().uppercase(Locale.US),
+                            onSaved = { dismiss() },
+                        )
+                    }
+                }
+            }
+            .show()
+    }
+
     private fun createDialogInput(
         hint: String,
         text: String,
@@ -189,6 +250,64 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         }
     }
 
+    private fun saveProductCreate(
+        rawProductId: String,
+        name: String,
+        description: String,
+        basePriceText: String,
+        categoryId: String,
+        onSaved: () -> Unit,
+    ) {
+        val productId = normalizeProductId(rawProductId)
+        val basePrice = basePriceText.toDoubleOrNull()
+        when {
+            productId.isBlank() -> {
+                showToast(R.string.manage_menu_create_id_required)
+                return
+            }
+
+            name.isBlank() -> {
+                showToast(R.string.manage_menu_edit_name_required)
+                return
+            }
+
+            basePrice == null || basePrice <= 0.0 -> {
+                showToast(R.string.manage_menu_edit_price_required)
+                return
+            }
+
+            categoryId.isBlank() -> {
+                showToast(R.string.manage_menu_edit_category_required)
+                return
+            }
+        }
+
+        AdminMenuFirestoreRepository.createProduct(
+            productId = productId,
+            name = name,
+            description = description,
+            basePrice = basePrice,
+            categoryId = categoryId,
+        ) { result ->
+            if (!isAdded) return@createProduct
+            result
+                .onSuccess {
+                    showToast(R.string.manage_menu_create_product_saved)
+                    onSaved()
+                    loadFirestoreProducts()
+                }
+                .onFailure {
+                    showToast(R.string.manage_menu_create_product_failed)
+                }
+        }
+    }
+
+    private fun normalizeProductId(rawProductId: String): String {
+        return rawProductId.trim()
+            .lowercase(Locale.US)
+            .replace(Regex("\\s+"), "-")
+    }
+
     private fun setupSearch() {
         binding.edtSearchMenu.addTextChangedListener { editable ->
             searchQuery = editable?.toString().orEmpty()
@@ -207,6 +326,12 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
 
         chipVeggie.setOnClickListener {
             selectCategory(AdminMenuCategory.VEGGIE)
+        }
+    }
+
+    private fun setupActions() = with(binding) {
+        btnMenu.setOnClickListener {
+            showCreateProductDialog()
         }
     }
 
