@@ -17,13 +17,7 @@ import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
-import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
-import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 
 class LoginFragment : Fragment() {
 
@@ -151,28 +145,7 @@ class LoginFragment : Fragment() {
 
     private fun openHomeByRole(role: UserRole) {
         FakeSessionStore.login(role)
-        clearAppBackStack()
-        when (role) {
-            UserRole.GUEST,
-            UserRole.CUSTOMER,
-                -> openCustomerHome(addToBackStack = false)
-
-            UserRole.STAFF -> {
-                openStaffDashboard(addToBackStack = false)
-            }
-
-            UserRole.KITCHEN -> {
-                openKitchenBoard(addToBackStack = false)
-            }
-
-            UserRole.SHIPPER -> {
-                openShipperDeliveryDashboard(addToBackStack = false)
-            }
-
-            UserRole.ADMIN -> {
-                openAdminDashboard(addToBackStack = false)
-            }
-        }
+        openRoleHome(role)
     }
 
     private fun openRegister() {

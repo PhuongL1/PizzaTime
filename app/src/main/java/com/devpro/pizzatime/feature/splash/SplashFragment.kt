@@ -9,16 +9,11 @@ import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.FakeSessionStore
-import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentSplashBinding
 import com.devpro.pizzatime.feature.auth.FirebaseAuthRepository
+import com.devpro.pizzatime.feature.auth.restoreSessionAndOpenRoleHome
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
-import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.devpro.pizzatime.feature.welcome.WelcomeFragment
 import com.google.firebase.auth.FirebaseAuth
 
@@ -66,31 +61,22 @@ class SplashFragment : Fragment() {
             if (!isAdded) return@loadCurrentUserProfile
             result
                 .onSuccess { user ->
-                    FakeSessionStore.login(user.role)
-                    CartStore.onUserChanged(user.uid)
-                    openHomeByRole(user.role)
+                    val openedHome = restoreSessionAndOpenRoleHome(user)
+                    if (!openedHome) {
+                        signOutAndOpenWelcome()
+                    }
                 }
                 .onFailure {
-                    FirebaseAuth.getInstance().signOut()
-                    FakeSessionStore.logout()
-                    CartStore.clearForLogout()
-                    openWelcome()
+                    signOutAndOpenWelcome()
                 }
         }
     }
 
-    private fun openHomeByRole(role: UserRole) {
-        clearAppBackStack()
-        when (role) {
-            UserRole.GUEST,
-            UserRole.CUSTOMER,
-                -> openCustomerHome(addToBackStack = false)
-
-            UserRole.STAFF -> openStaffDashboard(addToBackStack = false)
-            UserRole.KITCHEN -> openKitchenBoard(addToBackStack = false)
-            UserRole.SHIPPER -> openShipperDeliveryDashboard(addToBackStack = false)
-            UserRole.ADMIN -> openAdminDashboard(addToBackStack = false)
-        }
+    private fun signOutAndOpenWelcome() {
+        FirebaseAuth.getInstance().signOut()
+        FakeSessionStore.logout()
+        CartStore.clearForLogout()
+        openWelcome()
     }
 
     private fun openWelcome() {
