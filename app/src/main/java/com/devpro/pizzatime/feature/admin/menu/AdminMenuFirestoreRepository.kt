@@ -44,6 +44,7 @@ object AdminMenuFirestoreRepository {
         description: String,
         basePrice: Double,
         categoryId: String,
+        imageUrl: String,
         available: Boolean,
         onResult: (Result<Unit>) -> Unit,
     ) {
@@ -54,6 +55,7 @@ object AdminMenuFirestoreRepository {
                     "description" to description,
                     "basePrice" to basePrice,
                     "categoryId" to categoryId,
+                    "imageUrl" to imageUrl,
                     "available" to available,
                     "updatedAt" to FieldValue.serverTimestamp(),
                 ),
@@ -84,6 +86,7 @@ object AdminMenuFirestoreRepository {
         description: String,
         basePrice: Double,
         categoryId: String,
+        imageUrl: String,
         onResult: (Result<Unit>) -> Unit,
     ) {
         val productRef = firestore.collection("products").document(productId)
@@ -101,7 +104,7 @@ object AdminMenuFirestoreRepository {
                         "description" to description,
                         "categoryId" to categoryId,
                         "basePrice" to basePrice,
-                        "imageUrl" to "",
+                        "imageUrl" to imageUrl,
                         "rating" to 0.0,
                         "available" to true,
                         "createdAt" to FieldValue.serverTimestamp(),
@@ -125,6 +128,7 @@ object AdminMenuFirestoreRepository {
             basePrice = basePrice,
             categoryId = categoryId,
             category = mapCategory(categoryId),
+            imageUrl = getString("imageUrl") ?: "",
             imageRes = R.drawable.img_pizza_time,
             isAvailable = getBoolean("available") ?: true,
         )

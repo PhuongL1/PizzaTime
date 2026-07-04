@@ -625,7 +625,11 @@
     <string name="manage_menu_edit_product_saved">Product updated.</string>
     <string name="manage_menu_edit_product_failed">Could not update product.</string>
     <string name="manage_menu_upload_image">Upload image</string>
-    <string name="manage_menu_upload_image_disabled">Image upload is temporarily disabled. Firebase Storage is not set up yet.</string>
+    <string name="manage_menu_image_url_hint">Image URL</string>
+    <string name="manage_menu_selecting_image">Selecting image...</string>
+    <string name="manage_menu_uploading_image">Uploading image...</string>
+    <string name="manage_menu_cloudinary_not_configured">Cloudinary upload is not configured yet. Paste an image URL manually.</string>
+    <string name="manage_menu_upload_image_disabled">Firebase Storage upload is disabled in No-Blaze mode. Use Cloudinary or paste an image URL.</string>
     <string name="manage_menu_upload_image_saved">Product image uploaded.</string>
     <string name="manage_menu_upload_image_failed">Could not upload product image.</string>
     <string name="manage_menu_create_product_title">Add Product</string>

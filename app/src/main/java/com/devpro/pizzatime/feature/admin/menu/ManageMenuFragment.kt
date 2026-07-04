@@ -17,7 +17,6 @@ import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
-import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
 import com.devpro.pizzatime.databinding.FragmentManageMenuBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
@@ -32,23 +31,24 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             "FragmentManageMenuBinding is only valid between onViewCreated and onDestroyView."
         }
 
-    private var pendingImageUploadProductId: String? = null
+    private var pendingImageUpload: PendingImageUpload? = null
 
     private val pickProductImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
-            val productId = pendingImageUploadProductId
-            pendingImageUploadProductId = null
+            val pendingUpload = pendingImageUpload
+            pendingImageUpload = null
 
             if (uri == null) {
+                pendingUpload?.restoreButton()
                 return@registerForActivityResult
             }
 
-            if (productId.isNullOrBlank()) {
+            if (pendingUpload == null) {
                 showToast(R.string.manage_menu_upload_image_failed)
                 return@registerForActivityResult
             }
 
-            uploadProductImage(productId, uri)
+            uploadProductImage(pendingUpload, uri)
         }
 
     private var selectedCategory = AdminMenuCategory.SIGNATURE
@@ -115,15 +115,26 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             text = getString(R.string.manage_menu_edit_available)
             isChecked = item.isAvailable
         }
+        val imageUrlInput = createDialogInput(
+            hint = getString(R.string.manage_menu_image_url_hint),
+            text = item.imageUrl,
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
+        )
         val uploadImageButton = Button(requireContext()).apply {
             text = getString(R.string.manage_menu_upload_image)
             setOnClickListener {
-                if (!FirebaseFeatureFlags.STORAGE_UPLOAD_ENABLED) {
-                    showToast(R.string.manage_menu_upload_image_disabled)
+                if (!CloudinaryConfig.isConfigured) {
+                    showToast(R.string.manage_menu_cloudinary_not_configured)
                     return@setOnClickListener
                 }
 
-                pendingImageUploadProductId = item.id
+                isEnabled = false
+                text = getString(R.string.manage_menu_selecting_image)
+                pendingImageUpload = PendingImageUpload(
+                    productId = item.id,
+                    imageUrlInput = imageUrlInput,
+                    uploadButton = this,
+                )
                 pickProductImageLauncher.launch("image/*")
             }
         }
@@ -137,6 +148,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             addView(priceInput)
             addView(categoryInput)
             addView(availableInput)
+            addView(imageUrlInput)
             addView(uploadImageButton)
         }
 
@@ -155,6 +167,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                             description = descriptionInput.text.toString().trim(),
                             basePriceText = priceInput.text.toString().trim(),
                             categoryId = categoryInput.text.toString().trim().uppercase(Locale.US),
+                            imageUrl = imageUrlInput.text.toString().trim(),
                             available = availableInput.isChecked,
                             onSaved = { dismiss() },
                         )
@@ -189,6 +202,11 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             text = selectedCategory.name,
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
         )
+        val imageUrlInput = createDialogInput(
+            hint = getString(R.string.manage_menu_image_url_hint),
+            text = "",
+            inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_VARIATION_URI,
+        )
 
         val form = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
@@ -199,6 +217,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             addView(descriptionInput)
             addView(priceInput)
             addView(categoryInput)
+            addView(imageUrlInput)
         }
 
         AlertDialog.Builder(requireContext())
@@ -216,6 +235,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                             description = descriptionInput.text.toString().trim(),
                             basePriceText = priceInput.text.toString().trim(),
                             categoryId = categoryInput.text.toString().trim().uppercase(Locale.US),
+                            imageUrl = imageUrlInput.text.toString().trim(),
                             onSaved = { dismiss() },
                         )
                     }
@@ -225,28 +245,26 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     }
 
     private fun uploadProductImage(
-        productId: String,
+        pendingUpload: PendingImageUpload,
         imageUri: Uri,
     ) {
-        if (!FirebaseFeatureFlags.STORAGE_UPLOAD_ENABLED) {
-            showToast(R.string.manage_menu_upload_image_disabled)
-            return
-        }
-
-        AdminProductImageStorageRepository.uploadProductImage(
-            productId = productId,
+        pendingUpload.showUploading()
+        CloudinaryProductImageRepository.uploadProductImage(
+            context = requireContext(),
             imageUri = imageUri,
         ) { uploadResult ->
             if (!isAdded) return@uploadProductImage
             uploadResult
-                .onSuccess { downloadUrl ->
+                .onSuccess { imageUrl ->
                     AdminMenuFirestoreRepository.updateProductImageUrl(
-                        productId = productId,
-                        imageUrl = downloadUrl,
+                        productId = pendingUpload.productId,
+                        imageUrl = imageUrl,
                     ) { updateResult ->
                         if (!isAdded) return@updateProductImageUrl
+                        pendingUpload.restoreButton()
                         updateResult
                             .onSuccess {
+                                pendingUpload.imageUrlInput.setText(imageUrl)
                                 showToast(R.string.manage_menu_upload_image_saved)
                                 loadFirestoreProducts()
                             }
@@ -256,6 +274,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                     }
                 }
                 .onFailure {
+                    pendingUpload.restoreButton()
                     showToast(R.string.manage_menu_upload_image_failed)
                 }
         }
@@ -280,6 +299,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         description: String,
         basePriceText: String,
         categoryId: String,
+        imageUrl: String,
         available: Boolean,
         onSaved: () -> Unit,
     ) {
@@ -307,6 +327,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             description = description,
             basePrice = basePrice,
             categoryId = categoryId,
+            imageUrl = imageUrl,
             available = available,
         ) { result ->
             if (!isAdded) return@updateProduct
@@ -328,6 +349,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         description: String,
         basePriceText: String,
         categoryId: String,
+        imageUrl: String,
         onSaved: () -> Unit,
     ) {
         val productId = normalizeProductId(rawProductId)
@@ -360,6 +382,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             description = description,
             basePrice = basePrice,
             categoryId = categoryId,
+            imageUrl = imageUrl,
         ) { result ->
             if (!isAdded) return@createProduct
             result
@@ -471,7 +494,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     }
 
     override fun onDestroyView() {
-        pendingImageUploadProductId = null
+        pendingImageUpload = null
         _binding = null
         super.onDestroyView()
     }
@@ -479,5 +502,21 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     companion object {
         private val COLOR_CHIP_SELECTED = "#3A210D".toColorInt()
         private val COLOR_CHIP_UNSELECTED = "#D8C8BC".toColorInt()
+    }
+
+    private inner class PendingImageUpload(
+        val productId: String,
+        val imageUrlInput: EditText,
+        private val uploadButton: Button,
+    ) {
+        fun showUploading() {
+            uploadButton.isEnabled = false
+            uploadButton.text = getString(R.string.manage_menu_uploading_image)
+        }
+
+        fun restoreButton() {
+            uploadButton.isEnabled = true
+            uploadButton.text = getString(R.string.manage_menu_upload_image)
+        }
     }
 }
