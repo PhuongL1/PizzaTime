@@ -1,8 +1,19 @@
 package com.devpro.pizzatime.shared.location
 
+import android.Manifest
+import android.annotation.SuppressLint
+import android.content.Context
+import android.content.pm.PackageManager
+import android.location.Location
+import android.location.LocationListener
+import android.location.LocationManager
 import android.os.Bundle
+import android.os.Handler
+import android.os.Looper
 import android.view.View
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentMapPickerBinding
@@ -24,6 +35,21 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
     private var selectedLat: Double? = null
     private var selectedLng: Double? = null
     private var marker: Marker? = null
+    private var pendingLocationListener: LocationListener? = null
+    private val timeoutHandler = Handler(Looper.getMainLooper())
+    private var timeoutRunnable: Runnable? = null
+
+    private val locationPermissionLauncher = registerForActivityResult(
+        ActivityResultContracts.RequestMultiplePermissions(),
+    ) { grants ->
+        val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
+            grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
+        if (granted) {
+            locateCurrentPosition()
+        } else {
+            showToast(R.string.map_picker_permission_required)
+        }
+    }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -105,6 +131,19 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             parentFragmentManager.popBackStack()
         }
 
+        btnUseCurrentLocation.setOnClickListener {
+            if (hasLocationPermission()) {
+                locateCurrentPosition()
+            } else {
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                    ),
+                )
+            }
+        }
+
         btnUseLocation.setOnClickListener {
             val address = edtMapAddress.text.toString().trim()
             val lat = selectedLat
@@ -133,17 +172,136 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         }
     }
 
+    private fun hasLocationPermission(): Boolean {
+        val context = requireContext()
+        return ContextCompat.checkSelfPermission(
+            context,
+            Manifest.permission.ACCESS_FINE_LOCATION,
+        ) == PackageManager.PERMISSION_GRANTED ||
+            ContextCompat.checkSelfPermission(
+                context,
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+            ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun locateCurrentPosition() {
+        if (!hasLocationPermission()) {
+            showToast(R.string.map_picker_permission_required)
+            return
+        }
+
+        val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+        if (locationManager == null) {
+            showToast(R.string.map_picker_current_unavailable)
+            return
+        }
+
+        val enabledProviders = LOCATION_PROVIDERS.filter { provider ->
+            runCatching { locationManager.isProviderEnabled(provider) }.getOrDefault(false)
+        }
+        if (enabledProviders.isEmpty()) {
+            showToast(R.string.map_picker_location_services_disabled)
+            return
+        }
+
+        val lastKnownLocation = enabledProviders
+            .mapNotNull { provider ->
+                runCatching { locationManager.getLastKnownLocation(provider) }.getOrNull()
+            }
+            .maxByOrNull { it.time }
+
+        if (lastKnownLocation != null) {
+            applyCurrentLocation(lastKnownLocation)
+            return
+        }
+
+        requestSingleLocationUpdate(locationManager, enabledProviders)
+    }
+
+    @SuppressLint("MissingPermission")
+    private fun requestSingleLocationUpdate(
+        locationManager: LocationManager,
+        providers: List<String>,
+    ) {
+        clearPendingLocationRequest(locationManager)
+
+        val listener = LocationListener { location ->
+            clearPendingLocationRequest(locationManager)
+            applyCurrentLocation(location)
+        }
+        pendingLocationListener = listener
+
+        val requested = providers.any { provider ->
+            runCatching {
+                locationManager.requestLocationUpdates(
+                    provider,
+                    0L,
+                    0f,
+                    listener,
+                    Looper.getMainLooper(),
+                )
+            }.isSuccess
+        }
+
+        if (!requested) {
+            clearPendingLocationRequest(locationManager)
+            showToast(R.string.map_picker_current_unavailable)
+            return
+        }
+
+        timeoutRunnable = Runnable {
+            clearPendingLocationRequest(locationManager)
+            showToast(R.string.map_picker_current_unavailable)
+        }.also { runnable ->
+            timeoutHandler.postDelayed(runnable, LOCATION_TIMEOUT_MS)
+        }
+    }
+
+    private fun applyCurrentLocation(location: Location) {
+        val point = GeoPoint(location.latitude, location.longitude)
+        setSelectedPoint(point)
+        binding.mapView.controller.animateTo(point)
+        showToast(R.string.map_picker_current_selected)
+    }
+
+    private fun clearPendingLocationRequest(
+        locationManager: LocationManager? = currentLocationManager(),
+    ) {
+        val runnable = timeoutRunnable
+        if (runnable != null) {
+            timeoutHandler.removeCallbacks(runnable)
+            timeoutRunnable = null
+        }
+
+        val listener = pendingLocationListener
+        if (listener != null && locationManager != null) {
+            runCatching { locationManager.removeUpdates(listener) }
+        }
+        pendingLocationListener = null
+    }
+
+    private fun currentLocationManager(): LocationManager? {
+        return context?.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+    }
+
+    private fun showToast(messageRes: Int) {
+        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    }
+
     override fun onResume() {
         super.onResume()
         binding.mapView.onResume()
     }
 
     override fun onPause() {
+        clearPendingLocationRequest()
         binding.mapView.onPause()
         super.onPause()
     }
 
     override fun onDestroyView() {
+        clearPendingLocationRequest()
         binding.mapView.onDetach()
         _binding = null
         super.onDestroyView()
@@ -167,6 +325,11 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         private const val DEFAULT_ZOOM = 15.0
         private const val MIN_ZOOM = 3.0
         private const val MAX_ZOOM = 20.0
+        private const val LOCATION_TIMEOUT_MS = 10_000L
+        private val LOCATION_PROVIDERS = listOf(
+            LocationManager.GPS_PROVIDER,
+            LocationManager.NETWORK_PROVIDER,
+        )
 
         fun newInstance(
             mode: String,

@@ -1036,8 +1036,13 @@
     <string name="map_picker_address_hint">Address</string>
     <string name="map_picker_selected_coordinates">%1$.6f, %2$.6f</string>
     <string name="map_picker_use_location">USE THIS LOCATION</string>
+    <string name="map_picker_use_current_location">USE CURRENT LOCATION</string>
     <string name="map_picker_address_required">Address is required.</string>
     <string name="map_picker_coordinates_required">Tap the map to choose a location.</string>
+    <string name="map_picker_permission_required">Location permission is required to use your current location.</string>
+    <string name="map_picker_current_selected">Current location selected.</string>
+    <string name="map_picker_current_unavailable">Current location is not available.</string>
+    <string name="map_picker_location_services_disabled">Please enable location services and try again.</string>
     <string name="location_coordinates_format">%1$.6f, %2$.6f</string>
     <string name="location_coordinates_missing">Location not selected</string>
     <string name="location_not_available">Location is not available.</string>
