@@ -14,6 +14,9 @@ import com.devpro.pizzatime.databinding.ItemCustomerPromoCardBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import kotlin.math.roundToInt
 
 class CustomerPromoCodesFragment : Fragment() {
@@ -79,13 +82,13 @@ class CustomerPromoCodesFragment : Fragment() {
             bottomNav = customerBottomNav,
             selectedTab = CustomerBottomNavTab.LOYALTY,
             onCustomerMenuClick = {
-                // TODO: open pizza menu / customer home
+                openCustomerHome()
             },
             onCustomerOrdersClick = {
-                // TODO: open customer order history
+                openCustomerOrderHistory()
             },
             onCustomerProfileClick = {
-                // TODO: open customer profile
+                openCustomerAccount()
             },
         )
     }

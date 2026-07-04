@@ -31,6 +31,7 @@ import com.devpro.pizzatime.feature.customer.promos.CustomerPromoCodesFragment
 import com.devpro.pizzatime.feature.customer.support.SupportFaqFragment
 import com.devpro.pizzatime.feature.customer.tracking.OrderTrackingFragment
 import com.devpro.pizzatime.feature.customer.detail.PizzaDetailFragment
+import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFragment
 import com.devpro.pizzatime.feature.customer.menu.PizzaMenuFragment
 import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.kitchen.detail.KitchenOrderDetailFragment
@@ -306,6 +307,12 @@ fun Fragment.openSupportFaq(addToBackStack: Boolean = true) {
 fun Fragment.openCustomerAccount(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = CustomerAccountFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCustomerFavorites(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CustomerFavoritesFragment(),
         addToBackStack = addToBackStack,
     )
 }

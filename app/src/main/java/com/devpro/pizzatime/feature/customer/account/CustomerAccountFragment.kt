@@ -15,6 +15,10 @@ import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
@@ -74,13 +78,13 @@ class CustomerAccountFragment : Fragment() {
             bottomNav = customerBottomNav,
             selectedTab = CustomerBottomNavTab.PROFILE,
             onCustomerMenuClick = {
-                showToast(getString(R.string.customer_account_menu_toast))
+                openCustomerHome()
             },
             onCustomerOrdersClick = {
-                showToast(getString(R.string.customer_account_orders_toast))
+                openCustomerOrderHistory()
             },
             onCustomerLoyaltyClick = {
-                showToast(getString(R.string.customer_account_loyalty_toast))
+                openCustomerPromoCodes()
             },
         )
     }
@@ -91,7 +95,7 @@ class CustomerAccountFragment : Fragment() {
         }
 
         rowOrderHistory.setOnClickListener {
-            showToast(getString(R.string.customer_account_order_history_toast))
+            openCustomerOrderHistory()
         }
 
         rowPaymentMethods.setOnClickListener {
@@ -103,7 +107,7 @@ class CustomerAccountFragment : Fragment() {
         }
 
         rowFavorites.setOnClickListener {
-            showToast(getString(R.string.customer_account_favorites_toast))
+            openCustomerFavorites()
         }
 
         rowSettings.setOnClickListener {

@@ -12,6 +12,7 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStaffDashboardBinding
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
@@ -126,7 +127,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                 openShipperDeliveryDashboard()
             },
             onProfileClick = {
-                showComingSoon(R.string.staff_nav_profile)
+                openCustomerAccount()
             },
         )
     }

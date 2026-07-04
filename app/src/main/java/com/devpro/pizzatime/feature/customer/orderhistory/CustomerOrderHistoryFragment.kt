@@ -15,7 +15,10 @@ import com.devpro.pizzatime.databinding.ItemCustomerOrderHistoryCardBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderDetail
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -95,9 +98,9 @@ class CustomerOrderHistoryFragment : Fragment() {
         setupCustomerBottomNav(
             bottomNav = customerBottomNav,
             selectedTab = CustomerBottomNavTab.ORDERS,
-            onCustomerMenuClick = {},
-            onCustomerLoyaltyClick = {},
-            onCustomerProfileClick = {},
+            onCustomerMenuClick = { openCustomerHome() },
+            onCustomerLoyaltyClick = { openCustomerPromoCodes() },
+            onCustomerProfileClick = { openCustomerAccount() },
         )
     }
 
