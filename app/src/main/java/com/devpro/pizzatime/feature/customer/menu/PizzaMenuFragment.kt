@@ -12,8 +12,6 @@ import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentPizzaMenuBinding
 import com.devpro.pizzatime.databinding.ItemPizzaMenuBinding
-import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
-import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
@@ -74,32 +72,11 @@ class PizzaMenuFragment : Fragment() {
             itemBinding.tvPizzaRating.text = getString(R.string.home_rating_49).replace("4.9", item.rating)
 
             itemBinding.root.setOnClickListener {
-                openPizzaDetailScreen(
-                    productId = item.id,
-                    productName = item.name,
-                    productDescription = item.description,
-                    productPrice = item.price,
-                    productRating = item.rating,
-                    productImageUrl = item.imageUrl,
-                )
+                openPizzaDetail(item)
             }
 
             itemBinding.btnAddToCart.setOnClickListener {
-                CartStore.addItem(
-                    CartItemUiModel(
-                        id = item.id,
-                        name = item.name,
-                        price = parsePrice(item.price),
-                        quantity = 1,
-                        imageRes = item.imageRes,
-                    )
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    "Added ${item.name}",
-                    Toast.LENGTH_SHORT
-                ).show()
+                openPizzaDetail(item)
             }
 
             itemBinding.root.layoutParams = LinearLayout.LayoutParams(
@@ -162,11 +139,18 @@ class PizzaMenuFragment : Fragment() {
         super.onDestroyView()
     }
 
-    private fun parsePrice(price: String): Double {
-        return price
-            .replace("$", "")
-            .trim()
-            .toDoubleOrNull() ?: 0.0
+    private fun openPizzaDetail(item: PizzaMenuUiModel) {
+        openPizzaDetailScreen(
+            productId = item.id,
+            productName = item.name,
+            productDescription = item.description,
+            productPrice = item.price,
+            productRating = item.rating,
+            productImageUrl = item.imageUrl,
+            productSizeOptions = item.sizeOptions,
+            productCrustOptions = item.crustOptions,
+            productToppingOptions = item.toppingOptions,
+        )
     }
 
     private fun ProductUiModel.toPizzaMenuUiModel() = PizzaMenuUiModel(
@@ -177,5 +161,8 @@ class PizzaMenuFragment : Fragment() {
         rating = String.format("%.1f", rating),
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
+        sizeOptions = sizeOptions,
+        crustOptions = crustOptions,
+        toppingOptions = toppingOptions,
     )
 }

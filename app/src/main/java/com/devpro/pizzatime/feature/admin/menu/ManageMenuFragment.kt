@@ -21,6 +21,7 @@ import com.devpro.pizzatime.databinding.FragmentManageMenuBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openAddEditProduct
 import java.util.Locale
 
 class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
@@ -60,7 +61,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             toggleProductAvailability(item)
         },
         onEditClick = { item ->
-            showEditProductDialog(item)
+            openAddEditProduct(productId = item.id)
         },
     )
 
@@ -76,6 +77,13 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         setupBottomNav()
         resetMenuFilters()
         refreshProductsFromFirestore()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            refreshProductsFromFirestore()
+        }
     }
 
     private fun refreshProductsFromFirestore() {
@@ -547,7 +555,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         bindAdminTopBar(
             root = binding.staffTopBar.root,
             title = getString(R.string.manage_menu_title),
-            onMenuClick = { showCreateProductDialog() },
+            onMenuClick = { openAddEditProduct(productId = null) },
         )
     }
 

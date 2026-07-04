@@ -10,5 +10,8 @@ data class ProductUiModel(
     val available: Boolean,
     val categoryId: String = "",
     val categoryName: String = "",
+    val sizeOptions: List<String> = emptyList(),
+    val crustOptions: List<String> = emptyList(),
+    val toppingOptions: List<String> = emptyList(),
 )
 

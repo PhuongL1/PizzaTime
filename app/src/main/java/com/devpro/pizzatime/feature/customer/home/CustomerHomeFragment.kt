@@ -264,7 +264,7 @@ class CustomerHomeFragment : Fragment() {
             }
 
             itemBinding.btnAddToCart.setOnClickListener {
-                Toast.makeText(requireContext(), "Added ${item.name}", Toast.LENGTH_SHORT).show()
+                openProductDetail(item)
             }
 
             itemBinding.root.layoutParams = LinearLayout.LayoutParams(
@@ -323,6 +323,9 @@ class CustomerHomeFragment : Fragment() {
             productPrice = product.priceText,
             productRating = product.ratingText,
             productImageUrl = product.imageUrl,
+            productSizeOptions = product.sizeOptions,
+            productCrustOptions = product.crustOptions,
+            productToppingOptions = product.toppingOptions,
         )
     }
 
@@ -334,6 +337,9 @@ class CustomerHomeFragment : Fragment() {
             productPrice = item.price,
             productRating = item.rating,
             productImageUrl = item.imageUrl,
+            productSizeOptions = item.sizeOptions,
+            productCrustOptions = item.crustOptions,
+            productToppingOptions = item.toppingOptions,
         )
     }
 
@@ -345,6 +351,9 @@ class CustomerHomeFragment : Fragment() {
             productPrice = item.price,
             productRating = item.rawRating,
             productImageUrl = item.imageUrl,
+            productSizeOptions = item.sizeOptions,
+            productCrustOptions = item.crustOptions,
+            productToppingOptions = item.toppingOptions,
         )
     }
 
@@ -379,6 +388,9 @@ class CustomerHomeFragment : Fragment() {
         rating = ratingText,
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
+        sizeOptions = sizeOptions,
+        crustOptions = crustOptions,
+        toppingOptions = toppingOptions,
     )
 
     private fun ProductUiModel.toChefPizzaUiModel(rank: Int) = ChefPizzaUiModel(
@@ -391,6 +403,9 @@ class CustomerHomeFragment : Fragment() {
         rawRating = ratingText,
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
+        sizeOptions = sizeOptions,
+        crustOptions = crustOptions,
+        toppingOptions = toppingOptions,
     )
 
     private fun hideKeyboard() {

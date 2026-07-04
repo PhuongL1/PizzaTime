@@ -194,6 +194,18 @@
 
             <TextView
                 style="@style/AddEditProductLabel"
+                android:layout_marginTop="26dp"
+                android:text="@string/manage_menu_image_url_hint" />
+
+            <EditText
+                android:id="@+id/etImageUrl"
+                style="@style/AddEditProductInput"
+                android:autofillHints="url"
+                android:inputType="textUri"
+                tools:ignore="LabelFor" />
+
+            <TextView
+                style="@style/AddEditProductLabel"
                 android:layout_marginTop="36dp"
                 android:text="@string/add_edit_product_pizza_name" />
 
@@ -302,6 +314,11 @@
 
                 <TextView
                     android:id="@+id/tvSizeLarge"
+                    style="@style/AddEditProductChip"
+                    android:layout_marginStart="10dp" />
+
+                <TextView
+                    android:id="@+id/tvSizeFamily"
                     style="@style/AddEditProductChip"
                     android:layout_marginStart="10dp" />
             </LinearLayout>

@@ -12,6 +12,9 @@ data class BestSellerPizzaUiModel(
     @param:DrawableRes val imageRes: Int,
     val imageUrl: String = "",
     val isFavorite: Boolean = false,
+    val sizeOptions: List<String> = emptyList(),
+    val crustOptions: List<String> = emptyList(),
+    val toppingOptions: List<String> = emptyList(),
 )
 
 data class ChefPizzaUiModel(
@@ -24,6 +27,9 @@ data class ChefPizzaUiModel(
     val rawRating: String = "",
     @param:DrawableRes val imageRes: Int,
     val imageUrl: String = "",
+    val sizeOptions: List<String> = emptyList(),
+    val crustOptions: List<String> = emptyList(),
+    val toppingOptions: List<String> = emptyList(),
 )
 
 object FakeHomeData {

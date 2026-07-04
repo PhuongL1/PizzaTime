@@ -5,13 +5,18 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
+import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
+import com.devpro.pizzatime.core.product.ProductOptionDefaults
 import com.devpro.pizzatime.databinding.FragmentPizzaDetailBinding
 import com.devpro.pizzatime.databinding.ItemExtraToppingBinding
+import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -26,6 +31,9 @@ class PizzaDetailFragment : Fragment() {
 
     private var quantity = 1
     private var isFavorite = false
+    private var selectedSize = ""
+    private var selectedCrust = ""
+    private val selectedToppings = linkedSetOf<String>()
 
     private lateinit var pizzaDetail: PizzaDetailUiModel
 
@@ -41,6 +49,8 @@ class PizzaDetailFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         pizzaDetail = buildPizzaDetail()
         bindPizzaDetail(pizzaDetail)
+        renderSizeOptions(pizzaDetail.sizeOptions)
+        renderCrustOptions(pizzaDetail.crustOptions)
         renderToppings(pizzaDetail.toppings)
         setupActions()
         loadFavoriteState()
@@ -60,7 +70,17 @@ class PizzaDetailFragment : Fragment() {
             kcal = "840 KCAL",
             imageRes = R.drawable.img_welcome_hero,
             imageUrl = args.getString(ARG_IMAGE_URL, ""),
-            toppings = FakePizzaDetailData.truffleNoir.toppings,
+            toppings = args.getStringArrayList(ARG_TOPPING_OPTIONS)
+                .orEmpty()
+                .map { topping ->
+                    ExtraToppingUiModel(
+                        id = topping.lowercase().replace(Regex("\\s+"), "_"),
+                        name = topping,
+                        price = "",
+                    )
+                },
+            sizeOptions = args.getStringArrayList(ARG_SIZE_OPTIONS).orEmpty(),
+            crustOptions = args.getStringArrayList(ARG_CRUST_OPTIONS).orEmpty(),
         )
     }
 
@@ -76,6 +96,57 @@ class PizzaDetailFragment : Fragment() {
         binding.tvQuantity.text = quantity.toString()
     }
 
+    private fun renderSizeOptions(options: List<String>) {
+        val sizes = ProductOptionDefaults.sizesOrDefault(options)
+        val sizeViews = listOf(
+            binding.btnSizeSmall,
+            binding.btnSizeMedium,
+            binding.btnSizeLarge,
+            binding.btnSizeFamily,
+        )
+        if (selectedSize.isBlank()) {
+            selectedSize = sizes.firstOrNull().orEmpty()
+        }
+
+        sizeViews.forEachIndexed { index, view ->
+            val size = sizes.getOrNull(index)
+            view.isVisible = size != null
+            if (size != null) {
+                view.text = size.uppercase()
+                bindSizeState(view, selectedSize == size)
+                view.setOnClickListener {
+                    selectedSize = size
+                    renderSizeOptions(sizes)
+                }
+            }
+        }
+    }
+
+    private fun renderCrustOptions(options: List<String>) {
+        val crusts = ProductOptionDefaults.crustsOrDefault(options)
+        val crustViews = listOf(
+            binding.btnCrustClassic,
+            binding.btnCrustThin,
+            binding.btnCrustThick,
+        )
+        if (selectedCrust.isBlank()) {
+            selectedCrust = crusts.firstOrNull().orEmpty()
+        }
+
+        crustViews.forEachIndexed { index, view ->
+            val crust = crusts.getOrNull(index)
+            view.isVisible = crust != null
+            if (crust != null) {
+                view.text = crust
+                bindCrustState(view, selectedCrust == crust)
+                view.setOnClickListener {
+                    selectedCrust = crust
+                    renderCrustOptions(crusts)
+                }
+            }
+        }
+    }
+
     private fun renderToppings(items: List<ExtraToppingUiModel>) {
         binding.toppingContainer.removeAllViews()
 
@@ -89,11 +160,16 @@ class PizzaDetailFragment : Fragment() {
             itemBinding.tvToppingName.text = item.name
             itemBinding.tvToppingPrice.text = item.price
 
-            var isSelected = item.isSelected
+            var isSelected = selectedToppings.contains(item.name) || item.isSelected
             updateToppingState(itemBinding, isSelected)
 
             itemBinding.root.setOnClickListener {
                 isSelected = !isSelected
+                if (isSelected) {
+                    selectedToppings.add(item.name)
+                } else {
+                    selectedToppings.remove(item.name)
+                }
                 updateToppingState(itemBinding, isSelected)
 
                 Toast.makeText(
@@ -116,6 +192,28 @@ class PizzaDetailFragment : Fragment() {
 
             binding.toppingContainer.addView(itemBinding.root, params)
         }
+    }
+
+    private fun bindSizeState(view: TextView, selected: Boolean) {
+        view.setBackgroundResource(
+            if (selected) R.drawable.bg_size_option_selected else R.drawable.bg_size_option_unselected,
+        )
+        view.setTextColor(
+            requireContext().getColor(
+                if (selected) R.color.pt_text_dark else R.color.pt_text_primary,
+            ),
+        )
+    }
+
+    private fun bindCrustState(view: TextView, selected: Boolean) {
+        view.setBackgroundResource(
+            if (selected) R.drawable.bg_crust_selected else R.drawable.bg_crust_unselected,
+        )
+        view.setTextColor(
+            requireContext().getColor(
+                if (selected) R.color.pt_text_dark else R.color.pt_text_primary,
+            ),
+        )
     }
 
     private fun updateToppingState(
@@ -157,6 +255,19 @@ class PizzaDetailFragment : Fragment() {
         }
 
         binding.btnAddToCart.setOnClickListener {
+            CartStore.addItem(
+                CartItemUiModel(
+                    id = pizzaDetail.id,
+                    name = pizzaDetail.name,
+                    price = parsePrice(pizzaDetail.price),
+                    quantity = quantity,
+                    imageRes = pizzaDetail.imageRes,
+                    selectedSize = selectedSize,
+                    selectedCrust = selectedCrust,
+                    selectedToppings = selectedToppings.toList(),
+                    imageUrl = pizzaDetail.imageUrl,
+                ),
+            )
             Toast.makeText(
                 requireContext(),
                 "Added $quantity ${pizzaDetail.name}",
@@ -233,6 +344,13 @@ class PizzaDetailFragment : Fragment() {
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
 
+    private fun parsePrice(price: String): Double {
+        return price
+            .replace("$", "")
+            .trim()
+            .toDoubleOrNull() ?: 0.0
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
@@ -245,6 +363,9 @@ class PizzaDetailFragment : Fragment() {
         private const val ARG_PRICE = "price"
         private const val ARG_RATING = "rating"
         private const val ARG_IMAGE_URL = "image_url"
+        private const val ARG_SIZE_OPTIONS = "size_options"
+        private const val ARG_CRUST_OPTIONS = "crust_options"
+        private const val ARG_TOPPING_OPTIONS = "topping_options"
 
         fun newInstance(
             productId: String,
@@ -253,6 +374,9 @@ class PizzaDetailFragment : Fragment() {
             price: String,
             rating: String,
             imageUrl: String = "",
+            sizeOptions: List<String> = emptyList(),
+            crustOptions: List<String> = emptyList(),
+            toppingOptions: List<String> = emptyList(),
         ) = PizzaDetailFragment().apply {
             arguments = Bundle().apply {
                 putString(ARG_PRODUCT_ID, productId)
@@ -261,6 +385,9 @@ class PizzaDetailFragment : Fragment() {
                 putString(ARG_PRICE, price)
                 putString(ARG_RATING, rating)
                 putString(ARG_IMAGE_URL, imageUrl)
+                putStringArrayList(ARG_SIZE_OPTIONS, ArrayList(sizeOptions))
+                putStringArrayList(ARG_CRUST_OPTIONS, ArrayList(crustOptions))
+                putStringArrayList(ARG_TOPPING_OPTIONS, ArrayList(toppingOptions))
             }
         }
     }

@@ -253,6 +253,19 @@
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
+                    <TextView
+                        android:id="@+id/btnSizeFamily"
+                        android:layout_width="0dp"
+                        android:layout_height="match_parent"
+                        android:layout_marginStart="18dp"
+                        android:layout_weight="1"
+                        android:background="@drawable/bg_size_option_unselected"
+                        android:gravity="center"
+                        android:text="@string/detail_size_family"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="15sp"
+                        android:textStyle="bold" />
+
                 </LinearLayout>
 
                 <TextView

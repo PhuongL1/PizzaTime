@@ -12,6 +12,7 @@ object FakeAddEditProductData {
             name = "Midnight Truffle & Pecorino",
             description = "Shaved black summer truffles, aged pecorino romano, and cold-pressed extra virgin olive oil on our 48-hour fermented sourdough base.",
             category = "Signature Artisan",
+            imageUrl = "",
             basePrice = 28.00,
             sizes = listOf(
                 ProductOptionUiModel("Small (10\")", true),

@@ -30,7 +30,10 @@ object FirebaseOrderRepository {
                 "quantity" to item.quantity,
                 "unitPrice" to item.price,
                 "totalPrice" to item.price * item.quantity,
-                "imageUrl" to "",
+                "imageUrl" to item.imageUrl,
+                "selectedSize" to item.selectedSize,
+                "selectedCrust" to item.selectedCrust,
+                "selectedToppings" to item.selectedToppings,
             )
         }
 

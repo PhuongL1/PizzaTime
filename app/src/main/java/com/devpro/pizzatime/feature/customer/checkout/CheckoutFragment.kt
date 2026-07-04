@@ -350,11 +350,19 @@ class CheckoutFragment : Fragment() {
     }
 }
 
-private fun CartItemUiModel.toCheckoutItem() = CheckoutOrderItemUiModel(
-    id = id,
-    name = name,
-    optionText = "x$quantity",
-    price = price * quantity,
-    imageRes = imageRes,
-)
+private fun CartItemUiModel.toCheckoutItem(): CheckoutOrderItemUiModel {
+    val customizationParts = buildList {
+        if (selectedSize.isNotBlank()) add(selectedSize)
+        if (selectedCrust.isNotBlank()) add(selectedCrust)
+        if (selectedToppings.isNotEmpty()) add(selectedToppings.joinToString())
+    }
+    val optionText = ("x$quantity " + customizationParts.joinToString(" • ")).trim()
+    return CheckoutOrderItemUiModel(
+        id = id,
+        name = name,
+        optionText = optionText,
+        price = price * quantity,
+        imageRes = imageRes,
+    )
+}
 

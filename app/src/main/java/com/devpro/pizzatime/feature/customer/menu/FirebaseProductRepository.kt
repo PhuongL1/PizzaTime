@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.customer.menu
 
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Locale
 
 object FirebaseProductRepository {
 
@@ -32,7 +33,18 @@ object FirebaseProductRepository {
             available = doc.getBoolean("available") ?: false,
             categoryId = doc.getString("categoryId") ?: "",
             categoryName = doc.getString("categoryName") ?: "",
+            sizeOptions = doc.getStringList("sizeOptions"),
+            crustOptions = doc.getStringList("crustOptions"),
+            toppingOptions = doc.getStringList("toppingOptions"),
         )
     }
-}
 
+    private fun DocumentSnapshot.getStringList(field: String): List<String> {
+        return (get(field) as? List<*>)
+            ?.mapNotNull { it as? String }
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?.distinctBy { it.lowercase(Locale.US) }
+            ?: emptyList()
+    }
+}

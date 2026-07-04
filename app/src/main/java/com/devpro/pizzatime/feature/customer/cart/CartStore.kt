@@ -35,7 +35,7 @@ object CartStore {
 
     fun addItem(item: CartItemUiModel) {
         syncOwnerWithCurrentUser()
-        val index = cartItems.indexOfFirst { it.id == item.id }
+        val index = cartItems.indexOfFirst { it.cartKey == item.cartKey }
 
         if (index >= 0) {
             val currentItem = cartItems[index]
@@ -47,18 +47,18 @@ object CartStore {
         }
     }
 
-    fun increaseQuantity(id: String) {
+    fun increaseQuantity(cartKey: String) {
         syncOwnerWithCurrentUser()
-        val index = cartItems.indexOfFirst { it.id == id }
+        val index = cartItems.indexOfFirst { it.cartKey == cartKey }
         if (index < 0) return
 
         val item = cartItems[index]
         cartItems[index] = item.copy(quantity = item.quantity + 1)
     }
 
-    fun decreaseQuantity(id: String) {
+    fun decreaseQuantity(cartKey: String) {
         syncOwnerWithCurrentUser()
-        val index = cartItems.indexOfFirst { it.id == id }
+        val index = cartItems.indexOfFirst { it.cartKey == cartKey }
         if (index < 0) return
 
         val item = cartItems[index]
@@ -70,9 +70,9 @@ object CartStore {
         }
     }
 
-    fun removeItem(id: String) {
+    fun removeItem(cartKey: String) {
         syncOwnerWithCurrentUser()
-        cartItems.removeAll { it.id == id }
+        cartItems.removeAll { it.cartKey == cartKey }
     }
 
     fun replaceItems(items: List<CartItemUiModel>) {

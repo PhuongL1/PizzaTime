@@ -9,7 +9,15 @@ data class CartItemUiModel(
     val price: Double,
     val quantity: Int,
     @param:DrawableRes val imageRes: Int,
-)
+    val selectedSize: String = "",
+    val selectedCrust: String = "",
+    val selectedToppings: List<String> = emptyList(),
+    val imageUrl: String = "",
+) {
+    val cartKey: String
+        get() = listOf(id, selectedSize, selectedCrust, selectedToppings.joinToString("|"))
+            .joinToString("::")
+}
 
 object FakeCartData {
 

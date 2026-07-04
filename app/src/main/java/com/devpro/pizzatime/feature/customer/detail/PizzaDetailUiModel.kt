@@ -14,6 +14,8 @@ data class PizzaDetailUiModel(
     @param:DrawableRes val imageRes: Int,
     val toppings: List<ExtraToppingUiModel>,
     val imageUrl: String = "",
+    val sizeOptions: List<String> = emptyList(),
+    val crustOptions: List<String> = emptyList(),
 )
 
 data class ExtraToppingUiModel(

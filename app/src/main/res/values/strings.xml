@@ -154,6 +154,7 @@
     <string name="detail_size_small">SMALL</string>
     <string name="detail_size_medium">MEDIUM</string>
     <string name="detail_size_large">LARGE</string>
+    <string name="detail_size_family">FAMILY</string>
     <string name="detail_size_small_inch">10&quot;</string>
     <string name="detail_size_medium_inch">12&quot;</string>
     <string name="detail_size_large_inch">14&quot;</string>
@@ -587,6 +588,11 @@
     <string name="add_edit_product_toppings">TOPPINGS</string>
     <string name="add_edit_product_add_new">+ ADD NEW</string>
     <string name="add_edit_product_topping_chip_format">%1$s  ×</string>
+    <string name="add_edit_product_topping_name_hint">Topping name</string>
+    <string name="add_edit_product_topping_required">Topping name is required.</string>
+    <string name="add_edit_product_topping_duplicate">That topping already exists.</string>
+    <string name="add_edit_product_size_required">Select at least one size.</string>
+    <string name="add_edit_product_crust_required">Select at least one crust.</string>
 
     <string name="add_edit_product_check_icon">✓</string>
     <string name="add_edit_product_discard_changes">Discard Changes</string>

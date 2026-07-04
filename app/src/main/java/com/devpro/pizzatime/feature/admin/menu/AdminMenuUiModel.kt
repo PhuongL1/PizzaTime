@@ -23,4 +23,7 @@ data class AdminMenuUiModel(
     val imageUrl: String,
     @get:DrawableRes val imageRes: Int,
     val isAvailable: Boolean,
+    val sizeOptions: List<String> = emptyList(),
+    val crustOptions: List<String> = emptyList(),
+    val toppingOptions: List<String> = emptyList(),
 )

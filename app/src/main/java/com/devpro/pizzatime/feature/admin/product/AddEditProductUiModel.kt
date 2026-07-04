@@ -9,11 +9,12 @@ data class AddEditProductUiModel(
     val name: String,
     val description: String,
     val category: String,
+    val imageUrl: String,
     val basePrice: Double,
     val sizes: List<ProductOptionUiModel>,
     val crustOptions: List<ProductOptionUiModel>,
     val toppings: List<String>,
-    @DrawableRes val heroImageRes: Int,
+    @param:DrawableRes val heroImageRes: Int,
 )
 
 data class ProductOptionUiModel(

@@ -9,6 +9,7 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCartBinding
 import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
@@ -19,7 +20,10 @@ import java.util.Locale
 class CartFragment : Fragment() {
 
     private var _binding: FragmentCartBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentCartBinding
+        get() = checkNotNull(_binding) {
+            "FragmentCartBinding is only valid between onCreateView and onDestroyView."
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -71,17 +75,17 @@ class CartFragment : Fragment() {
             bindCartItem(itemBinding, item)
 
             itemBinding.btnMinus.setOnClickListener {
-                CartStore.decreaseQuantity(item.id)
+                CartStore.decreaseQuantity(item.cartKey)
                 renderCart()
             }
 
             itemBinding.btnPlus.setOnClickListener {
-                CartStore.increaseQuantity(item.id)
+                CartStore.increaseQuantity(item.cartKey)
                 renderCart()
             }
 
             itemBinding.btnRemove.setOnClickListener {
-                CartStore.removeItem(item.id)
+                CartStore.removeItem(item.cartKey)
                 renderCart()
             }
 
@@ -104,11 +108,25 @@ class CartFragment : Fragment() {
         itemBinding: ItemCartPizzaBinding,
         item: CartItemUiModel,
     ) {
-        itemBinding.imgPizza.setImageResource(item.imageRes)
+        itemBinding.imgPizza.loadProductImage(item.imageUrl, item.imageRes)
         itemBinding.imgPizza.contentDescription = item.name
         itemBinding.tvPizzaName.text = item.name
-        itemBinding.tvPizzaPrice.text = formatMoney(item.price)
+        val customizationText = item.customizationText()
+        itemBinding.tvPizzaPrice.text = if (customizationText.isBlank()) {
+            formatMoney(item.price)
+        } else {
+            "${formatMoney(item.price)}\n$customizationText"
+        }
         itemBinding.tvQuantity.text = item.quantity.toString()
+    }
+
+    private fun CartItemUiModel.customizationText(): String {
+        val parts = buildList {
+            if (selectedSize.isNotBlank()) add("Size: $selectedSize")
+            if (selectedCrust.isNotBlank()) add("Crust: $selectedCrust")
+            if (selectedToppings.isNotEmpty()) add("Toppings: ${selectedToppings.joinToString()}")
+        }
+        return parts.joinToString(" • ")
     }
 
     private fun renderSummary(cartItems: List<CartItemUiModel>) {

@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.admin.menu
 
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.product.ProductOptionDefaults
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -38,6 +39,22 @@ object AdminMenuFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun loadProduct(
+        productId: String,
+        onResult: (Result<AdminMenuUiModel>) -> Unit,
+    ) {
+        firestore.collection("products").document(productId)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (!doc.exists()) {
+                    onResult(Result.failure(Exception("Product not found.")))
+                    return@addOnSuccessListener
+                }
+                onResult(Result.success(doc.toAdminMenuUiModel()))
+            }
+            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
     fun updateProduct(
         productId: String,
         name: String,
@@ -46,6 +63,9 @@ object AdminMenuFirestoreRepository {
         categoryId: String,
         imageUrl: String,
         available: Boolean,
+        sizeOptions: List<String> = ProductOptionDefaults.sizeOptions,
+        crustOptions: List<String> = ProductOptionDefaults.crustOptions,
+        toppingOptions: List<String> = emptyList(),
         onResult: (Result<Unit>) -> Unit,
     ) {
         firestore.collection("products").document(productId)
@@ -57,6 +77,9 @@ object AdminMenuFirestoreRepository {
                     "categoryId" to categoryId,
                     "imageUrl" to imageUrl,
                     "available" to available,
+                    "sizeOptions" to sizeOptions,
+                    "crustOptions" to crustOptions,
+                    "toppingOptions" to toppingOptions,
                     "updatedAt" to FieldValue.serverTimestamp(),
                 ),
             )
@@ -97,6 +120,10 @@ object AdminMenuFirestoreRepository {
         basePrice: Double,
         categoryId: String,
         imageUrl: String,
+        available: Boolean = true,
+        sizeOptions: List<String> = ProductOptionDefaults.sizeOptions,
+        crustOptions: List<String> = ProductOptionDefaults.crustOptions,
+        toppingOptions: List<String> = emptyList(),
         onResult: (Result<Unit>) -> Unit,
     ) {
         val productRef = firestore.collection("products").document(productId)
@@ -116,7 +143,10 @@ object AdminMenuFirestoreRepository {
                         "basePrice" to basePrice,
                         "imageUrl" to imageUrl,
                         "rating" to 0.0,
-                        "available" to true,
+                        "available" to available,
+                        "sizeOptions" to sizeOptions,
+                        "crustOptions" to crustOptions,
+                        "toppingOptions" to toppingOptions,
                         "createdAt" to FieldValue.serverTimestamp(),
                         "updatedAt" to FieldValue.serverTimestamp(),
                     ),
@@ -141,7 +171,19 @@ object AdminMenuFirestoreRepository {
             imageUrl = getString("imageUrl") ?: "",
             imageRes = R.drawable.img_pizza_time,
             isAvailable = getBoolean("available") ?: true,
+            sizeOptions = getStringList("sizeOptions"),
+            crustOptions = getStringList("crustOptions"),
+            toppingOptions = getStringList("toppingOptions"),
         )
+    }
+
+    private fun DocumentSnapshot.getStringList(field: String): List<String> {
+        return (get(field) as? List<*>)
+            ?.mapNotNull { it as? String }
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?.distinctBy { it.lowercase(Locale.US) }
+            ?: emptyList()
     }
 
     private fun mapCategory(categoryId: String): AdminMenuCategory {
