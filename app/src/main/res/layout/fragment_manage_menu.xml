@@ -17,120 +17,112 @@
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
 
-    <ScrollView
-        android:id="@+id/manageMenuScroll"
+    <LinearLayout
+        android:id="@+id/manageMenuContent"
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
-        android:overScrollMode="never"
-        android:scrollbars="none">
+        android:orientation="vertical"
+        android:paddingHorizontal="24dp"
+        android:paddingTop="36dp"
+        android:paddingBottom="36dp">
 
-        <LinearLayout
-            android:id="@+id/manageMenuContent"
+        <TextView
+            android:id="@+id/tvManageMenuTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="36dp"
-            android:paddingBottom="36dp">
+            android:fontFamily="serif"
+            android:text="@string/manage_menu_title"
+            android:textColor="@color/pt_white"
+            android:textSize="36sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvManageMenuTitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:fontFamily="serif"
-                android:text="@string/manage_menu_title"
-                android:textColor="@color/pt_white"
-                android:textSize="36sp"
-                android:textStyle="bold" />
+        <TextView
+            android:id="@+id/tvManageMenuSubtitle"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="6dp"
+            android:text="@string/manage_menu_subtitle"
+            android:textColor="@color/pt_white_light"
+            android:textSize="17sp"
+            android:textStyle="bold" />
 
-            <TextView
-                android:id="@+id/tvManageMenuSubtitle"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="6dp"
-                android:text="@string/manage_menu_subtitle"
-                android:textColor="@color/pt_white_light"
-                android:textSize="17sp"
-                android:textStyle="bold" />
+        <EditText
+            android:id="@+id/edtSearchMenu"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginTop="42dp"
+            android:background="@drawable/bg_manage_menu_search"
+            android:hint="@string/manage_menu_search_hint"
+            android:inputType="text"
+            android:paddingHorizontal="22dp"
+            android:singleLine="true"
+            android:textColor="@color/pt_white"
+            android:textColorHint="#8F8580"
+            android:textSize="18sp" />
 
-            <EditText
-                android:id="@+id/edtSearchMenu"
-                android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_marginTop="42dp"
-                android:background="@drawable/bg_manage_menu_search"
-                android:hint="@string/manage_menu_search_hint"
-                android:inputType="text"
-                android:paddingHorizontal="22dp"
-                android:singleLine="true"
-                android:textColor="@color/pt_white"
-                android:textColorHint="#8F8580"
-                android:textSize="18sp" />
+        <HorizontalScrollView
+            android:id="@+id/categoryScroll"
+            android:layout_width="match_parent"
+            android:layout_height="70dp"
+            android:layout_marginTop="18dp"
+            android:overScrollMode="never"
+            android:scrollbars="none">
 
-            <HorizontalScrollView
-                android:id="@+id/categoryScroll"
-                android:layout_width="match_parent"
-                android:layout_height="70dp"
-                android:layout_marginTop="18dp"
-                android:overScrollMode="never"
-                android:scrollbars="none">
+            <LinearLayout
+                android:id="@+id/categoryRow"
+                android:layout_width="wrap_content"
+                android:layout_height="match_parent"
+                android:gravity="center_vertical"
+                android:orientation="horizontal">
 
-                <LinearLayout
-                    android:id="@+id/categoryRow"
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
+                <TextView
+                    android:id="@+id/chipSignature"
+                    android:layout_width="145dp"
+                    android:layout_height="52dp"
+                    android:background="@drawable/bg_chip_selected_gold"
+                    android:gravity="center"
+                    android:text="@string/manage_menu_category_signature"
+                    android:textColor="#3A210D"
+                    android:textSize="17sp" />
 
-                    <TextView
-                        android:id="@+id/chipSignature"
-                        android:layout_width="145dp"
-                        android:layout_height="52dp"
-                        android:background="@drawable/bg_chip_selected_gold"
-                        android:gravity="center"
-                        android:text="@string/manage_menu_category_signature"
-                        android:textColor="#3A210D"
-                        android:textSize="17sp" />
+                <TextView
+                    android:id="@+id/chipClassic"
+                    android:layout_width="125dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_chip_unselected_dark"
+                    android:gravity="center"
+                    android:text="@string/manage_menu_category_classic"
+                    android:textColor="#D8C8BC"
+                    android:textSize="17sp" />
 
-                    <TextView
-                        android:id="@+id/chipClassic"
-                        android:layout_width="125dp"
-                        android:layout_height="52dp"
-                        android:layout_marginStart="12dp"
-                        android:background="@drawable/bg_chip_unselected_dark"
-                        android:gravity="center"
-                        android:text="@string/manage_menu_category_classic"
-                        android:textColor="#D8C8BC"
-                        android:textSize="17sp" />
+                <TextView
+                    android:id="@+id/chipVeggie"
+                    android:layout_width="125dp"
+                    android:layout_height="52dp"
+                    android:layout_marginStart="12dp"
+                    android:background="@drawable/bg_chip_unselected_dark"
+                    android:gravity="center"
+                    android:text="@string/manage_menu_category_veggie"
+                    android:textColor="#D8C8BC"
+                    android:textSize="17sp" />
 
-                    <TextView
-                        android:id="@+id/chipVeggie"
-                        android:layout_width="125dp"
-                        android:layout_height="52dp"
-                        android:layout_marginStart="12dp"
-                        android:background="@drawable/bg_chip_unselected_dark"
-                        android:gravity="center"
-                        android:text="@string/manage_menu_category_veggie"
-                        android:textColor="#D8C8BC"
-                        android:textSize="17sp" />
+            </LinearLayout>
 
-                </LinearLayout>
+        </HorizontalScrollView>
 
-            </HorizontalScrollView>
+        <androidx.recyclerview.widget.RecyclerView
+            android:id="@+id/rvMenuItems"
+            android:layout_width="match_parent"
+            android:layout_height="0dp"
+            android:layout_marginTop="28dp"
+            android:layout_weight="1"
+            android:clipToPadding="false"
+            android:overScrollMode="never"
+            tools:listitem="@layout/item_admin_menu" />
 
-            <androidx.recyclerview.widget.RecyclerView
-                android:id="@+id/rvMenuItems"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_marginTop="28dp"
-                android:nestedScrollingEnabled="false"
-                android:overScrollMode="never"
-                tools:listitem="@layout/item_admin_menu" />
-
-        </LinearLayout>
-
-    </ScrollView>
+    </LinearLayout>
 
     <include
         android:id="@+id/staffBottomNav"

@@ -8,6 +8,7 @@ import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.ItemAdminMenuBinding
 
 class AdminMenuAdapter(
@@ -43,7 +44,10 @@ class AdminMenuAdapter(
         fun bind(item: AdminMenuUiModel) = with(binding) {
             val context = root.context
 
-            ivMenuImage.setImageResource(item.imageRes)
+            ivMenuImage.loadProductImage(
+                imageUrl = item.imageUrl,
+                fallbackRes = item.imageRes,
+            )
             tvCategoryBadge.text = context.getString(item.category.labelRes)
             tvMenuName.text = item.name
             tvMenuDescription.text = item.description
