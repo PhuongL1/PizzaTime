@@ -5,6 +5,7 @@ import android.view.ViewGroup
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
+import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.ItemShipperDeliveryOrderBinding
 
 class ShipperDeliveryAdapter(
@@ -42,6 +43,11 @@ class ShipperDeliveryAdapter(
                 order.paymentAmount
             } else {
                 order.paymentLabel
+            }
+            btnStartDelivery.text = if (order.status == ShipperDeliveryStatus.ACTIVE) {
+                root.context.getString(R.string.shipper_detail_delivered_cash_collected)
+            } else {
+                root.context.getString(R.string.shipper_detail_start_delivery)
             }
 
             root.setOnClickListener {

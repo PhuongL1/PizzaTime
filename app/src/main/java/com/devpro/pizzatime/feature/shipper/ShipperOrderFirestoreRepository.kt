@@ -96,6 +96,7 @@ object ShipperOrderFirestoreRepository {
             paymentLabel = paymentMethod.uppercase(Locale.US),
             paymentAmount = String.format(Locale.US, "$%.2f", total),
             status = if (statusStr == "DELIVERING") ShipperDeliveryStatus.ACTIVE else ShipperDeliveryStatus.ASSIGNED,
+            shipperId = getString("shipperId").orEmpty(),
         )
     }
 

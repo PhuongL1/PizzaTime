@@ -13,4 +13,5 @@ data class ShipperDeliveryUiModel(
     val paymentLabel: String,
     val paymentAmount: String,
     val status: ShipperDeliveryStatus,
+    val shipperId: String = "",
 )

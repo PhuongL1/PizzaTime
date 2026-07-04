@@ -13,6 +13,7 @@ import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.ListenerRegistration
 
 class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_delivery_dashboard) {
@@ -77,11 +78,15 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         ordersListener = ShipperOrderFirestoreRepository.listenOrders { result ->
             if (!isAdded) return@listenOrders
             result.onSuccess { orders ->
-                val activeDelivery = orders.firstOrNull { it.status == ShipperDeliveryStatus.ACTIVE }
+                val shipperId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+                val visibleOrders = orders.filter { order ->
+                    order.shipperId.isBlank() || order.shipperId == shipperId
+                }
+                val activeDelivery = visibleOrders.firstOrNull { it.status == ShipperDeliveryStatus.ACTIVE }
                 if (activeDelivery != null) {
                     bindActiveDelivery(activeDelivery)
                 }
-                deliveryAdapter.submitList(orders.filter { it.status == ShipperDeliveryStatus.ASSIGNED })
+                deliveryAdapter.submitList(visibleOrders)
             }
         }
     }

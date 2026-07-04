@@ -17,7 +17,6 @@ object OrderTransitionRepository {
     private const val STATUS_DELIVERING = "DELIVERING"
     private const val STATUS_DELIVERED = "DELIVERED"
     private const val STATUS_CANCELLED = "CANCELLED"
-    private const val POINT_VALUE_VND = 10_000.0
 
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -249,22 +248,14 @@ object OrderTransitionRepository {
 
             val currentStatus = order.getString("status").orEmpty()
             val currentShipperId = order.getString("shipperId").orEmpty()
-            val alreadyAwarded = order.getBoolean("loyaltyAwarded") == true
             if (
                 currentStatus != STATUS_DELIVERING ||
-                alreadyAwarded ||
                 currentShipperId.isNotBlank() && currentShipperId != shipperId
             ) {
                 throw staleOrderException()
             }
 
             val total = order.getDouble("finalTotal") ?: order.getDouble("total") ?: 0.0
-            val customerId = order.getString("customerId").orEmpty()
-            if (customerId.isBlank()) {
-                throw staleOrderException()
-            }
-
-            val earnedPoints = (total / POINT_VALUE_VND).toInt()
             transaction.update(
                 orderRef,
                 mapOf(
@@ -285,19 +276,6 @@ object OrderTransitionRepository {
                             note = "Shipper delivered order and collected cash payment",
                         ),
                     ),
-                    "loyaltyAwarded" to true,
-                    "earnedPoints" to earnedPoints,
-                ),
-            )
-
-            val userRef = firestore.collection("users").document(customerId)
-            transaction.update(
-                userRef,
-                mapOf(
-                    "doughPoints" to FieldValue.increment(earnedPoints.toLong()),
-                    "lifetimeSpend" to FieldValue.increment(total),
-                    "completedOrders" to FieldValue.increment(1L),
-                    "updatedAt" to FieldValue.serverTimestamp(),
                 ),
             )
         }
