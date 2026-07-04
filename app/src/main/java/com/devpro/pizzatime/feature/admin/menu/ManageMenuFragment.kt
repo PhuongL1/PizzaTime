@@ -51,9 +51,9 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             uploadProductImage(pendingUpload, uri)
         }
 
-    private var selectedCategory = AdminMenuCategory.SIGNATURE
+    private var selectedCategory: AdminMenuCategory? = null
     private var searchQuery = ""
-    private var allProducts: List<AdminMenuUiModel> = FakeAdminMenuData.getItems()
+    private var allProducts: List<AdminMenuUiModel> = emptyList()
 
     private val menuAdapter = AdminMenuAdapter(
         onAvailabilityClick = { item ->
@@ -74,11 +74,11 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         setupMenuList()
         setupTopBar()
         setupBottomNav()
-        renderMenuItems()
-        loadFirestoreProducts()
+        resetMenuFilters()
+        refreshProductsFromFirestore()
     }
 
-    private fun loadFirestoreProducts() {
+    private fun refreshProductsFromFirestore() {
         AdminMenuFirestoreRepository.loadProducts { result ->
             if (!isAdded) return@loadProducts
             allProducts = result.getOrElse { FakeAdminMenuData.getItems() }
@@ -216,7 +216,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         )
         val categoryInput = createDialogInput(
             hint = getString(R.string.manage_menu_edit_category_hint),
-            text = selectedCategory.name,
+            text = selectedCategory?.name ?: AdminMenuCategory.SIGNATURE.name,
             inputType = InputType.TYPE_CLASS_TEXT or InputType.TYPE_TEXT_FLAG_CAP_CHARACTERS,
         )
         val imageUrlInput = createDialogInput(
@@ -283,7 +283,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                             .onSuccess {
                                 pendingUpload.imageUrlInput.setText(imageUrl)
                                 showToast(R.string.manage_menu_upload_image_saved)
-                                loadFirestoreProducts()
+                                refreshProductsFromFirestore()
                             }
                             .onFailure {
                                 showToast(R.string.manage_menu_upload_image_failed)
@@ -352,7 +352,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                 .onSuccess {
                     showToast(R.string.manage_menu_edit_product_saved)
                     onSaved()
-                    loadFirestoreProducts()
+                    refreshProductsFromFirestore()
                 }
                 .onFailure {
                     showToast(R.string.manage_menu_edit_product_failed)
@@ -406,7 +406,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                 .onSuccess {
                     showToast(R.string.manage_menu_create_product_saved)
                     onSaved()
-                    loadFirestoreProducts()
+                    refreshProductsFromFirestore()
                 }
                 .onFailure {
                     showToast(R.string.manage_menu_create_product_failed)
@@ -446,6 +446,15 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         renderMenuItems()
     }
 
+    private fun resetMenuFilters() {
+        searchQuery = ""
+        selectedCategory = null
+        if (binding.edtSearchMenu.text.isNotEmpty()) {
+            binding.edtSearchMenu.setText("")
+        }
+        updateCategoryChipState()
+    }
+
     private fun setupMenuList() = with(binding.rvMenuItems) {
         layoutManager = LinearLayoutManager(requireContext())
         adapter = menuAdapter
@@ -456,7 +465,9 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         val normalizedQuery = searchQuery.trim().lowercase()
 
         val filteredItems = allProducts
-            .filter { item -> item.category == selectedCategory }
+            .filter { item ->
+                selectedCategory == null || item.category == selectedCategory
+            }
             .filter { item ->
                 normalizedQuery.isBlank() ||
                         item.name.lowercase().contains(normalizedQuery) ||
