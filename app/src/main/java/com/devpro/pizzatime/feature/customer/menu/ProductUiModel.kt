@@ -8,5 +8,7 @@ data class ProductUiModel(
     val imageUrl: String,
     val rating: Double,
     val available: Boolean,
+    val categoryId: String = "",
+    val categoryName: String = "",
 )
 

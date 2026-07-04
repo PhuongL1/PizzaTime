@@ -30,6 +30,8 @@ object FirebaseProductRepository {
             imageUrl = doc.getString("imageUrl") ?: "",
             rating = doc.getDouble("rating") ?: 0.0,
             available = doc.getBoolean("available") ?: false,
+            categoryId = doc.getString("categoryId") ?: "",
+            categoryName = doc.getString("categoryName") ?: "",
         )
     }
 }

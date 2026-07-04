@@ -119,14 +119,19 @@
                     android:contentDescription="@string/home_search_hint"
                     android:src="@drawable/ic_search" />
 
-                <TextView
+                <EditText
                     android:id="@+id/tvSearchHint"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_marginStart="16dp"
                     android:layout_weight="1"
-                    android:text="@string/home_search_hint"
-                    android:textColor="@color/pt_text_muted"
+                    android:background="@android:color/transparent"
+                    android:hint="@string/home_search_hint"
+                    android:imeOptions="actionSearch"
+                    android:inputType="text"
+                    android:singleLine="true"
+                    android:textColor="@color/pt_text_primary"
+                    android:textColorHint="@color/pt_text_muted"
                     android:textSize="16sp" />
 
             </LinearLayout>
@@ -279,6 +284,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tvPromoTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="12dp"
@@ -289,6 +295,7 @@
                         android:textSize="26sp" />
 
                     <TextView
+                        android:id="@+id/btnPromoAction"
                         android:layout_width="150dp"
                         android:layout_height="46dp"
                         android:layout_marginTop="16dp"
@@ -313,22 +320,38 @@
                 android:scrollbars="none">
 
                 <LinearLayout
+                    android:id="@+id/categoryRow"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:orientation="horizontal">
 
                     <TextView
+                        android:id="@+id/chipAll"
                         android:layout_width="96dp"
                         android:layout_height="42dp"
                         android:background="@drawable/bg_chip_selected_gold"
                         android:gravity="center"
                         android:letterSpacing="0.10"
-                        android:text="@string/home_category_pizza"
+                        android:text="@string/home_category_all"
                         android:textColor="@color/pt_text_dark"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/chipPizza"
+                        android:layout_width="96dp"
+                        android:layout_height="42dp"
+                        android:layout_marginStart="14dp"
+                        android:background="@drawable/bg_chip_unselected_dark"
+                        android:gravity="center"
+                        android:letterSpacing="0.10"
+                        android:text="@string/home_category_pizza"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="12sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:id="@+id/chipCombo"
                         android:layout_width="112dp"
                         android:layout_height="42dp"
                         android:layout_marginStart="14dp"
@@ -341,6 +364,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/chipDrinks"
                         android:layout_width="112dp"
                         android:layout_height="42dp"
                         android:layout_marginStart="14dp"
@@ -353,6 +377,7 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/chipDessert"
                         android:layout_width="112dp"
                         android:layout_height="42dp"
                         android:layout_marginStart="14dp"

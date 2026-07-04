@@ -101,9 +101,13 @@
     <string name="home_promo_title">Midnight Truffle\n&amp; Bubbles</string>
     <string name="home_promo_button">RESERVE NOW</string>
     <string name="home_category_pizza">PIZZA</string>
+    <string name="home_category_all">ALL</string>
     <string name="home_category_combo">COMBO</string>
     <string name="home_category_drinks">DRINKS</string>
     <string name="home_category_dessert">DESSERT</string>
+    <string name="home_no_featured_product">No featured product available yet.</string>
+    <string name="home_chef_rank_label">BEST SELLER #%1$d</string>
+    <string name="home_rating_label">★ %1$s</string>
     <string name="home_best_sellers">Best Sellers</string>
     <string name="home_see_all">SEE ALL</string>
     <string name="home_product_diavola">Diavola Noir</string>

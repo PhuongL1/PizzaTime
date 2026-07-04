@@ -21,6 +21,7 @@ data class ChefPizzaUiModel(
     val price: String,
     val label: String,
     val rating: String,
+    val rawRating: String = "",
     @param:DrawableRes val imageRes: Int,
     val imageUrl: String = "",
 )
