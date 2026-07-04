@@ -29,6 +29,9 @@
 - Favorites loads and updates correctly.
 - Cart opens from product screens.
 - Checkout creates an order in Firestore.
+- Checkout is blocked if Store Settings has no pickup address.
+- Checkout is blocked if Store Settings is not accepting orders.
+- Checkout is blocked if the customer delivery address is blank.
 - Tracking updates in realtime.
 - History shows customer orders.
 - Profile loads Firestore profile data.
@@ -69,6 +72,7 @@
 ## Admin QA
 
 - Admin routes to Admin Dashboard.
+- Store Settings saves `appConfig/store` with pickup address, phone, hours, and accepting-orders state.
 - Manage Menu loads products from Firestore.
 - Product add, edit, and availability toggle still work with Firestore.
 - Product image upload shows: "Image upload is temporarily disabled. Firebase Storage is not set up yet."
@@ -83,6 +87,7 @@
 
 - `users/{uid}` has the expected role and `active = true`.
 - `orders/{orderId}` has status history entries.
+- New `orders/{orderId}` contains `storeName`, `pickupAddress`, `storePhone`, `deliveryAddress`, `customerName`, and `customerPhone`.
 - Existing `products/{id}.imageUrl` values display when valid; blank or invalid URLs use fallback drawables.
 - Firestore rules still block invalid role transitions.
 - Storage upload is disabled in no-Blaze demo mode.

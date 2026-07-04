@@ -63,8 +63,18 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         tvReceivedAgo.text = getString(R.string.staff_order_detail_received, order.receivedAgo)
         tvStatus.text = mapStatusText(order.status)
 
+        tvPickupInfo.text = getString(
+            R.string.staff_order_detail_pickup_info,
+            order.storeName,
+            order.pickupAddress,
+            order.storePhone,
+        )
         tvCustomerName.text = order.customerName
-        tvCustomerAddress.text = order.deliveryAddress
+        tvCustomerAddress.text = getString(
+            R.string.staff_order_detail_delivery_info,
+            order.deliveryAddress,
+            order.customerPhone,
+        )
         tvEstimatedDelivery.text = getString(
             R.string.staff_order_detail_estimated_delivery,
             order.estimatedDeliveryTime,

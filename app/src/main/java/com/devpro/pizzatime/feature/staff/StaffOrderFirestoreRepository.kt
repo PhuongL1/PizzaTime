@@ -128,9 +128,12 @@ object StaffOrderFirestoreRepository {
             orderId = id,
             receivedAgo = createdAt.toTimeAgo(),
             status = mapStatus(statusStr),
+            storeName = getString("storeName").orNotProvided(),
+            pickupAddress = getString("pickupAddress").orNotProvided(),
+            storePhone = getString("storePhone").orNotProvided(),
             customerName = customerName,
-            customerPhone = "",
-            deliveryAddress = getString("deliveryAddress") ?: "",
+            customerPhone = getString("customerPhone").orNotProvided(),
+            deliveryAddress = getString("deliveryAddress").orNotProvided(),
             estimatedDeliveryTime = "",
             paymentMethod = getString("paymentMethod") ?: "CASH",
             paymentTotal = total,
@@ -209,6 +212,9 @@ object StaffOrderFirestoreRepository {
         return SimpleDateFormat("hh:mm a", Locale.US).format(Date(seconds * 1000))
     }
 
+    private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: NOT_PROVIDED
+
     private const val STATUS_CANCELLED = "CANCELLED"
+    private const val NOT_PROVIDED = "Not provided"
 }
 

@@ -91,7 +91,7 @@ object ShipperOrderFirestoreRepository {
         return ShipperDeliveryUiModel(
             orderId = id,
             customerName = customerName,
-            address = getString("deliveryAddress") ?: "",
+            address = getString("deliveryAddress").orNotProvided(),
             etaLabel = "",
             paymentLabel = paymentMethod.uppercase(Locale.US),
             paymentAmount = String.format(Locale.US, "$%.2f", total),
@@ -109,8 +109,12 @@ object ShipperOrderFirestoreRepository {
 
         return ShipperDeliveryDetailUiModel(
             orderId = id,
+            storeName = getString("storeName").orNotProvided(),
+            pickupAddress = getString("pickupAddress").orNotProvided(),
+            storePhone = getString("storePhone").orNotProvided(),
             customerName = customerName,
-            address = getString("deliveryAddress") ?: "",
+            customerPhone = getString("customerPhone").orNotProvided(),
+            address = getString("deliveryAddress").orNotProvided(),
             courierNote = getString("note") ?: "",
             paymentAmount = String.format(Locale.US, "$%.2f", total),
             paymentMethod = (getString("paymentMethod") ?: "CASH").uppercase(Locale.US),
@@ -129,5 +133,7 @@ object ShipperOrderFirestoreRepository {
         )
     }
 
-}
+    private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: NOT_PROVIDED
 
+    private const val NOT_PROVIDED = "Not provided"
+}

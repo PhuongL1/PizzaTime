@@ -23,7 +23,7 @@
     <string name="welcome_delivery_content_description">Delivery</string>
     <string name="welcome_delivery_title">Midnight Delivery</string>
     <string name="welcome_delivery_subtitle">Precision arrival for the late-night crave.</string>
-    <string name="welcome_footer">PIZZATIME Â© 2024 Â· ARTISAN CRAFT</string>
+    <string name="welcome_footer">PIZZATIME A© 2026 A· ARTISAN CRAFT</string>
     <string name="register_title">Create Account</string>
     <string name="register_subtitle">Join PizzaTime and unlock late-night artisan selections, faster checkout, and order tracking.</string>
     <string name="register_experience_label">MEMBER EXPERIENCE</string>
@@ -206,6 +206,9 @@
     <string name="checkout_prices_changed">Prices have changed. Please review your order again.</string>
     <string name="checkout_promo_invalid">Promo code is no longer valid. Please review your order again.</string>
     <string name="checkout_verify_failed">Could not verify your order. Please try again.</string>
+    <string name="checkout_store_pickup_missing">Store pickup address is not configured yet.</string>
+    <string name="checkout_store_closed">Store is not accepting orders right now.</string>
+    <string name="checkout_delivery_address_missing">Please add a delivery address before placing your order.</string>
     <string name="checkout_secure">SECURE CHECKOUT BY PIZZATIME</string>
     <string name="tracking_order_number">ORDER #PT-9823</string>
     <string name="tracking_eta">15-20 Mins</string>
@@ -811,6 +814,7 @@
     <string name="customer_order_detail_item_placeholder">▱</string>
 
     <string name="customer_order_detail_bill_details">BILL DETAILS</string>
+    <string name="customer_order_detail_pickup_from">PICKUP FROM</string>
     <string name="customer_order_detail_timeline_title">Order Timeline</string>
     <string name="customer_order_detail_subtotal">Subtotal</string>
     <string name="customer_order_detail_delivery_fee">Delivery Fee</string>
@@ -996,6 +1000,29 @@
     <string name="customer_account_settings_toast">Settings coming soon</string>
     <string name="customer_account_logout_toast">Logout coming soon</string>
     <string name="staff_order_detail_cancel_order">CANCEL ORDER</string>
+    <string name="common_not_provided">Not provided</string>
+    <string name="admin_action_store_settings">Store Settings</string>
+    <string name="store_settings_title">Store Settings</string>
+    <string name="store_settings_subtitle">Configure the live pickup address and whether customers can place new orders.</string>
+    <string name="store_settings_store_name">STORE NAME</string>
+    <string name="store_settings_store_name_hint">PizzaTime</string>
+    <string name="store_settings_pickup_address">PICKUP ADDRESS</string>
+    <string name="store_settings_pickup_address_hint">123 Nguyen Trai, Ha Noi</string>
+    <string name="store_settings_store_phone">STORE PHONE</string>
+    <string name="store_settings_store_phone_hint">0900000000</string>
+    <string name="store_settings_opening_hours">OPENING HOURS</string>
+    <string name="store_settings_opening_hours_hint">09:00 - 22:00</string>
+    <string name="store_settings_accepting_orders">Accepting Orders</string>
+    <string name="store_settings_save">SAVE SETTINGS</string>
+    <string name="store_settings_load_failed">Could not load store settings.</string>
+    <string name="store_settings_store_name_required">Store name is required.</string>
+    <string name="store_settings_pickup_address_required">Pickup address is required.</string>
+    <string name="store_settings_store_phone_required">Store phone is required.</string>
+    <string name="store_settings_save_success">Store settings saved.</string>
+    <string name="store_settings_save_failed">Could not save store settings.</string>
+    <string name="shipper_detail_pickup">PICKUP</string>
+    <string name="staff_order_detail_pickup_info">Pickup: %1$s, %2$s, %3$s</string>
+    <string name="staff_order_detail_delivery_info">Delivery: %1$s, %2$s</string>
 
     <!-- dialog select shipper  -->
     <string name="assign_shipper_active_deliveries">%1$d active</string>

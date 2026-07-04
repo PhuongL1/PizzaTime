@@ -14,6 +14,7 @@ import com.devpro.pizzatime.feature.admin.product.AddEditProductFragment
 import com.devpro.pizzatime.feature.admin.promo.ManagePromoCodesFragment
 import com.devpro.pizzatime.feature.admin.reports.ReportsFragment
 import com.devpro.pizzatime.feature.admin.staff.ManageStaffFragment
+import com.devpro.pizzatime.feature.admin.store.StoreSettingsFragment
 import com.devpro.pizzatime.feature.auth.LoginFragment
 import com.devpro.pizzatime.feature.auth.LoginRequiredFragment
 import com.devpro.pizzatime.feature.auth.forgot.ForgotPasswordFragment
@@ -230,6 +231,12 @@ fun Fragment.openManageStaff(addToBackStack: Boolean = true) {
 fun Fragment.openReports(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = ReportsFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openStoreSettings(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = StoreSettingsFragment(),
         addToBackStack = addToBackStack,
     )
 }

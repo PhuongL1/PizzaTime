@@ -113,19 +113,25 @@ Customer screens used in the demo:
 
 1. Login as `admin@pizzatime.com`.
 2. Open Admin Dashboard.
-3. Manage Menu:
+3. Open Store Settings and configure a pickup address before customer checkout:
+   - `storeName = PizzaTime`
+   - `pickupAddress = 123 Nguyen Trai, Ha Noi`
+   - `storePhone = 0900000000`
+   - `openingHours = 09:00 - 22:00`
+   - `acceptingOrders = true`
+4. Manage Menu:
    - edit products
    - image upload shows the no-Blaze disabled message
    - toggle availability
-4. Manage Promo:
+5. Manage Promo:
    - edit promo fields
    - toggle active state
-5. Manage Staff:
+6. Manage Staff:
    - view users
    - toggle active state
    - staff creation shows the no-Blaze disabled message
-6. Open Reports.
-7. Log out.
+7. Open Reports.
+8. Log out.
 
 ## Build Commands
 
@@ -171,6 +177,7 @@ firebase deploy --only functions --project pizzatime-de04c
 - Android FCM token registration and notification permission behavior remain enabled, but server-side notification delivery requires deployed Cloud Functions.
 - Admin-created staff accounts are temporarily disabled until Cloud Functions are deployed.
 - Product image upload is temporarily disabled until Firebase Storage is set up; existing `imageUrl` values still display, with fallback drawables for blank or invalid URLs.
+- Customers cannot place orders until Store Settings has a pickup address, the store is accepting orders, and the customer profile has a delivery address.
 - Some secondary screens still use fallback demo data if Firestore is unavailable.
 
 ## Submission Notes

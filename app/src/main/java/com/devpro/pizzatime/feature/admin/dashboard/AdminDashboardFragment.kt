@@ -15,6 +15,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openManagePromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openManageStaff
 import com.devpro.pizzatime.feature.staff.navigation.openReports
+import com.devpro.pizzatime.feature.staff.navigation.openStoreSettings
 
 class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
@@ -84,6 +85,10 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
         btnPromotions.setOnClickListener {
             openManagePromoCodes()
+        }
+
+        btnStoreSettings.setOnClickListener {
+            openStoreSettings()
         }
 
         tvSeeAllOrders.setOnClickListener {

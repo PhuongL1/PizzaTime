@@ -64,7 +64,11 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
 
     private fun bindDetail(detail: ShipperDeliveryDetailUiModel) = with(binding) {
         tvOrderTitle.text = getString(R.string.shipper_detail_order_title, detail.orderId.removePrefix("#"))
+        tvStoreName.text = detail.storeName
+        tvPickupAddress.text = detail.pickupAddress
+        tvStorePhone.text = detail.storePhone
         tvCustomerName.text = detail.customerName
+        tvCustomerPhone.text = detail.customerPhone
         tvDeliveryAddress.text = detail.address
         tvCourierNote.text = getString(R.string.shipper_detail_note_quote, detail.courierNote)
         tvPaymentAmount.text = detail.paymentAmount

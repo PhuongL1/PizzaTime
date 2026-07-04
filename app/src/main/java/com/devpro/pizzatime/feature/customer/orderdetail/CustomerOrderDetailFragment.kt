@@ -6,8 +6,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import android.widget.TextView
+import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
@@ -25,7 +25,7 @@ class CustomerOrderDetailFragment : Fragment() {
     private val binding: FragmentCustomerOrderDetailBinding
         get() = checkNotNull(_binding) {
             "FragmentCustomerOrderDetailBinding is only valid between onCreateView and onDestroyView."
-    }
+        }
     private var currentOrderId: String = ""
     private var isCancellingOrder = false
 
@@ -64,7 +64,7 @@ class CustomerOrderDetailFragment : Fragment() {
         currentOrderId = orderId
         if (isFirestoreOrderId(orderId)) {
             CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
-                if (!isAdded) return@loadOrderDetail
+                if (_binding == null || !isAdded) return@loadOrderDetail
                 val detail = result.getOrElse {
                     FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
                 }
@@ -97,7 +97,7 @@ class CustomerOrderDetailFragment : Fragment() {
     private fun bindItems(items: List<CustomerOrderItemUiModel>) = with(binding.orderItemsContainer) {
         removeAllViews()
 
-        items.forEach { item ->
+        items.forEachIndexed { index, item ->
             val itemBinding = ItemCustomerOrderDetailLineBinding.inflate(layoutInflater, this, false)
 
             itemBinding.tvItemName.text = getString(
@@ -112,8 +112,17 @@ class CustomerOrderDetailFragment : Fragment() {
                 itemBinding.ivItemImage.setImageResource(item.imageRes)
                 itemBinding.tvItemPlaceholder.isVisible = false
             } else {
-                itemBinding.ivItemImage.setImageResource(0)
+                itemBinding.ivItemImage.setImageDrawable(null)
                 itemBinding.tvItemPlaceholder.isVisible = true
+            }
+
+            itemBinding.root.layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                if (index > 0) {
+                    topMargin = 14.dp
+                }
             }
 
             addView(itemBinding.root)
@@ -133,6 +142,9 @@ class CustomerOrderDetailFragment : Fragment() {
         tvDeliveredTo.text = detail.deliveryAddressTitle
         tvAddressLine1.text = detail.deliveryAddressLine1
         tvAddressLine2.text = detail.deliveryAddressLine2
+        tvStoreName.text = detail.storeName
+        tvPickupAddress.text = detail.pickupAddress
+        tvStorePhone.text = detail.storePhone
     }
 
     private fun bindStatusHistory(items: List<CustomerOrderStatusHistoryUiModel>) = with(binding) {
@@ -194,7 +206,7 @@ class CustomerOrderDetailFragment : Fragment() {
         isCancellingOrder = true
         binding.btnCancelOrder.isEnabled = false
         CustomerOrderFirestoreRepository.cancelOrder(currentOrderId) { result ->
-            if (!isAdded) return@cancelOrder
+            if (_binding == null || !isAdded) return@cancelOrder
             result
                 .onSuccess {
                     isCancellingOrder = false

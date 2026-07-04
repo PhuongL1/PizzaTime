@@ -186,6 +186,11 @@ service cloud.firestore {
       allow write: if isAdmin();
     }
 
+    match /appConfig/{configId} {
+      allow get, list: if isActiveUser() && configId == "store";
+      allow create, update, delete: if isAdmin() && configId == "store";
+    }
+
     match /users/{userId} {
       allow get: if (isOwner(userId) && isActiveUser()) || isAdmin();
       allow list: if isAdmin();

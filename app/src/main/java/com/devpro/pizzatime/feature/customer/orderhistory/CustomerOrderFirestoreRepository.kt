@@ -113,8 +113,11 @@ object CustomerOrderFirestoreRepository {
                 STATUS_CANCELLED -> "DELIVERY ADDRESS"
                 else -> "DELIVERING TO"
             },
-            deliveryAddressLine1 = getString("deliveryAddress") ?: "",
+            deliveryAddressLine1 = getString("deliveryAddress").orNotProvided(),
             deliveryAddressLine2 = "",
+            storeName = getString("storeName").orNotProvided(),
+            pickupAddress = getString("pickupAddress").orNotProvided(),
+            storePhone = getString("storePhone").orNotProvided(),
             statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
             canCancel = statusStr == STATUS_PENDING,
         )
@@ -207,6 +210,8 @@ object CustomerOrderFirestoreRepository {
     private fun String?.orUnknownStatus(): String = this?.takeIf { it.isNotBlank() } ?: "Unknown"
 
     private fun String?.orSystemRole(): String = this?.takeIf { it.isNotBlank() } ?: "System"
+
+    private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: "Not provided"
 
     private data class OrderStatusHistoryEntry(
         val status: String,

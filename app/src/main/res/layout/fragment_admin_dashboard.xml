@@ -430,10 +430,39 @@
 
                 </LinearLayout>
 
+                <LinearLayout
+                    android:id="@+id/btnStoreSettings"
+                    android:layout_width="0dp"
+                    android:layout_height="match_parent"
+                    android:layout_weight="1"
+                    android:gravity="center"
+                    android:orientation="vertical"
+                    tools:ignore="UseCompoundDrawables">
+
+                    <ImageView
+                        android:layout_width="66dp"
+                        android:layout_height="66dp"
+                        android:background="@drawable/bg_admin_quick_action_circle"
+                        android:contentDescription="@string/admin_action_store_settings"
+                        android:padding="18dp"
+                        android:src="@drawable/ic_admin_inventory" />
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="10dp"
+                        android:gravity="center"
+                        android:text="@string/admin_action_store_settings"
+                        android:textColor="@color/pt_white"
+                        android:textSize="10sp"
+                        tools:ignore="SmallSp" />
+
+                </LinearLayout>
+
                 <View
                     android:layout_width="0dp"
                     android:layout_height="0dp"
-                    android:layout_weight="3" />
+                    android:layout_weight="2" />
 
             </LinearLayout>
 

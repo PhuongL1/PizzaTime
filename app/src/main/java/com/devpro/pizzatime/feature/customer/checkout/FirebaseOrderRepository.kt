@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.checkout
 
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
+import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -15,6 +16,9 @@ object FirebaseOrderRepository {
         items: List<CartItemUiModel>,
         deliveryFee: Double,
         deliveryAddress: String = "",
+        customerName: String = "",
+        customerPhone: String = "",
+        storeSettings: StoreSettingsUiModel,
         promoCode: String = "",
         discount: Double = 0.0,
         onResult: (Result<String>) -> Unit,
@@ -40,7 +44,11 @@ object FirebaseOrderRepository {
         val order = hashMapOf(
             "customerId" to customerId,
             "customerEmail" to customerEmail,
-            "customerName" to customerEmail,
+            "customerName" to customerName.ifBlank { customerEmail },
+            "customerPhone" to customerPhone,
+            "storeName" to storeSettings.storeName,
+            "pickupAddress" to storeSettings.pickupAddress,
+            "storePhone" to storeSettings.storePhone,
             "status" to "PENDING",
             "orderType" to "DELIVERY",
             "paymentMethod" to "CASH",

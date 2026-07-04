@@ -4,19 +4,18 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.LinearLayout
 import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
+import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
+import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Locale
 
 class CheckoutFragment : Fragment() {
@@ -31,6 +30,9 @@ class CheckoutFragment : Fragment() {
     private var appliedDiscount = 0.0
     private var appliedPromoCode = ""
     private var selectedDeliveryAddress = ""
+    private var customerName = ""
+    private var customerPhone = ""
+    private var currentStoreSettings: StoreSettingsUiModel? = null
     private var isPlacingOrder = false
 
     override fun onCreateView(
@@ -44,16 +46,16 @@ class CheckoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         orderItems = CartStore.items.map { it.toCheckoutItem() }
-        selectedDeliveryAddress = getString(R.string.checkout_delivery_address)
         renderDeliveryDetails(
             name = getString(R.string.checkout_delivery_name),
             phone = getString(R.string.checkout_delivery_phone),
-            address = selectedDeliveryAddress,
+            address = getString(R.string.common_not_provided),
         )
         renderOrderItems(orderItems)
         renderSummary()
         setupActions()
         loadCustomerDeliveryDetails()
+        loadStoreSettings()
     }
 
     private fun loadCustomerDeliveryDetails() {
@@ -62,14 +64,25 @@ class CheckoutFragment : Fragment() {
             if (_binding == null) return@loadProfile
             result.onSuccess { profile ->
                 val profileAddress = profile.deliveryAddress.trim()
+                customerName = profile.fullName
+                customerPhone = profile.phone
                 if (profileAddress.isNotBlank()) {
                     selectedDeliveryAddress = profileAddress
                 }
                 renderDeliveryDetails(
                     name = profile.fullName,
                     phone = profile.phone.ifBlank { getString(R.string.checkout_delivery_phone) },
-                    address = selectedDeliveryAddress,
+                    address = selectedDeliveryAddress.ifBlank { getString(R.string.common_not_provided) },
                 )
+            }
+        }
+    }
+
+    private fun loadStoreSettings() {
+        StoreSettingsRepository.loadStoreSettings { result ->
+            if (_binding == null) return@loadStoreSettings
+            result.onSuccess { settings ->
+                currentStoreSettings = settings
             }
         }
     }
@@ -87,27 +100,18 @@ class CheckoutFragment : Fragment() {
     private fun renderOrderItems(items: List<CheckoutOrderItemUiModel>) {
         binding.orderItemContainer.removeAllViews()
 
-        items.forEachIndexed { index, item ->
+        items.forEach { item ->
             val itemBinding = ItemCheckoutOrderBinding.inflate(
                 layoutInflater,
                 binding.orderItemContainer,
                 false
             )
 
-            itemBinding.imgOrderPizza.setImageResource(item.imageRes)
-            itemBinding.imgOrderPizza.contentDescription = item.name
-            itemBinding.tvOrderName.text = item.name
-            itemBinding.tvOrderOption.text = item.optionText
-            itemBinding.tvOrderPrice.text = formatMoney(item.price)
-
-            itemBinding.root.layoutParams = LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                82.dp
-            ).apply {
-                if (index > 0) {
-                    topMargin = 16.dp
-                }
-            }
+            itemBinding.ivOrderItemImage.setImageResource(item.imageRes)
+            itemBinding.ivOrderItemImage.contentDescription = item.name
+            itemBinding.tvOrderItemName.text = item.name
+            itemBinding.tvOrderItemMeta.text = item.optionText
+            itemBinding.tvOrderItemPrice.text = formatMoney(item.price)
 
             binding.orderItemContainer.addView(itemBinding.root)
         }
@@ -120,8 +124,6 @@ class CheckoutFragment : Fragment() {
 
         binding.tvSubtotal.text = formatMoney(subtotal)
         binding.tvDeliveryFee.text = formatMoney(deliveryFee)
-        binding.promoDiscountRow.isVisible = appliedDiscount > 0
-        binding.tvDiscount.text = "-${formatMoney(appliedDiscount)}"
         binding.tvTotal.text = formatMoney(total)
     }
 
@@ -149,60 +151,6 @@ class CheckoutFragment : Fragment() {
         binding.btnPlaceOrder.setOnClickListener {
             placeOrder()
         }
-
-        binding.btnApplyPromo.setOnClickListener {
-            applyPromoCode()
-        }
-    }
-
-    private fun applyPromoCode() {
-        val code = binding.edtPromoCode.text?.toString()?.trim()?.uppercase(Locale.US).orEmpty()
-        if (code.isBlank()) {
-            Toast.makeText(requireContext(), "Enter a promo code.", Toast.LENGTH_SHORT).show()
-            return
-        }
-        val subtotal = orderItems.sumOf { it.price }
-        binding.btnApplyPromo.isEnabled = false
-
-        FirebaseFirestore.getInstance().collection("promoCodes").document(code)
-            .get()
-            .addOnSuccessListener { doc ->
-                if (_binding == null) return@addOnSuccessListener
-                binding.btnApplyPromo.isEnabled = true
-                if (!doc.exists()) {
-                    Toast.makeText(requireContext(), "Promo code not found.", Toast.LENGTH_SHORT).show()
-                    return@addOnSuccessListener
-                }
-                val active = doc.getBoolean("active") ?: false
-                if (!active) {
-                    Toast.makeText(requireContext(), "This promo code is inactive.", Toast.LENGTH_SHORT).show()
-                    return@addOnSuccessListener
-                }
-                val minOrderAmount = doc.getDouble("minOrderAmount") ?: 0.0
-                if (subtotal < minOrderAmount) {
-                    Toast.makeText(
-                        requireContext(),
-                        String.format(Locale.US, "Minimum order $%.2f required.", minOrderAmount),
-                        Toast.LENGTH_SHORT,
-                    ).show()
-                    return@addOnSuccessListener
-                }
-                val discountType = doc.getString("discountType") ?: "PERCENT"
-                val discountValue = doc.getDouble("discountValue") ?: 0.0
-                val discount = when (discountType.uppercase(Locale.US)) {
-                    "PERCENT" -> (subtotal * discountValue / 100).coerceAtMost(subtotal)
-                    "FIXED" -> discountValue.coerceAtMost(subtotal)
-                    else -> 0.0
-                }
-                appliedDiscount = discount
-                appliedPromoCode = code
-                renderSummary()
-            }
-            .addOnFailureListener {
-                if (_binding == null) return@addOnFailureListener
-                binding.btnApplyPromo.isEnabled = true
-                Toast.makeText(requireContext(), "Failed to validate promo code.", Toast.LENGTH_SHORT).show()
-            }
     }
 
     private fun placeOrder() {
@@ -217,6 +165,10 @@ class CheckoutFragment : Fragment() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
             Toast.makeText(requireContext(), "Please log in to place an order.", Toast.LENGTH_SHORT).show()
+            return
+        }
+        if (selectedDeliveryAddress.trim().isBlank()) {
+            showToast(R.string.checkout_delivery_address_missing)
             return
         }
 
@@ -277,14 +229,49 @@ class CheckoutFragment : Fragment() {
                 appliedDiscount = validationResult.discount
                 appliedPromoCode = validationResult.promoCode
                 renderSummary()
-                createValidatedOrder(
-                    customerId = customerId,
-                    customerEmail = customerEmail,
-                    items = validationResult.items,
-                    promoCode = validationResult.promoCode,
-                    discount = validationResult.discount,
-                )
+                loadStoreSettingsForOrder { storeSettings ->
+                    createValidatedOrder(
+                        customerId = customerId,
+                        customerEmail = customerEmail,
+                        items = validationResult.items,
+                        promoCode = validationResult.promoCode,
+                        discount = validationResult.discount,
+                        storeSettings = storeSettings,
+                    )
+                }
             }
+        }
+    }
+
+    private fun loadStoreSettingsForOrder(onValidStore: (StoreSettingsUiModel) -> Unit) {
+        StoreSettingsRepository.loadStoreSettings { result ->
+            if (_binding == null) return@loadStoreSettings
+            result
+                .onSuccess { settings ->
+                    currentStoreSettings = settings
+                    when {
+                        !settings.acceptingOrders -> {
+                            setPlaceOrderLoading(false)
+                            showToast(R.string.checkout_store_closed)
+                        }
+
+                        settings.storeName.isBlank() || settings.pickupAddress.isBlank() -> {
+                            setPlaceOrderLoading(false)
+                            showToast(R.string.checkout_store_pickup_missing)
+                        }
+
+                        selectedDeliveryAddress.trim().isBlank() -> {
+                            setPlaceOrderLoading(false)
+                            showToast(R.string.checkout_delivery_address_missing)
+                        }
+
+                        else -> onValidStore(settings)
+                    }
+                }
+                .onFailure {
+                    setPlaceOrderLoading(false)
+                    showToast(R.string.checkout_store_pickup_missing)
+                }
         }
     }
 
@@ -294,13 +281,17 @@ class CheckoutFragment : Fragment() {
         items: List<CartItemUiModel>,
         promoCode: String,
         discount: Double,
+        storeSettings: StoreSettingsUiModel,
     ) {
         FirebaseOrderRepository.createOrder(
             customerId = customerId,
             customerEmail = customerEmail,
             items = items,
             deliveryFee = DELIVERY_FEE,
-            deliveryAddress = selectedDeliveryAddress,
+            deliveryAddress = selectedDeliveryAddress.trim(),
+            customerName = customerName.ifBlank { customerEmail },
+            customerPhone = customerPhone,
+            storeSettings = storeSettings,
             promoCode = promoCode,
             discount = discount,
             onResult = { result ->
@@ -338,9 +329,6 @@ class CheckoutFragment : Fragment() {
         return String.format(Locale.US, "$%.2f", value)
     }
 
-    private val Int.dp: Int
-        get() = (this * resources.displayMetrics.density).toInt()
-
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
@@ -365,4 +353,3 @@ private fun CartItemUiModel.toCheckoutItem(): CheckoutOrderItemUiModel {
         imageRes = imageRes,
     )
 }
-

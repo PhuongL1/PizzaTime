@@ -127,6 +127,19 @@
                         android:textStyle="bold" />
 
                     <TextView
+                        android:id="@+id/tvPickupInfo"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="12dp"
+                        android:drawablePadding="10dp"
+                        android:gravity="center_vertical"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="16sp"
+                        app:drawableStartCompat="@drawable/ic_location_pin"
+                        app:drawableTint="@color/pt_text_secondary_dark_bg"
+                        tools:text="Pickup: PizzaTime, 123 Nguyen Trai, Ha Noi, 0900000000" />
+
+                    <TextView
                         android:id="@+id/tvCustomerAddress"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"

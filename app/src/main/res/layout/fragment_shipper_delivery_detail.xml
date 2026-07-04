@@ -193,6 +193,55 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/pickupCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="34dp"
+                android:background="@drawable/bg_shipper_active_card"
+                android:orientation="vertical"
+                android:padding="28dp">
+
+                <TextView
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:letterSpacing="0.12"
+                    android:text="@string/shipper_detail_pickup"
+                    android:textColor="@color/pt_gold_light"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvStoreName"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_primary"
+                    android:textSize="21sp"
+                    android:textStyle="bold"
+                    tools:text="PizzaTime" />
+
+                <TextView
+                    android:id="@+id/tvPickupAddress"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:lineSpacingExtra="5dp"
+                    android:textColor="@color/pt_text_secondary"
+                    android:textSize="18sp"
+                    tools:text="123 Nguyen Trai, Ha Noi" />
+
+                <TextView
+                    android:id="@+id/tvStorePhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_secondary"
+                    android:textSize="16sp"
+                    tools:text="0900000000" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/customerCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
@@ -220,6 +269,15 @@
                     android:textSize="38sp"
                     android:textStyle="bold"
                     tools:text="Alessandra Rossi" />
+
+                <TextView
+                    android:id="@+id/tvCustomerPhone"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_secondary"
+                    android:textSize="16sp"
+                    tools:text="0900000000" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

@@ -1,53 +1,61 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/checkoutOrderItemRoot"
     android:layout_width="match_parent"
-    android:layout_height="82dp"
+    android:layout_height="wrap_content"
+    android:layout_marginBottom="14dp"
+    android:baselineAligned="false"
     android:gravity="center_vertical"
     android:orientation="horizontal">
 
     <ImageView
-        android:id="@+id/imgOrderPizza"
-        android:layout_width="72dp"
-        android:layout_height="72dp"
-        android:contentDescription="@string/menu_open_pizza"
+        android:id="@+id/ivOrderItemImage"
+        android:layout_width="58dp"
+        android:layout_height="58dp"
+        android:background="@drawable/bg_customer_order_history_item_image"
+        android:contentDescription="@string/customer_order_history_item_image_description"
         android:scaleType="centerCrop"
-        tools:src="@drawable/img_welcome_hero" />
+        tools:src="@drawable/img_pizza_time" />
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
+        android:layout_marginStart="14dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
         <TextView
-            android:id="@+id/tvOrderName"
+            android:id="@+id/tvOrderItemName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="@color/pt_text_primary"
-            android:textSize="19sp"
+            android:textSize="15sp"
+            android:textStyle="bold"
             tools:text="Margherita Verace" />
 
         <TextView
-            android:id="@+id/tvOrderOption"
+            android:id="@+id/tvOrderItemMeta"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="6dp"
+            android:layout_marginTop="3dp"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="@color/pt_text_secondary"
-            android:textSize="15sp"
+            android:textSize="12sp"
             android:textStyle="bold"
             tools:text="x1 · Large · Extra Basil" />
 
     </LinearLayout>
 
     <TextView
-        android:id="@+id/tvOrderPrice"
+        android:id="@+id/tvOrderItemPrice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginStart="10dp"
         android:textColor="@color/pt_gold"
-        android:textSize="16sp"
+        android:textSize="13sp"
         android:textStyle="bold"
         tools:text="$24.00" />
 
