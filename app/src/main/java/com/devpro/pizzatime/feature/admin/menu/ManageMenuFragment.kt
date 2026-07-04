@@ -155,6 +155,9 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                 pickProductImageLauncher.launch("image/*")
             }
         }
+        val deleteButton = Button(requireContext()).apply {
+            text = getString(R.string.manage_menu_delete_product)
+        }
 
         val form = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
@@ -167,6 +170,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             addView(availableInput)
             addView(imageUrlInput)
             addView(uploadImageButton)
+            addView(deleteButton)
         }
 
         AlertDialog.Builder(requireContext())
@@ -189,9 +193,47 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                             onSaved = { dismiss() },
                         )
                     }
+                    deleteButton.setOnClickListener {
+                        showDeleteProductConfirmation(item, this)
+                    }
                 }
             }
             .show()
+    }
+
+    private fun showDeleteProductConfirmation(
+        item: AdminMenuUiModel,
+        editDialog: AlertDialog,
+    ) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.manage_menu_delete_product_title)
+            .setMessage(R.string.manage_menu_delete_product_message)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.manage_menu_confirm_delete_product) { _, _ ->
+                deleteProduct(item, editDialog)
+            }
+            .show()
+    }
+
+    private fun deleteProduct(
+        item: AdminMenuUiModel,
+        editDialog: AlertDialog,
+    ) {
+        AdminMenuFirestoreRepository.deleteProduct(item.id) { result ->
+            if (!isAdded) return@deleteProduct
+            result
+                .onSuccess {
+                    allProducts = allProducts.filterNot { product -> product.id == item.id }
+                    renderMenuItems()
+                    if (editDialog.isShowing) {
+                        editDialog.dismiss()
+                    }
+                    showToast(R.string.manage_menu_delete_product_saved)
+                }
+                .onFailure {
+                    showToast(R.string.manage_menu_delete_product_failed)
+                }
+        }
     }
 
     private fun showCreateProductDialog() {

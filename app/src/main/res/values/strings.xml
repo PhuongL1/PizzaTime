@@ -624,6 +624,12 @@
     <string name="manage_menu_edit_category_required">Category ID is required.</string>
     <string name="manage_menu_edit_product_saved">Product updated.</string>
     <string name="manage_menu_edit_product_failed">Could not update product.</string>
+    <string name="manage_menu_delete_product">Delete</string>
+    <string name="manage_menu_delete_product_title">Delete product?</string>
+    <string name="manage_menu_delete_product_message">Delete this product from the store? This will remove it from the database.</string>
+    <string name="manage_menu_confirm_delete_product">Confirm Delete</string>
+    <string name="manage_menu_delete_product_saved">Product deleted.</string>
+    <string name="manage_menu_delete_product_failed">Could not delete product.</string>
     <string name="manage_menu_upload_image">Upload image</string>
     <string name="manage_menu_image_url_hint">Image URL</string>
     <string name="manage_menu_selecting_image">Selecting image...</string>
