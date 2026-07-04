@@ -19,10 +19,9 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
 import com.devpro.pizzatime.databinding.FragmentManageMenuBinding
-import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
-import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
 import java.util.Locale
 
 class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
@@ -78,8 +77,8 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         setupSearch()
         setupCategoryChips()
         setupMenuList()
+        setupTopBar()
         setupBottomNav()
-        setupActions()
         renderMenuItems()
         loadFirestoreProducts()
     }
@@ -402,12 +401,6 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         }
     }
 
-    private fun setupActions() = with(binding) {
-        btnMenu.setOnClickListener {
-            showCreateProductDialog()
-        }
-    }
-
     private fun selectCategory(category: AdminMenuCategory) {
         selectedCategory = category
         renderMenuItems()
@@ -451,17 +444,17 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
-            currentTab = StaffBottomNavTab.KITCHEN,
-            onDashboardClick = {
-                openAdminDashboard()
-            },
-            onDeliveryClick = {
-                openShipperDeliveryDashboard()
-            },
-            onProfileClick = {
-                showComingSoon(R.string.staff_nav_profile)
-            },
+        bindAdminBottomNav(
+            root = binding.staffBottomNav.root,
+            selectedDestination = AdminBottomNavDestination.MENU,
+        )
+    }
+
+    private fun setupTopBar() {
+        bindAdminTopBar(
+            root = binding.staffTopBar.root,
+            title = getString(R.string.manage_menu_title),
+            onMenuClick = { showCreateProductDialog() },
         )
     }
 

@@ -13,6 +13,9 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderDetailBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderDetailLineBinding
+import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
 import java.util.Locale
 
@@ -36,9 +39,25 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTopBar()
+        setupBottomNav()
         setupActions()
         val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
         loadOrder(orderId)
+    }
+
+    private fun setupTopBar() = with(binding) {
+        bindCustomerTopBar(
+            root = customerTopBar.root,
+            cartItemCount = 0,
+        )
+    }
+
+    private fun setupBottomNav() = with(binding) {
+        bindCustomerBottomNav(
+            root = bottomNav.root,
+            selectedTab = CustomerBottomNavTab.ORDERS,
+        )
     }
 
     private fun loadOrder(orderId: String) {

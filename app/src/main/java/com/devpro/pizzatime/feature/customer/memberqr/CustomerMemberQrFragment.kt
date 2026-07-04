@@ -10,8 +10,8 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerMemberQrBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
-import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
-import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.google.firebase.auth.FirebaseAuth
 import java.text.NumberFormat
 import java.util.Locale
@@ -63,28 +63,16 @@ class CustomerMemberQrFragment : Fragment() {
     }
 
     private fun setupTopBar() = with(binding) {
-        setupCustomerTopBar(
-            topBar = customerTopBar,
+        bindCustomerTopBar(
+            root = customerTopBar.root,
             cartItemCount = 0,
-            onCartClick = {
-                showToast(getString(R.string.customer_member_qr_cart_toast))
-            },
         )
     }
 
     private fun setupBottomNav() = with(binding) {
-        setupCustomerBottomNav(
-            bottomNav = customerBottomNav,
+        bindCustomerBottomNav(
+            root = customerBottomNav.root,
             selectedTab = CustomerBottomNavTab.PROFILE,
-            onCustomerMenuClick = {
-                showToast(getString(R.string.customer_member_qr_menu_toast))
-            },
-            onCustomerOrdersClick = {
-                showToast(getString(R.string.customer_member_qr_orders_toast))
-            },
-            onCustomerLoyaltyClick = {
-                showToast(getString(R.string.customer_member_qr_loyalty_toast))
-            },
         )
     }
 

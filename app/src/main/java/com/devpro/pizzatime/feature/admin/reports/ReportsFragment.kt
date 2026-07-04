@@ -9,10 +9,8 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentReportsBinding
-import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 
 class ReportsFragment : Fragment() {
 
@@ -81,12 +79,9 @@ class ReportsFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
-            StaffBottomNavTab.DASHBOARD,
-            {},
-            { openKitchenBoard() },
-            { openShipperDeliveryDashboard() },
-            {},
+        bindAdminBottomNav(
+            root = binding.staffBottomNav.root,
+            selectedDestination = AdminBottomNavDestination.DASHBOARD,
         )
     }
 

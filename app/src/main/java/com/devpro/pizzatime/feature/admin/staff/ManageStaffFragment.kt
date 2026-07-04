@@ -19,11 +19,8 @@ import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
 import com.devpro.pizzatime.databinding.FragmentManageStaffBinding
-import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
-import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 
 class ManageStaffFragment : Fragment() {
 
@@ -251,12 +248,9 @@ class ManageStaffFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
-            StaffBottomNavTab.PROFILE,
-            { openAdminDashboard() },
-            { openKitchenBoard() },
-            { openShipperDeliveryDashboard() },
-            {},
+        bindAdminBottomNav(
+            root = binding.staffBottomNav.root,
+            selectedDestination = AdminBottomNavDestination.STAFF,
         )
     }
 

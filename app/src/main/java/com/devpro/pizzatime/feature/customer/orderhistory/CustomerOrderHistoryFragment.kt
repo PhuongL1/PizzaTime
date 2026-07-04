@@ -13,12 +13,9 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderHistoryBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderHistoryCardBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
-import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
-import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderDetail
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -81,26 +78,16 @@ class CustomerOrderHistoryFragment : Fragment() {
     }
 
     private fun setupTopBar() = with(binding) {
-        setupCustomerTopBar(
-            topBar = customerTopBar,
+        bindCustomerTopBar(
+            root = customerTopBar.root,
             cartItemCount = 2,
-            onCartClick = {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.customer_promo_cart_toast),
-                    Toast.LENGTH_SHORT,
-                ).show()
-            },
         )
     }
 
     private fun setupBottomNav() = with(binding) {
-        setupCustomerBottomNav(
-            bottomNav = customerBottomNav,
+        bindCustomerBottomNav(
+            root = customerBottomNav.root,
             selectedTab = CustomerBottomNavTab.ORDERS,
-            onCustomerMenuClick = { openCustomerHome() },
-            onCustomerLoyaltyClick = { openCustomerPromoCodes() },
-            onCustomerProfileClick = { openCustomerAccount() },
         )
     }
 

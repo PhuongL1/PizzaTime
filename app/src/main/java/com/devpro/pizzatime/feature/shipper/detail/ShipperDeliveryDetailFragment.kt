@@ -10,9 +10,9 @@ import com.devpro.pizzatime.databinding.ItemShipperPaymentRowBinding
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
+import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
 import com.google.firebase.auth.FirebaseAuth
 
 class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_delivery_detail) {
@@ -166,7 +166,8 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
+        bindStaffBottomNav(
+            root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.DELIVERY,
             onDashboardClick = {
                 openStaffDashboard()

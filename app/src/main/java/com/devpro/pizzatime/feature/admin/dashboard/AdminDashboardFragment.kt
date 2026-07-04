@@ -7,15 +7,14 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentAdminDashboardBinding
-import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
+import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openAddEditProduct
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
-import com.devpro.pizzatime.feature.staff.navigation.openManageOrders
 import com.devpro.pizzatime.feature.staff.navigation.openManagePromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openManageStaff
 import com.devpro.pizzatime.feature.staff.navigation.openReports
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
 
 class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
@@ -41,6 +40,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         _binding = FragmentAdminDashboardBinding.bind(view)
 
         bindDashboard(FakeAdminDashboardData.getDashboard())
+        setupTopBar()
         setupQuickActions()
         setupRecentOrders()
         setupBottomNav()
@@ -98,18 +98,14 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
-            currentTab = StaffBottomNavTab.DASHBOARD,
-            onKitchenClick = {
-                openManageOrders()
-            },
-            onDeliveryClick = {
-                openShipperDeliveryDashboard()
-            },
-            onProfileClick = {
-                showComingSoon(R.string.staff_nav_profile)
-            },
+        bindAdminBottomNav(
+            root = binding.staffBottomNav.root,
+            selectedDestination = AdminBottomNavDestination.DASHBOARD,
         )
+    }
+
+    private fun setupTopBar() {
+        bindAdminTopBar(root = binding.staffTopBar.root)
     }
 
     private fun showComingSoon(titleRes: Int) {

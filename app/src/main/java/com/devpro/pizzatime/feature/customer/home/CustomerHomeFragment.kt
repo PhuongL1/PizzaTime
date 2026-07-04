@@ -9,17 +9,13 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
-import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.menu.FirebaseProductRepository
 import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
-import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaMenuScreen
 
@@ -173,23 +169,10 @@ class CustomerHomeFragment : Fragment() {
             Toast.makeText(requireContext(), "Promo detail coming soon", Toast.LENGTH_SHORT).show()
         }
 
-        binding.bottomNav.navOrders.setOnClickListener {
-            if (FakeSessionStore.isLoggedIn) openCustomerOrderHistory()
-            else openLoginRequiredScreen()
-        }
-
-        binding.bottomNav.navLoyalty.setOnClickListener {
-            openCustomerPromoCodes()
-        }
-
-        binding.bottomNav.navProfile.setOnClickListener {
-            if (FakeSessionStore.isLoggedIn) openCustomerAccount()
-            else openLoginRequiredScreen()
-        }
-
-        binding.bottomNav.navMenu.setOnClickListener {
-            openCustomerHome()
-        }
+        bindCustomerBottomNav(
+            root = binding.bottomNav.root,
+            selectedTab = CustomerBottomNavTab.MENU,
+        )
 
         binding.tvSeeAll.setOnClickListener {
             openPizzaMenuScreen()

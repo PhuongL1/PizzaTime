@@ -12,11 +12,8 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerPromoCodesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerPromoCardBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
-import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
-import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import kotlin.math.roundToInt
 
 class CustomerPromoCodesFragment : Fragment() {
@@ -65,31 +62,15 @@ class CustomerPromoCodesFragment : Fragment() {
     }
 
     private fun setupTopBar() = with(binding) {
-        setupCustomerTopBar(
-            topBar = customerTopBar,
+        bindCustomerTopBar(
+            root = customerTopBar.root,
             cartItemCount = 2,
-            onCartClick = {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.customer_promo_cart_toast),
-                    Toast.LENGTH_SHORT,
-                ).show()
-            },
         )
     }
     private fun setupBottomNav() = with(binding) {
-        setupCustomerBottomNav(
-            bottomNav = customerBottomNav,
+        bindCustomerBottomNav(
+            root = customerBottomNav.root,
             selectedTab = CustomerBottomNavTab.LOYALTY,
-            onCustomerMenuClick = {
-                openCustomerHome()
-            },
-            onCustomerOrdersClick = {
-                openCustomerOrderHistory()
-            },
-            onCustomerProfileClick = {
-                openCustomerAccount()
-            },
         )
     }
     private fun setupTabs() = with(binding) {

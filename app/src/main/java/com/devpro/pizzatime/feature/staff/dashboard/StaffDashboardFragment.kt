@@ -12,11 +12,11 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStaffDashboardBinding
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
+import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
 import com.google.firebase.firestore.ListenerRegistration
 
 class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
@@ -118,7 +118,8 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
+        bindStaffBottomNav(
+            root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.DASHBOARD,
             onKitchenClick = {
                 openKitchenBoard()

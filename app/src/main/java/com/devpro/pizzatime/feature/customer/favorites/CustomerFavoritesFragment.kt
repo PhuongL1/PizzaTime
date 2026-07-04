@@ -15,8 +15,8 @@ import com.devpro.pizzatime.databinding.FragmentCustomerFavoritesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteCompactBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteFeaturedBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
-import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
-import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -178,31 +178,15 @@ class CustomerFavoritesFragment : Fragment() {
     }
 
     private fun setupTopBar() = with(binding) {
-        setupCustomerTopBar(
-            topBar = customerTopBar,
+        bindCustomerTopBar(
+            root = customerTopBar.root,
             cartItemCount = 2,
-            onCartClick = {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.customer_promo_cart_toast),
-                    Toast.LENGTH_SHORT,
-                ).show()
-            },
         )
     }
     private fun setupBottomNav() = with(binding) {
-        setupCustomerBottomNav(
-            bottomNav = customerBottomNav,
+        bindCustomerBottomNav(
+            root = customerBottomNav.root,
             selectedTab = CustomerBottomNavTab.PROFILE,
-            onCustomerMenuClick = {
-                // TODO: open pizza menu / customer home
-            },
-            onCustomerOrdersClick = {
-                // TODO: open customer order history
-            },
-            onCustomerLoyaltyClick = {
-                // TODO: open promo codes
-            },
         )
     }
 

@@ -9,7 +9,7 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.databinding.FragmentKitchenBoardBinding
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
@@ -68,7 +68,8 @@ class KitchenBoardFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
+        bindStaffBottomNav(
+            root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.KITCHEN,
             onDashboardClick = {
                 backToPreviousStaffScreen()

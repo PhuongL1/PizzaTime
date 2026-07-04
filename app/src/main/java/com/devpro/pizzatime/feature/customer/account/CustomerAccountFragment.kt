@@ -13,8 +13,8 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
-import com.devpro.pizzatime.feature.customer.common.bottomnav.setupCustomerBottomNav
-import com.devpro.pizzatime.feature.customer.common.topbar.setupCustomerTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
@@ -64,28 +64,16 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private fun setupTopBar() = with(binding) {
-        setupCustomerTopBar(
-            topBar = customerTopBar,
+        bindCustomerTopBar(
+            root = customerTopBar.root,
             cartItemCount = 0,
-            onCartClick = {
-                showToast(getString(R.string.customer_account_cart_toast))
-            },
         )
     }
 
     private fun setupBottomNav() = with(binding) {
-        setupCustomerBottomNav(
-            bottomNav = customerBottomNav,
+        bindCustomerBottomNav(
+            root = customerBottomNav.root,
             selectedTab = CustomerBottomNavTab.PROFILE,
-            onCustomerMenuClick = {
-                openCustomerHome()
-            },
-            onCustomerOrdersClick = {
-                openCustomerOrderHistory()
-            },
-            onCustomerLoyaltyClick = {
-                openCustomerPromoCodes()
-            },
         )
     }
 

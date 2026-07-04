@@ -17,11 +17,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentManagePromoCodesBinding
-import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
-import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
-import com.devpro.pizzatime.feature.staff.navigation.setupStaffBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
 import java.util.Locale
 
 class ManagePromoCodesFragment : Fragment() {
@@ -66,6 +64,7 @@ class ManagePromoCodesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupRecyclerView()
+        setupTopBar()
         setupActions()
         setupFilters()
         setupBottomNav()
@@ -356,14 +355,6 @@ class ManagePromoCodesFragment : Fragment() {
         btnAddPromo.setOnClickListener {
             showCreatePromoDialog()
         }
-
-        btnMenu.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.promo_action_coming_soon, getString(R.string.menu)),
-                Toast.LENGTH_SHORT,
-            ).show()
-        }
     }
 
     private fun setupFilters() = with(binding) {
@@ -384,12 +375,16 @@ class ManagePromoCodesFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.staffBottomNav.setupStaffBottomNav(
-            StaffBottomNavTab.PROFILE,
-            { openAdminDashboard() },
-            { openKitchenBoard() },
-            { openShipperDeliveryDashboard() },
-            {},
+        bindAdminBottomNav(
+            root = binding.staffBottomNav.root,
+            selectedDestination = AdminBottomNavDestination.PROMOS,
+        )
+    }
+
+    private fun setupTopBar() {
+        bindAdminTopBar(
+            root = binding.staffTopBar.root,
+            title = getString(R.string.manage_codes),
         )
     }
 

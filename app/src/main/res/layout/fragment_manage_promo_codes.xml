@@ -7,6 +7,15 @@
     android:background="@color/pt_background"
     android:orientation="vertical">
 
+    <include
+        android:id="@+id/staffTopBar"
+        layout="@layout/layout_staff_top_bar"
+        android:layout_width="match_parent"
+        android:layout_height="66dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ScrollView
         android:layout_width="match_parent"
         android:layout_height="0dp"
@@ -19,47 +28,6 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingBottom="28dp">
-
-            <LinearLayout
-                android:id="@+id/layoutTopBar"
-                android:layout_width="match_parent"
-                android:layout_height="96dp"
-                android:layout_margin="12dp"
-                android:background="@drawable/bg_admin_top_bar"
-                android:gravity="center_vertical"
-                android:orientation="horizontal"
-                android:paddingHorizontal="24dp">
-
-                <ImageButton
-                    android:id="@+id/btnMenu"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/menu"
-                    android:minWidth="48dp"
-                    android:minHeight="48dp"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_menu" />
-
-                <TextView
-                    android:id="@+id/tvBrandName"
-                    android:layout_width="0dp"
-                    android:layout_height="wrap_content"
-                    android:layout_marginStart="22dp"
-                    android:layout_weight="1"
-                    android:text="@string/midnight_artisan"
-                    android:textColor="@color/pt_gold_light"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <ImageView
-                    android:id="@+id/ivAvatar"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
-                    android:background="@drawable/img_avatar"
-                    android:contentDescription="@string/profile"
-                    android:padding="12dp" />
-            </LinearLayout>
 
             <TextView
                 android:id="@+id/tvSectionLabel"
