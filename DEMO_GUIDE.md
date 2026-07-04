@@ -116,6 +116,7 @@ Customer screens used in the demo:
 3. Open Store Settings and configure a pickup address before customer checkout:
    - `storeName = PizzaTime`
    - `pickupAddress = 123 Nguyen Trai, Ha Noi`
+   - choose the pickup point on the map so `pickupLat` and `pickupLng` are saved
    - `storePhone = 0900000000`
    - `openingHours = 09:00 - 22:00`
    - `acceptingOrders = true`
@@ -177,7 +178,7 @@ firebase deploy --only functions --project pizzatime-de04c
 - Android FCM token registration and notification permission behavior remain enabled, but server-side notification delivery requires deployed Cloud Functions.
 - Admin-created staff accounts are temporarily disabled until Cloud Functions are deployed.
 - Product image upload is temporarily disabled until Firebase Storage is set up; existing `imageUrl` values still display, with fallback drawables for blank or invalid URLs.
-- Customers cannot place orders until Store Settings has a pickup address, the store is accepting orders, and the customer profile has a delivery address.
+- Customers cannot place orders until Store Settings has a pickup address, pickup coordinates, the store is accepting orders, and the customer has a delivery address with map coordinates.
 - Some secondary screens still use fallback demo data if Firestore is unavailable.
 
 ## Submission Notes

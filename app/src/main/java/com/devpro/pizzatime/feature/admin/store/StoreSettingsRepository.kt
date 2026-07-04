@@ -26,6 +26,8 @@ object StoreSettingsRepository {
         val data = mapOf(
             "storeName" to settings.storeName.trim(),
             "pickupAddress" to settings.pickupAddress.trim(),
+            "pickupLat" to settings.pickupLat,
+            "pickupLng" to settings.pickupLng,
             "storePhone" to settings.storePhone.trim(),
             "openingHours" to settings.openingHours.trim(),
             "acceptingOrders" to settings.acceptingOrders,
@@ -47,6 +49,8 @@ object StoreSettingsRepository {
             storeName = getString("storeName").orEmpty()
                 .ifBlank { StoreSettingsUiModel.DEFAULT_STORE_NAME },
             pickupAddress = getString("pickupAddress").orEmpty(),
+            pickupLat = getDouble("pickupLat"),
+            pickupLng = getDouble("pickupLng"),
             storePhone = getString("storePhone").orEmpty(),
             openingHours = getString("openingHours").orEmpty()
                 .ifBlank { StoreSettingsUiModel.DEFAULT_OPENING_HOURS },

@@ -15,6 +15,9 @@ import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRep
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
+import com.devpro.pizzatime.shared.location.MapPickerFragment
+import com.devpro.pizzatime.shared.location.isValidLatitude
+import com.devpro.pizzatime.shared.location.isValidLongitude
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 
@@ -30,6 +33,8 @@ class CheckoutFragment : Fragment() {
     private var appliedDiscount = 0.0
     private var appliedPromoCode = ""
     private var selectedDeliveryAddress = ""
+    private var selectedDeliveryLat: Double? = null
+    private var selectedDeliveryLng: Double? = null
     private var customerName = ""
     private var customerPhone = ""
     private var currentStoreSettings: StoreSettingsUiModel? = null
@@ -53,6 +58,7 @@ class CheckoutFragment : Fragment() {
         )
         renderOrderItems(orderItems)
         renderSummary()
+        setupMapPickerResult()
         setupActions()
         loadCustomerDeliveryDetails()
         loadStoreSettings()
@@ -66,6 +72,8 @@ class CheckoutFragment : Fragment() {
                 val profileAddress = profile.deliveryAddress.trim()
                 customerName = profile.fullName
                 customerPhone = profile.phone
+                selectedDeliveryLat = profile.deliveryLat
+                selectedDeliveryLng = profile.deliveryLng
                 if (profileAddress.isNotBlank()) {
                     selectedDeliveryAddress = profileAddress
                 }
@@ -74,6 +82,7 @@ class CheckoutFragment : Fragment() {
                     phone = profile.phone.ifBlank { getString(R.string.checkout_delivery_phone) },
                     address = selectedDeliveryAddress.ifBlank { getString(R.string.common_not_provided) },
                 )
+                renderDeliveryCoordinateStatus()
             }
         }
     }
@@ -95,6 +104,16 @@ class CheckoutFragment : Fragment() {
         tvDeliveryName.text = name
         tvDeliveryPhone.text = phone
         tvDeliveryAddress.text = address
+    }
+
+    private fun renderDeliveryCoordinateStatus() {
+        binding.tvDeliveryCoordinates.text = if (
+            selectedDeliveryLat.isValidLatitude() && selectedDeliveryLng.isValidLongitude()
+        ) {
+            getString(R.string.location_coordinates_format, selectedDeliveryLat, selectedDeliveryLng)
+        } else {
+            getString(R.string.location_coordinates_missing)
+        }
     }
 
     private fun renderOrderItems(items: List<CheckoutOrderItemUiModel>) {
@@ -133,7 +152,7 @@ class CheckoutFragment : Fragment() {
         }
 
         binding.btnEditDelivery.setOnClickListener {
-            Toast.makeText(requireContext(), "Edit delivery later", Toast.LENGTH_SHORT).show()
+            openDeliveryMapPicker()
         }
 
         binding.paymentCreditCard.setOnClickListener {
@@ -169,6 +188,10 @@ class CheckoutFragment : Fragment() {
         }
         if (selectedDeliveryAddress.trim().isBlank()) {
             showToast(R.string.checkout_delivery_address_missing)
+            return
+        }
+        if (!selectedDeliveryLat.isValidLatitude() || !selectedDeliveryLng.isValidLongitude()) {
+            showToast(R.string.checkout_delivery_location_missing)
             return
         }
 
@@ -260,9 +283,19 @@ class CheckoutFragment : Fragment() {
                             showToast(R.string.checkout_store_pickup_missing)
                         }
 
+                        !settings.pickupLat.isValidLatitude() || !settings.pickupLng.isValidLongitude() -> {
+                            setPlaceOrderLoading(false)
+                            showToast(R.string.checkout_store_location_missing)
+                        }
+
                         selectedDeliveryAddress.trim().isBlank() -> {
                             setPlaceOrderLoading(false)
                             showToast(R.string.checkout_delivery_address_missing)
+                        }
+
+                        !selectedDeliveryLat.isValidLatitude() || !selectedDeliveryLng.isValidLongitude() -> {
+                            setPlaceOrderLoading(false)
+                            showToast(R.string.checkout_delivery_location_missing)
                         }
 
                         else -> onValidStore(settings)
@@ -289,6 +322,8 @@ class CheckoutFragment : Fragment() {
             items = items,
             deliveryFee = DELIVERY_FEE,
             deliveryAddress = selectedDeliveryAddress.trim(),
+            deliveryLat = selectedDeliveryLat,
+            deliveryLng = selectedDeliveryLng,
             customerName = customerName.ifBlank { customerEmail },
             customerPhone = customerPhone,
             storeSettings = storeSettings,
@@ -323,6 +358,65 @@ class CheckoutFragment : Fragment() {
 
     private fun showToast(messageRes: Int) {
         Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun setupMapPickerResult() {
+        parentFragmentManager.setFragmentResultListener(
+            MapPickerFragment.REQUEST_KEY,
+            viewLifecycleOwner,
+        ) { _, bundle ->
+            if (bundle.getString(MapPickerFragment.KEY_MODE) != MapPickerFragment.MODE_CUSTOMER_DELIVERY) {
+                return@setFragmentResultListener
+            }
+            val address = bundle.getString(MapPickerFragment.KEY_ADDRESS).orEmpty()
+            val lat = bundle.getDouble(MapPickerFragment.KEY_LAT)
+            val lng = bundle.getDouble(MapPickerFragment.KEY_LNG)
+            if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
+                showToast(R.string.checkout_delivery_location_missing)
+                return@setFragmentResultListener
+            }
+            selectedDeliveryAddress = address
+            selectedDeliveryLat = lat
+            selectedDeliveryLng = lng
+            renderDeliveryDetails(
+                name = customerName.ifBlank { getString(R.string.checkout_delivery_name) },
+                phone = customerPhone.ifBlank { getString(R.string.checkout_delivery_phone) },
+                address = selectedDeliveryAddress,
+            )
+            renderDeliveryCoordinateStatus()
+            saveDeliveryLocation(address, lat, lng)
+        }
+    }
+
+    private fun openDeliveryMapPicker() {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(
+                R.id.fragmentContainer,
+                MapPickerFragment.newInstance(
+                    mode = MapPickerFragment.MODE_CUSTOMER_DELIVERY,
+                    initialAddress = selectedDeliveryAddress,
+                    initialLat = selectedDeliveryLat,
+                    initialLng = selectedDeliveryLng,
+                ),
+            )
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun saveDeliveryLocation(address: String, lat: Double, lng: Double) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        CustomerProfileFirestoreRepository.updateDeliveryLocation(
+            uid = uid,
+            deliveryAddress = address,
+            deliveryLat = lat,
+            deliveryLng = lng,
+        ) { result ->
+            if (_binding == null || !isAdded) return@updateDeliveryLocation
+            result.onFailure {
+                showToast(R.string.checkout_delivery_location_save_failed)
+            }
+        }
     }
 
     private fun formatMoney(value: Double): String {

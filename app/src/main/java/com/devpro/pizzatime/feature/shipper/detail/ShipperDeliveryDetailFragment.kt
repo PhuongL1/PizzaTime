@@ -1,5 +1,8 @@
 package com.devpro.pizzatime.feature.shipper.detail
 
+import android.content.ActivityNotFoundException
+import android.content.Intent
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
@@ -13,6 +16,8 @@ import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
+import com.devpro.pizzatime.shared.location.isValidLatitude
+import com.devpro.pizzatime.shared.location.isValidLongitude
 import com.google.firebase.auth.FirebaseAuth
 
 class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_delivery_detail) {
@@ -67,9 +72,11 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         tvStoreName.text = detail.storeName
         tvPickupAddress.text = detail.pickupAddress
         tvStorePhone.text = detail.storePhone
+        tvPickupCoordinates.text = formatCoordinates(detail.pickupLat, detail.pickupLng)
         tvCustomerName.text = detail.customerName
         tvCustomerPhone.text = detail.customerPhone
         tvDeliveryAddress.text = detail.address
+        tvDeliveryCoordinates.text = formatCoordinates(detail.deliveryLat, detail.deliveryLng)
         tvCourierNote.text = getString(R.string.shipper_detail_note_quote, detail.courierNote)
         tvPaymentAmount.text = detail.paymentAmount
         tvPaymentMethod.text = detail.paymentMethod
@@ -107,12 +114,20 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             ).show()
         }
 
+        btnOpenPickupMap.setOnClickListener {
+            openExternalMap(
+                lat = detail.pickupLat,
+                lng = detail.pickupLng,
+                label = detail.storeName,
+            )
+        }
+
         btnNavigate.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                R.string.shipper_message_navigation_started,
-                Toast.LENGTH_SHORT,
-            ).show()
+            openExternalMap(
+                lat = detail.deliveryLat,
+                lng = detail.deliveryLng,
+                label = detail.customerName,
+            )
         }
 
         btnConfirmDelivery.setOnClickListener {
@@ -166,6 +181,31 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                         Toast.LENGTH_SHORT,
                     ).show()
                 }
+        }
+    }
+
+    private fun openExternalMap(lat: Double?, lng: Double?, label: String) {
+        if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
+            Toast.makeText(requireContext(), R.string.location_not_available, Toast.LENGTH_SHORT).show()
+            return
+        }
+        val safeLat = lat ?: return
+        val safeLng = lng ?: return
+        val encodedLabel = Uri.encode(label.ifBlank { getString(R.string.app_name) })
+        val uri = Uri.parse("geo:$safeLat,$safeLng?q=$safeLat,$safeLng($encodedLabel)")
+        val intent = Intent(Intent.ACTION_VIEW, uri)
+        try {
+            startActivity(intent)
+        } catch (error: ActivityNotFoundException) {
+            Toast.makeText(requireContext(), R.string.location_not_available, Toast.LENGTH_SHORT).show()
+        }
+    }
+
+    private fun formatCoordinates(lat: Double?, lng: Double?): String {
+        return if (lat.isValidLatitude() && lng.isValidLongitude()) {
+            getString(R.string.location_coordinates_format, lat, lng)
+        } else {
+            getString(R.string.location_coordinates_missing)
         }
     }
 

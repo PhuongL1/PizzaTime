@@ -239,6 +239,27 @@
                     android:textSize="16sp"
                     tools:text="0900000000" />
 
+                <TextView
+                    android:id="@+id/tvPickupCoordinates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_muted"
+                    android:textSize="13sp"
+                    tools:text="21.027800, 105.834200" />
+
+                <TextView
+                    android:id="@+id/btnOpenPickupMap"
+                    android:layout_width="match_parent"
+                    android:layout_height="52dp"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/bg_button_primary_gold"
+                    android:gravity="center"
+                    android:text="@string/shipper_open_pickup_map"
+                    android:textColor="@color/pt_text_dark"
+                    android:textSize="16sp"
+                    android:textStyle="bold" />
+
             </LinearLayout>
 
             <LinearLayout
@@ -305,7 +326,7 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_shipper_detail_disabled_button"
                         android:gravity="center"
-                        android:text="@string/shipper_navigate"
+                        android:text="@string/shipper_open_delivery_map"
                         android:textColor="#BDB6B1"
                         android:textSize="18sp"
                         android:textStyle="bold" />
@@ -343,6 +364,15 @@
                     android:textColor="#F4EEE8"
                     android:textSize="21sp"
                     tools:text="422 Artisan Way, Suite 8B&#10;Manhattan, NY 10014" />
+
+                <TextView
+                    android:id="@+id/tvDeliveryCoordinates"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_muted"
+                    android:textSize="13sp"
+                    tools:text="21.027800, 105.834200" />
 
                 <LinearLayout
                     android:id="@+id/courierNoteCard"

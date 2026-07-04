@@ -47,6 +47,26 @@ object CustomerProfileFirestoreRepository {
             .addOnFailureListener { error -> onResult(Result.failure(error)) }
     }
 
+    fun updateDeliveryLocation(
+        uid: String,
+        deliveryAddress: String,
+        deliveryLat: Double,
+        deliveryLng: Double,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        firestore.collection("users").document(uid)
+            .update(
+                mapOf(
+                    "deliveryAddress" to deliveryAddress,
+                    "deliveryLat" to deliveryLat,
+                    "deliveryLng" to deliveryLng,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error)) }
+    }
+
     private fun DocumentSnapshot.toCustomerAccountUiModel(): CustomerAccountUiModel {
         val fallback = FakeCustomerAccountData.getCustomerAccount()
         return CustomerAccountUiModel(
@@ -56,6 +76,8 @@ object CustomerProfileFirestoreRepository {
             email = getString("email").orEmpty().ifBlank { fallback.email },
             phone = getString("phone").orEmpty(),
             deliveryAddress = getString("deliveryAddress").orEmpty(),
+            deliveryLat = getDouble("deliveryLat"),
+            deliveryLng = getDouble("deliveryLng"),
             avatarUrl = getString("avatarUrl").orEmpty(),
             avatarRes = R.drawable.ic_customer_account_avatar_placeholder,
             lifetimeSpendText = getDouble("lifetimeSpend")?.let(::formatCurrency)

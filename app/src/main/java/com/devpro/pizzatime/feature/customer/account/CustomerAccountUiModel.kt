@@ -9,6 +9,8 @@ data class CustomerAccountUiModel(
     val email: String,
     val phone: String,
     val deliveryAddress: String,
+    val deliveryLat: Double? = null,
+    val deliveryLng: Double? = null,
     val avatarUrl: String,
     @param:DrawableRes val avatarRes: Int,
     val lifetimeSpendText: String = "",

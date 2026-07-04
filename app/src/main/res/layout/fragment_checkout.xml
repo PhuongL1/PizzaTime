@@ -170,6 +170,15 @@
                             android:textColor="@color/pt_text_secondary"
                             android:textSize="14sp" />
 
+                        <TextView
+                            android:id="@+id/tvDeliveryCoordinates"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/location_coordinates_missing"
+                            android:textColor="@color/pt_text_muted"
+                            android:textSize="12sp" />
+
                     </LinearLayout>
 
                     <TextView
@@ -178,7 +187,7 @@
                         android:layout_height="wrap_content"
                         android:layout_gravity="top|end"
                         android:letterSpacing="0.10"
-                        android:text="@string/checkout_delivery_edit"
+                        android:text="@string/checkout_pick_on_map"
                         android:textColor="@color/pt_gold"
                         android:textSize="12sp"
                         android:textStyle="bold" />

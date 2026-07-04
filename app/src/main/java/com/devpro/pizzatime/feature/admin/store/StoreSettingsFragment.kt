@@ -6,6 +6,9 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStoreSettingsBinding
+import com.devpro.pizzatime.shared.location.MapPickerFragment
+import com.devpro.pizzatime.shared.location.isValidLatitude
+import com.devpro.pizzatime.shared.location.isValidLongitude
 
 class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
 
@@ -20,6 +23,7 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
         _binding = FragmentStoreSettingsBinding.bind(view)
 
         bindSettings(StoreSettingsUiModel())
+        setupMapPickerResult()
         setupActions()
         loadSettings()
     }
@@ -31,6 +35,26 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
 
         btnSaveStoreSettings.setOnClickListener {
             saveSettings()
+        }
+
+        btnPickPickupLocation.setOnClickListener {
+            openPickupMapPicker()
+        }
+    }
+
+    private fun setupMapPickerResult() {
+        parentFragmentManager.setFragmentResultListener(
+            MapPickerFragment.REQUEST_KEY,
+            viewLifecycleOwner,
+        ) { _, bundle ->
+            if (bundle.getString(MapPickerFragment.KEY_MODE) != MapPickerFragment.MODE_STORE_PICKUP) {
+                return@setFragmentResultListener
+            }
+            binding.edtPickupAddress.setText(bundle.getString(MapPickerFragment.KEY_ADDRESS).orEmpty())
+            binding.tvPickupCoordinates.text = formatCoordinates(
+                bundle.getDouble(MapPickerFragment.KEY_LAT),
+                bundle.getDouble(MapPickerFragment.KEY_LNG),
+            )
         }
     }
 
@@ -52,6 +76,7 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
     private fun bindSettings(settings: StoreSettingsUiModel) = with(binding) {
         edtStoreName.setText(settings.storeName)
         edtPickupAddress.setText(settings.pickupAddress)
+        tvPickupCoordinates.text = formatCoordinates(settings.pickupLat, settings.pickupLng)
         edtStorePhone.setText(settings.storePhone)
         edtOpeningHours.setText(settings.openingHours)
         switchAcceptingOrders.isChecked = settings.acceptingOrders
@@ -61,6 +86,8 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
         val settings = StoreSettingsUiModel(
             storeName = edtStoreName.text.toString().trim(),
             pickupAddress = edtPickupAddress.text.toString().trim(),
+            pickupLat = currentPickupLat(),
+            pickupLng = currentPickupLng(),
             storePhone = edtStorePhone.text.toString().trim(),
             openingHours = edtOpeningHours.text.toString().trim()
                 .ifBlank { StoreSettingsUiModel.DEFAULT_OPENING_HOURS },
@@ -73,12 +100,22 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
                 return@with
             }
 
-            settings.pickupAddress.isBlank() -> {
+            settings.acceptingOrders && settings.pickupAddress.isBlank() -> {
                 showToast(R.string.store_settings_pickup_address_required)
                 return@with
             }
 
-            settings.storePhone.isBlank() -> {
+            settings.acceptingOrders && !settings.pickupLat.isValidLatitude() -> {
+                showToast(R.string.store_settings_pickup_location_required)
+                return@with
+            }
+
+            settings.acceptingOrders && !settings.pickupLng.isValidLongitude() -> {
+                showToast(R.string.store_settings_pickup_location_required)
+                return@with
+            }
+
+            settings.acceptingOrders && settings.storePhone.isBlank() -> {
                 showToast(R.string.store_settings_store_phone_required)
                 return@with
             }
@@ -91,6 +128,47 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
             result
                 .onSuccess { showToast(R.string.store_settings_save_success) }
                 .onFailure { showToast(R.string.store_settings_save_failed) }
+        }
+    }
+
+    private fun openPickupMapPicker() = with(binding) {
+        parentFragmentManager.beginTransaction()
+            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+            .replace(
+                R.id.fragmentContainer,
+                MapPickerFragment.newInstance(
+                    mode = MapPickerFragment.MODE_STORE_PICKUP,
+                    initialAddress = edtPickupAddress.text.toString().trim(),
+                    initialLat = currentPickupLat(),
+                    initialLng = currentPickupLng(),
+                ),
+            )
+            .addToBackStack(null)
+            .commit()
+    }
+
+    private fun currentPickupLat(): Double? {
+        return (binding.tvPickupCoordinates.tag as? DoubleArray)
+            ?.getOrNull(0)
+            ?.takeIf { it in -90.0..90.0 }
+    }
+
+    private fun currentPickupLng(): Double? {
+        return (binding.tvPickupCoordinates.tag as? DoubleArray)
+            ?.getOrNull(1)
+            ?.takeIf { it in -180.0..180.0 }
+    }
+
+    private fun formatCoordinates(lat: Double?, lng: Double?): String {
+        binding.tvPickupCoordinates.tag = if (lat.isValidLatitude() && lng.isValidLongitude()) {
+            doubleArrayOf(lat ?: 0.0, lng ?: 0.0)
+        } else {
+            null
+        }
+        return if (lat.isValidLatitude() && lng.isValidLongitude()) {
+            getString(R.string.location_coordinates_format, lat, lng)
+        } else {
+            getString(R.string.location_coordinates_missing)
         }
     }
 

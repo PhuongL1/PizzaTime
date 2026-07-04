@@ -209,6 +209,10 @@
     <string name="checkout_store_pickup_missing">Store pickup address is not configured yet.</string>
     <string name="checkout_store_closed">Store is not accepting orders right now.</string>
     <string name="checkout_delivery_address_missing">Please add a delivery address before placing your order.</string>
+    <string name="checkout_store_location_missing">Please choose the store pickup location.</string>
+    <string name="checkout_delivery_location_missing">Please choose your delivery location.</string>
+    <string name="checkout_delivery_location_save_failed">Could not save delivery location.</string>
+    <string name="checkout_pick_on_map">PICK ON MAP</string>
     <string name="checkout_secure">SECURE CHECKOUT BY PIZZATIME</string>
     <string name="tracking_order_number">ORDER #PT-9823</string>
     <string name="tracking_eta">15-20 Mins</string>
@@ -1017,12 +1021,26 @@
     <string name="store_settings_load_failed">Could not load store settings.</string>
     <string name="store_settings_store_name_required">Store name is required.</string>
     <string name="store_settings_pickup_address_required">Pickup address is required.</string>
+    <string name="store_settings_pickup_location_required">Pickup location is required while accepting orders.</string>
     <string name="store_settings_store_phone_required">Store phone is required.</string>
     <string name="store_settings_save_success">Store settings saved.</string>
     <string name="store_settings_save_failed">Could not save store settings.</string>
+    <string name="store_settings_pick_on_map">PICK PICKUP LOCATION ON MAP</string>
     <string name="shipper_detail_pickup">PICKUP</string>
+    <string name="shipper_open_pickup_map">OPEN PICKUP MAP</string>
+    <string name="shipper_open_delivery_map">OPEN MAP</string>
     <string name="staff_order_detail_pickup_info">Pickup: %1$s, %2$s, %3$s</string>
     <string name="staff_order_detail_delivery_info">Delivery: %1$s, %2$s</string>
+    <string name="map_picker_store_title">Pick Pickup Location</string>
+    <string name="map_picker_delivery_title">Pick Delivery Location</string>
+    <string name="map_picker_address_hint">Address</string>
+    <string name="map_picker_selected_coordinates">%1$.6f, %2$.6f</string>
+    <string name="map_picker_use_location">USE THIS LOCATION</string>
+    <string name="map_picker_address_required">Address is required.</string>
+    <string name="map_picker_coordinates_required">Tap the map to choose a location.</string>
+    <string name="location_coordinates_format">%1$.6f, %2$.6f</string>
+    <string name="location_coordinates_missing">Location not selected</string>
+    <string name="location_not_available">Location is not available.</string>
 
     <!-- dialog select shipper  -->
     <string name="assign_shipper_active_deliveries">%1$d active</string>

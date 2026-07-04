@@ -10,8 +10,12 @@ data class ShipperDeliveryDetailUiModel(
     val items: List<ShipperPaymentItemUiModel>,
     val storeName: String = "",
     val pickupAddress: String = "",
+    val pickupLat: Double? = null,
+    val pickupLng: Double? = null,
     val storePhone: String = "",
     val customerPhone: String = "",
+    val deliveryLat: Double? = null,
+    val deliveryLng: Double? = null,
 )
 
 data class ShipperPaymentItemUiModel(
