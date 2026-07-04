@@ -57,12 +57,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
 
     private val menuAdapter = AdminMenuAdapter(
         onAvailabilityClick = { item ->
-            AdminMenuFirestoreRepository.toggleAvailability(item.id, !item.isAvailable) { result ->
-                if (!isAdded) return@toggleAvailability
-                if (result.isSuccess) {
-                    loadFirestoreProducts()
-                }
-            }
+            toggleProductAvailability(item)
         },
         onEditClick = { item ->
             showEditProductDialog(item)
@@ -87,7 +82,29 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         AdminMenuFirestoreRepository.loadProducts { result ->
             if (!isAdded) return@loadProducts
             allProducts = result.getOrElse { FakeAdminMenuData.getItems() }
+                .distinctBy { it.id }
             renderMenuItems()
+        }
+    }
+
+    private fun toggleProductAvailability(item: AdminMenuUiModel) {
+        val newAvailable = !item.isAvailable
+        AdminMenuFirestoreRepository.toggleAvailability(item.id, newAvailable) { result ->
+            if (!isAdded) return@toggleAvailability
+            result
+                .onSuccess {
+                    allProducts = allProducts.map { product ->
+                        if (product.id == item.id) {
+                            product.copy(isAvailable = newAvailable)
+                        } else {
+                            product
+                        }
+                    }
+                    renderMenuItems()
+                }
+                .onFailure {
+                    showToast(R.string.manage_menu_edit_product_failed)
+                }
         }
     }
 
