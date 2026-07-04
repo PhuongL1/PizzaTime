@@ -7,6 +7,7 @@ data class ShipperDeliveryDetailUiModel(
     val courierNote: String,
     val paymentAmount: String,
     val paymentMethod: String,
+    val paymentStatus: String = "",
     val items: List<ShipperPaymentItemUiModel>,
     val storeName: String = "",
     val pickupAddress: String = "",

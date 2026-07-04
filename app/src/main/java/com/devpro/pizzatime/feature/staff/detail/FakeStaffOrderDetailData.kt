@@ -25,6 +25,7 @@ object FakeStaffOrderDetailData {
             ),
             estimatedDeliveryTime = DEFAULT_ESTIMATED_DELIVERY_TIME,
             paymentMethod = DEFAULT_PAYMENT_METHOD,
+            paymentStatus = "Unpaid",
             paymentTotal = customerOrder.bill.total,
             deliveryNote = DEFAULT_DELIVERY_NOTE,
             items = customerOrder.items.map { item ->

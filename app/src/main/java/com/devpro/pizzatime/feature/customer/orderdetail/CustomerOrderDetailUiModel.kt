@@ -17,6 +17,8 @@ data class CustomerOrderDetailUiModel(
     val pickupAddress: String = "",
     val storePhone: String = "",
     val distanceKm: Double? = null,
+    val paymentMethod: String = "",
+    val paymentStatus: String = "",
     val statusHistory: List<CustomerOrderStatusHistoryUiModel> = emptyList(),
     val canCancel: Boolean = false,
 )

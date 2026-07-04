@@ -112,10 +112,20 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
 
     private fun bindPayment(order: StaffOrderDetailUiModel) = with(binding) {
         tvPaymentMethod.text = order.paymentMethod
-        tvPaymentSummary.text = getString(
-            R.string.staff_order_detail_payment_summary,
-            formatPrice(order.paymentTotal),
-        )
+        tvPaymentSummary.text = if (order.cashCollected) {
+            getString(
+                R.string.staff_order_detail_payment_summary_collected,
+                order.paymentStatus,
+                formatPrice(order.collectedAmount),
+                order.collectedByShipperId.ifBlank { getString(R.string.common_not_provided) },
+            )
+        } else {
+            getString(
+                R.string.staff_order_detail_payment_summary_uncollected,
+                order.paymentStatus,
+                formatPrice(order.paymentTotal),
+            )
+        }
     }
 
     private fun bindDeliveryNote(note: String) = with(binding) {

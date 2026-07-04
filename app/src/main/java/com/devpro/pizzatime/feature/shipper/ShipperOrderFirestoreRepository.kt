@@ -86,7 +86,7 @@ object ShipperOrderFirestoreRepository {
             ?: customerEmail.substringBefore("@").ifBlank { "Customer" }
         val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val statusStr = getString("status") ?: "READY"
-        val paymentMethod = getString("paymentMethod") ?: "CASH"
+        val paymentMethod = getString("paymentMethod").toPaymentMethodLabel()
 
         return ShipperDeliveryUiModel(
             orderId = id,
@@ -124,7 +124,11 @@ object ShipperOrderFirestoreRepository {
             deliveryFee = String.format(Locale.US, "$%.2f", deliveryFee),
             courierNote = getString("note") ?: "",
             paymentAmount = String.format(Locale.US, "$%.2f", total),
-            paymentMethod = (getString("paymentMethod") ?: "CASH").uppercase(Locale.US),
+            paymentMethod = getString("paymentMethod").toPaymentMethodLabel(),
+            paymentStatus = paymentStatusLabel(
+                stored = getString("paymentStatus"),
+                status = getString("status").orEmpty(),
+            ),
             items = rawItems?.mapNotNull { it.toPaymentItem() } ?: emptyList(),
         )
     }
@@ -141,6 +145,23 @@ object ShipperOrderFirestoreRepository {
     }
 
     private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: NOT_PROVIDED
+
+    private fun String?.toPaymentMethodLabel(): String {
+        return when (this?.uppercase(Locale.US)) {
+            "CASH_ON_DELIVERY", "CASH" -> "Cash on Delivery"
+            else -> this?.takeIf { it.isNotBlank() } ?: "Cash on Delivery"
+        }
+    }
+
+    private fun paymentStatusLabel(stored: String?, status: String): String {
+        val normalized = stored?.uppercase(Locale.US)
+        return when {
+            normalized == "PAID" -> "Paid"
+            normalized == "UNPAID" -> "Unpaid"
+            status == "DELIVERED" -> "Paid"
+            else -> "Unpaid"
+        }
+    }
 
     private const val NOT_PROVIDED = "Not provided"
 }

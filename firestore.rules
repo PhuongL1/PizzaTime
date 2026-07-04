@@ -96,8 +96,38 @@ service cloud.firestore {
         "statusHistory",
         "shipperId",
         "loyaltyAwarded",
-        "earnedPoints"
+        "earnedPoints",
+        "paymentStatus",
+        "paymentMethod",
+        "paidAt",
+        "deliveredAt",
+        "collectedByShipperId",
+        "collectedAmount",
+        "cashCollected"
       ]);
+    }
+
+    function shipperPaymentCollectionFieldsValid() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "paymentStatus",
+        "paymentMethod",
+        "paidAt",
+        "deliveredAt",
+        "collectedByShipperId",
+        "collectedAmount",
+        "cashCollected"
+      ])
+        || (
+          statusTransition("DELIVERING", "DELIVERED")
+          && request.resource.data.paymentStatus == "PAID"
+          && request.resource.data.paymentMethod == "CASH_ON_DELIVERY"
+          && request.resource.data.paidAt == request.time
+          && request.resource.data.deliveredAt == request.time
+          && request.resource.data.collectedByShipperId == request.auth.uid
+          && request.resource.data.collectedAmount is number
+          && request.resource.data.collectedAmount >= 0
+          && request.resource.data.cashCollected == true
+        );
     }
 
     function shipperLoyaltyOrderFieldsValid() {
@@ -166,8 +196,22 @@ service cloud.firestore {
 
     function shipperStatusTransition() {
       return statusTransition("READY", "ASSIGNED_TO_SHIPPER")
+        || statusTransition("READY", "DELIVERING")
         || statusTransition("ASSIGNED_TO_SHIPPER", "DELIVERING")
         || statusTransition("DELIVERING", "DELIVERED");
+    }
+
+    function shipperOwnsOrClaimsOrder() {
+      return (
+        resource.data.status == "READY"
+        && resource.data.get("shipperId", "") == ""
+        && request.resource.data.shipperId == request.auth.uid
+      )
+        || (
+          resource.data.status in ["ASSIGNED_TO_SHIPPER", "DELIVERING"]
+          && resource.data.get("shipperId", "") == request.auth.uid
+          && request.resource.data.get("shipperId", "") == request.auth.uid
+        );
     }
 
     match /categories/{categoryId} {
@@ -220,6 +264,8 @@ service cloud.firestore {
         || (
           isShipper()
           && shipperStatusUpdate()
+          && shipperOwnsOrClaimsOrder()
+          && shipperPaymentCollectionFieldsValid()
           && shipperLoyaltyOrderFieldsValid()
           && validStatusHistoryField()
           && shipperStatusTransition()

@@ -137,7 +137,14 @@ object StaffOrderFirestoreRepository {
             customerPhone = getString("customerPhone").orNotProvided(),
             deliveryAddress = getString("deliveryAddress").orNotProvided(),
             estimatedDeliveryTime = "",
-            paymentMethod = getString("paymentMethod") ?: "CASH",
+            paymentMethod = getString("paymentMethod").toPaymentMethodLabel(),
+            paymentStatus = paymentStatusLabel(
+                stored = getString("paymentStatus"),
+                status = statusStr,
+            ),
+            cashCollected = getBoolean("cashCollected") == true,
+            collectedByShipperId = getString("collectedByShipperId").orEmpty(),
+            collectedAmount = getDouble("collectedAmount") ?: 0.0,
             paymentTotal = total,
             deliveryNote = getString("note") ?: "",
             items = rawItems?.mapNotNull { it.toDetailItem() } ?: emptyList(),
@@ -215,6 +222,23 @@ object StaffOrderFirestoreRepository {
     }
 
     private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: NOT_PROVIDED
+
+    private fun String?.toPaymentMethodLabel(): String {
+        return when (this?.uppercase(Locale.US)) {
+            "CASH_ON_DELIVERY", "CASH" -> "Cash on Delivery"
+            else -> this?.takeIf { it.isNotBlank() } ?: "Cash on Delivery"
+        }
+    }
+
+    private fun paymentStatusLabel(stored: String?, status: String): String {
+        val normalized = stored?.uppercase(Locale.US)
+        return when {
+            normalized == "PAID" -> "Paid"
+            normalized == "UNPAID" -> "Unpaid"
+            status == "DELIVERED" -> "Paid"
+            else -> "Unpaid"
+        }
+    }
 
     private const val STATUS_CANCELLED = "CANCELLED"
     private const val NOT_PROVIDED = "Not provided"

@@ -119,6 +119,11 @@ object CustomerOrderFirestoreRepository {
             pickupAddress = getString("pickupAddress").orNotProvided(),
             storePhone = getString("storePhone").orNotProvided(),
             distanceKm = getDouble("distanceKm"),
+            paymentMethod = getString("paymentMethod").toPaymentMethodLabel(),
+            paymentStatus = paymentStatusLabel(
+                stored = getString("paymentStatus"),
+                status = statusStr,
+            ),
             statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
             canCancel = statusStr == STATUS_PENDING,
         )
@@ -213,6 +218,23 @@ object CustomerOrderFirestoreRepository {
     private fun String?.orSystemRole(): String = this?.takeIf { it.isNotBlank() } ?: "System"
 
     private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: "Not provided"
+
+    private fun String?.toPaymentMethodLabel(): String {
+        return when (this?.uppercase(Locale.US)) {
+            "CASH_ON_DELIVERY", "CASH" -> "Cash on Delivery"
+            else -> this?.takeIf { it.isNotBlank() } ?: "Cash on Delivery"
+        }
+    }
+
+    private fun paymentStatusLabel(stored: String?, status: String): String {
+        val normalized = stored?.uppercase(Locale.US)
+        return when {
+            normalized == "PAID" -> "Paid"
+            normalized == "UNPAID" -> "Unpaid"
+            status == "DELIVERED" -> "Paid"
+            else -> "Unpaid"
+        }
+    }
 
     private data class OrderStatusHistoryEntry(
         val status: String,

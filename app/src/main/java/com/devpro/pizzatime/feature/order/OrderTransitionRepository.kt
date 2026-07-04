@@ -107,7 +107,7 @@ object OrderTransitionRepository {
         when (newStatus) {
             STATUS_ASSIGNED_TO_SHIPPER -> acceptByShipper(orderId, shipperId, onResult)
             STATUS_DELIVERING -> startDelivery(orderId, shipperId, onResult)
-            STATUS_DELIVERED -> deliverWithLoyaltyAward(orderId, shipperId, onResult)
+            STATUS_DELIVERED -> completeCashDelivery(orderId, shipperId, onResult)
             else -> onResult(Result.failure(staleOrderException()))
         }
     }
@@ -206,10 +206,10 @@ object OrderTransitionRepository {
 
             val currentStatus = order.getString("status").orEmpty()
             val currentShipperId = order.getString("shipperId").orEmpty()
-            if (
-                currentStatus != STATUS_ASSIGNED_TO_SHIPPER ||
-                currentShipperId.isNotBlank() && currentShipperId != shipperId
-            ) {
+            val canStartFromReady = currentStatus == STATUS_READY && currentShipperId.isBlank()
+            val canStartFromAssigned = currentStatus == STATUS_ASSIGNED_TO_SHIPPER &&
+                (currentShipperId.isBlank() || currentShipperId == shipperId)
+            if (!canStartFromReady && !canStartFromAssigned) {
                 throw staleOrderException()
             }
 
@@ -217,6 +217,7 @@ object OrderTransitionRepository {
                 orderRef,
                 mapOf(
                     "status" to STATUS_DELIVERING,
+                    "shipperId" to shipperId,
                     "updatedAt" to FieldValue.serverTimestamp(),
                     "statusHistory" to FieldValue.arrayUnion(
                         buildHistoryItem(
@@ -233,7 +234,7 @@ object OrderTransitionRepository {
             .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
     }
 
-    private fun deliverWithLoyaltyAward(
+    private fun completeCashDelivery(
         orderId: String,
         shipperId: String,
         onResult: (Result<Unit>) -> Unit,
@@ -257,7 +258,7 @@ object OrderTransitionRepository {
                 throw staleOrderException()
             }
 
-            val total = order.getDouble("total") ?: 0.0
+            val total = order.getDouble("finalTotal") ?: order.getDouble("total") ?: 0.0
             val customerId = order.getString("customerId").orEmpty()
             if (customerId.isBlank()) {
                 throw staleOrderException()
@@ -268,13 +269,20 @@ object OrderTransitionRepository {
                 orderRef,
                 mapOf(
                     "status" to STATUS_DELIVERED,
+                    "paymentMethod" to "CASH_ON_DELIVERY",
+                    "paymentStatus" to "PAID",
+                    "paidAt" to FieldValue.serverTimestamp(),
+                    "deliveredAt" to FieldValue.serverTimestamp(),
+                    "collectedByShipperId" to shipperId,
+                    "collectedAmount" to total,
+                    "cashCollected" to true,
                     "updatedAt" to FieldValue.serverTimestamp(),
                     "statusHistory" to FieldValue.arrayUnion(
                         buildHistoryItem(
                             status = STATUS_DELIVERED,
                             actorRole = "SHIPPER",
                             actorId = shipperId,
-                            note = "Shipper delivered order",
+                            note = "Shipper delivered order and collected cash payment",
                         ),
                     ),
                     "loyaltyAwarded" to true,

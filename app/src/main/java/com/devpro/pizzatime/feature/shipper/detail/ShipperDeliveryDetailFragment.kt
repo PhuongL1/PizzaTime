@@ -1,11 +1,13 @@
 package com.devpro.pizzatime.feature.shipper.detail
 
+import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDetailBinding
@@ -83,6 +85,8 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         tvCourierNote.text = getString(R.string.shipper_detail_note_quote, detail.courierNote)
         tvPaymentAmount.text = detail.paymentAmount
         tvPaymentMethod.text = detail.paymentMethod
+        tvPaymentStatus.text = detail.paymentStatus.ifBlank { getString(R.string.payment_status_unpaid) }
+        renderActionButton(firestoreStatus)
 
         bindPaymentItems(detail.items)
     }
@@ -133,25 +137,64 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             )
         }
 
-        btnConfirmDelivery.setOnClickListener {
-            val nextStatus = nextFirestoreStatus(firestoreStatus)
-            if (firestoreStatus != null && nextStatus != null) {
-                updateFirestoreStatus(detail.orderId, nextStatus)
-            } else {
-                Toast.makeText(
-                    requireContext(),
-                    getString(R.string.shipper_detail_delivery_confirmed, detail.orderId),
-                    Toast.LENGTH_SHORT,
-                ).show()
-            }
+        btnConfirmDelivery.setOnClickListener { handleDeliveryAction(detail) }
+    }
+
+    private fun handleDeliveryAction(detail: ShipperDeliveryDetailUiModel) {
+        when (firestoreStatus) {
+            "READY",
+            "ASSIGNED_TO_SHIPPER",
+            "READY_FOR_DELIVERY",
+            "READY_TO_DELIVER",
+                -> updateFirestoreStatus(detail.orderId, "DELIVERING")
+
+            "DELIVERING" -> showCompleteDeliveryDialog(detail)
+
+            else -> Unit
         }
     }
 
-    private fun nextFirestoreStatus(status: String?): String? = when (status) {
-        "READY" -> "ASSIGNED_TO_SHIPPER"
-        "ASSIGNED_TO_SHIPPER" -> "DELIVERING"
-        "DELIVERING" -> "DELIVERED"
-        else -> null
+    private fun nextActionLabel(status: String?): Int {
+        return when (status) {
+            "READY", "ASSIGNED_TO_SHIPPER", "READY_FOR_DELIVERY", "READY_TO_DELIVER" ->
+                R.string.shipper_detail_start_delivery
+            "DELIVERING" -> R.string.shipper_detail_delivered_cash_collected
+            "DELIVERED" -> R.string.shipper_detail_order_completed
+            "CANCELLED" -> R.string.shipper_detail_order_cancelled
+            else -> R.string.shipper_detail_confirm_delivery
+        }
+    }
+
+    private fun renderActionButton(status: String?) = with(binding.btnConfirmDelivery) {
+        text = getString(nextActionLabel(status))
+        isEnabled = status in setOf(
+            "READY",
+            "ASSIGNED_TO_SHIPPER",
+            "READY_FOR_DELIVERY",
+            "READY_TO_DELIVER",
+            "DELIVERING",
+        ) && !isUpdatingStatus
+        isVisible = status != "DELIVERED" && status != "CANCELLED"
+        if (status == "DELIVERED" || status == "CANCELLED") {
+            isVisible = true
+            isEnabled = false
+        }
+    }
+
+    private fun showCompleteDeliveryDialog(detail: ShipperDeliveryDetailUiModel) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.shipper_complete_delivery_title)
+            .setMessage(
+                getString(
+                    R.string.shipper_complete_delivery_message_with_amount,
+                    detail.paymentAmount,
+                ),
+            )
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.shipper_complete_delivery_confirm) { _, _ ->
+                updateFirestoreStatus(detail.orderId, "DELIVERED")
+            }
+            .show()
     }
 
     private fun updateFirestoreStatus(orderId: String, nextStatus: String) {
@@ -167,8 +210,8 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             result
                 .onSuccess {
                     isUpdatingStatus = false
-                    binding.btnConfirmDelivery.isEnabled = nextStatus != "DELIVERED"
                     firestoreStatus = nextStatus
+                    renderActionButton(nextStatus)
                     Toast.makeText(
                         requireContext(),
                         getString(R.string.shipper_detail_delivery_confirmed, orderId),
@@ -177,7 +220,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 }
                 .onFailure { error ->
                     isUpdatingStatus = false
-                    binding.btnConfirmDelivery.isEnabled = true
+                    renderActionButton(firestoreStatus)
                     Toast.makeText(
                         requireContext(),
                         error.message ?: "Failed to update order.",

@@ -136,6 +136,8 @@ class CustomerOrderDetailFragment : Fragment() {
         tvDeliveryDistanceValue.text = detail.distanceKm?.let { formatDistance(it) }
             ?: getString(R.string.common_not_provided)
         tvTaxesValue.text = formatPrice(bill.taxes)
+        tvPaymentMethodValue.text = detail.paymentMethod.ifBlank { getString(R.string.payment_method_cash_on_delivery) }
+        tvPaymentStatusValue.text = detail.paymentStatus.ifBlank { getString(R.string.payment_status_unpaid) }
         tvDiscountLabel.text = bill.discountLabel
         tvDiscountValue.text = formatSignedPrice(bill.discount)
         tvTotalAmount.text = formatPrice(bill.total)

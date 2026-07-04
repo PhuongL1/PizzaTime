@@ -472,6 +472,17 @@
                             android:textStyle="bold"
                             tools:text="CASH ON DELIVERY" />
 
+                        <TextView
+                            android:id="@+id/tvPaymentStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:letterSpacing="0.12"
+                            android:textColor="@color/pt_text_secondary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="UNPAID" />
+
                     </LinearLayout>
 
                 </LinearLayout>
