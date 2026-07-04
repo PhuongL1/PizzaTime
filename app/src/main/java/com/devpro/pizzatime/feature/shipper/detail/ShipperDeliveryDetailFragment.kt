@@ -77,6 +77,9 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         tvCustomerPhone.text = detail.customerPhone
         tvDeliveryAddress.text = detail.address
         tvDeliveryCoordinates.text = formatCoordinates(detail.deliveryLat, detail.deliveryLng)
+        tvDeliveryDistance.text = detail.distanceKm?.let { formatDistance(it) }
+            ?: getString(R.string.common_not_provided)
+        tvDeliveryFee.text = detail.deliveryFee.ifBlank { getString(R.string.common_not_provided) }
         tvCourierNote.text = getString(R.string.shipper_detail_note_quote, detail.courierNote)
         tvPaymentAmount.text = detail.paymentAmount
         tvPaymentMethod.text = detail.paymentMethod
@@ -207,6 +210,10 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         } else {
             getString(R.string.location_coordinates_missing)
         }
+    }
+
+    private fun formatDistance(distanceKm: Double): String {
+        return String.format(java.util.Locale.US, "%.1f km", distanceKm)
     }
 
     private fun setupBottomNav() {

@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
@@ -15,11 +16,15 @@ import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRep
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
+import com.devpro.pizzatime.shared.location.LocationDistanceCalculator
 import com.devpro.pizzatime.shared.location.MapPickerFragment
+import com.devpro.pizzatime.shared.location.isValidCoordinate
 import com.devpro.pizzatime.shared.location.isValidLatitude
 import com.devpro.pizzatime.shared.location.isValidLongitude
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
+import kotlin.math.ceil
+import kotlin.math.round
 
 class CheckoutFragment : Fragment() {
 
@@ -38,6 +43,7 @@ class CheckoutFragment : Fragment() {
     private var customerName = ""
     private var customerPhone = ""
     private var currentStoreSettings: StoreSettingsUiModel? = null
+    private var currentDeliveryEstimate: DeliveryEstimate? = null
     private var isPlacingOrder = false
 
     override fun onCreateView(
@@ -83,6 +89,7 @@ class CheckoutFragment : Fragment() {
                     address = selectedDeliveryAddress.ifBlank { getString(R.string.common_not_provided) },
                 )
                 renderDeliveryCoordinateStatus()
+                updateDeliveryEstimate()
             }
         }
     }
@@ -92,6 +99,7 @@ class CheckoutFragment : Fragment() {
             if (_binding == null) return@loadStoreSettings
             result.onSuccess { settings ->
                 currentStoreSettings = settings
+                updateDeliveryEstimate(settings)
             }
         }
     }
@@ -138,12 +146,27 @@ class CheckoutFragment : Fragment() {
 
     private fun renderSummary() {
         val subtotal = orderItems.sumOf { it.price }
-        val deliveryFee = DELIVERY_FEE
-        val total = subtotal - appliedDiscount + deliveryFee
+        val deliveryFee = currentDeliveryEstimate?.deliveryFee ?: 0.0
+        val total = (subtotal - appliedDiscount).coerceAtLeast(0.0) + deliveryFee
 
         binding.tvSubtotal.text = formatMoney(subtotal)
+        binding.rowDiscount.isVisible = appliedDiscount > 0.0
+        binding.tvDiscount.text = "-${formatMoney(appliedDiscount)}"
+        binding.tvDeliveryDistance.text = currentDeliveryEstimate?.let {
+            formatDistance(it.distanceKm)
+        } ?: getString(R.string.common_not_provided)
         binding.tvDeliveryFee.text = formatMoney(deliveryFee)
         binding.tvTotal.text = formatMoney(total)
+    }
+
+    private fun updateDeliveryEstimate(settings: StoreSettingsUiModel? = currentStoreSettings) {
+        currentDeliveryEstimate = calculateDeliveryEstimate(
+            settings = settings,
+            itemsSubtotal = orderItems.sumOf { it.price },
+        )
+        if (_binding != null) {
+            renderSummary()
+        }
     }
 
     private fun setupActions() {
@@ -233,7 +256,7 @@ class CheckoutFragment : Fragment() {
                 appliedDiscount = 0.0
                 appliedPromoCode = ""
                 renderOrderItems(orderItems)
-                renderSummary()
+                updateDeliveryEstimate()
                 setPlaceOrderLoading(false)
                 showToast(R.string.checkout_prices_changed)
             }
@@ -241,7 +264,7 @@ class CheckoutFragment : Fragment() {
             CheckoutConsistencyResult.PromoInvalid -> {
                 appliedDiscount = 0.0
                 appliedPromoCode = ""
-                renderSummary()
+                updateDeliveryEstimate()
                 setPlaceOrderLoading(false)
                 showToast(R.string.checkout_promo_invalid)
             }
@@ -251,8 +274,8 @@ class CheckoutFragment : Fragment() {
                 orderItems = CartStore.items.map { it.toCheckoutItem() }
                 appliedDiscount = validationResult.discount
                 appliedPromoCode = validationResult.promoCode
-                renderSummary()
-                loadStoreSettingsForOrder { storeSettings ->
+                updateDeliveryEstimate()
+                loadStoreSettingsForOrder { storeSettings, deliveryEstimate ->
                     createValidatedOrder(
                         customerId = customerId,
                         customerEmail = customerEmail,
@@ -260,13 +283,14 @@ class CheckoutFragment : Fragment() {
                         promoCode = validationResult.promoCode,
                         discount = validationResult.discount,
                         storeSettings = storeSettings,
+                        deliveryEstimate = deliveryEstimate,
                     )
                 }
             }
         }
     }
 
-    private fun loadStoreSettingsForOrder(onValidStore: (StoreSettingsUiModel) -> Unit) {
+    private fun loadStoreSettingsForOrder(onValidStore: (StoreSettingsUiModel, DeliveryEstimate) -> Unit) {
         StoreSettingsRepository.loadStoreSettings { result ->
             if (_binding == null) return@loadStoreSettings
             result
@@ -298,7 +322,20 @@ class CheckoutFragment : Fragment() {
                             showToast(R.string.checkout_delivery_location_missing)
                         }
 
-                        else -> onValidStore(settings)
+                        else -> {
+                            val estimate = calculateDeliveryEstimate(
+                                settings = settings,
+                                itemsSubtotal = orderItems.sumOf { it.price },
+                            )
+                            if (estimate == null) {
+                                setPlaceOrderLoading(false)
+                                showToast(R.string.checkout_delivery_location_missing)
+                            } else {
+                                currentDeliveryEstimate = estimate
+                                renderSummary()
+                                onValidStore(settings, estimate)
+                            }
+                        }
                     }
                 }
                 .onFailure {
@@ -315,12 +352,21 @@ class CheckoutFragment : Fragment() {
         promoCode: String,
         discount: Double,
         storeSettings: StoreSettingsUiModel,
+        deliveryEstimate: DeliveryEstimate,
     ) {
+        val itemsSubtotal = items.sumOf { it.price * it.quantity }
+        val discountAmount = discount.coerceAtLeast(0.0)
+        val finalTotal = (itemsSubtotal - discountAmount).coerceAtLeast(0.0) +
+            deliveryEstimate.deliveryFee
         FirebaseOrderRepository.createOrder(
             customerId = customerId,
             customerEmail = customerEmail,
             items = items,
-            deliveryFee = DELIVERY_FEE,
+            distanceKm = deliveryEstimate.distanceKm,
+            deliveryFee = deliveryEstimate.deliveryFee,
+            itemsSubtotal = itemsSubtotal,
+            discountAmount = discountAmount,
+            finalTotal = finalTotal,
             deliveryAddress = selectedDeliveryAddress.trim(),
             deliveryLat = selectedDeliveryLat,
             deliveryLng = selectedDeliveryLng,
@@ -328,7 +374,6 @@ class CheckoutFragment : Fragment() {
             customerPhone = customerPhone,
             storeSettings = storeSettings,
             promoCode = promoCode,
-            discount = discount,
             onResult = { result ->
                 if (_binding == null) return@createOrder
                 result
@@ -384,6 +429,7 @@ class CheckoutFragment : Fragment() {
                 address = selectedDeliveryAddress,
             )
             renderDeliveryCoordinateStatus()
+            updateDeliveryEstimate()
             saveDeliveryLocation(address, lat, lng)
         }
     }
@@ -423,14 +469,54 @@ class CheckoutFragment : Fragment() {
         return String.format(Locale.US, "$%.2f", value)
     }
 
+    private fun formatDistance(distanceKm: Double): String {
+        return String.format(Locale.US, "%.1f km", distanceKm)
+    }
+
+    private fun calculateDeliveryEstimate(
+        settings: StoreSettingsUiModel?,
+        itemsSubtotal: Double,
+    ): DeliveryEstimate? {
+        if (settings == null) return null
+        if (!isValidCoordinate(settings.pickupLat, settings.pickupLng)) return null
+        if (!isValidCoordinate(selectedDeliveryLat, selectedDeliveryLng)) return null
+
+        val pickupLat = settings.pickupLat ?: return null
+        val pickupLng = settings.pickupLng ?: return null
+        val deliveryLat = selectedDeliveryLat ?: return null
+        val deliveryLng = selectedDeliveryLng ?: return null
+        val rawDistanceKm = LocationDistanceCalculator.calculateDistanceKm(
+            startLat = pickupLat,
+            startLng = pickupLng,
+            endLat = deliveryLat,
+            endLng = deliveryLng,
+        )
+        val roundedDistanceKm = ceil(rawDistanceKm * 10.0) / 10.0
+        val deliveryFee = if (
+            settings.freeDeliveryMinSubtotal > 0.0 &&
+            itemsSubtotal >= settings.freeDeliveryMinSubtotal
+        ) {
+            0.0
+        } else {
+            settings.baseDeliveryFee + roundedDistanceKm * settings.deliveryFeePerKm
+        }
+
+        return DeliveryEstimate(
+            distanceKm = roundedDistanceKm,
+            deliveryFee = round(deliveryFee * 100.0) / 100.0,
+        )
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
     }
-    companion object {
-        private const val DELIVERY_FEE = 4.5
-    }
 }
+
+private data class DeliveryEstimate(
+    val distanceKm: Double,
+    val deliveryFee: Double,
+)
 
 private fun CartItemUiModel.toCheckoutItem(): CheckoutOrderItemUiModel {
     val customizationParts = buildList {

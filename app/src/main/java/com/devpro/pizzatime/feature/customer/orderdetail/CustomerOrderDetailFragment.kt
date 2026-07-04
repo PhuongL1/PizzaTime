@@ -88,7 +88,7 @@ class CustomerOrderDetailFragment : Fragment() {
         tvHeroMessage.text = detail.heroMessage
 
         bindItems(detail.items)
-        bindBill(detail.bill)
+        bindBill(detail)
         bindAddress(detail)
         bindStatusHistory(detail.statusHistory)
         btnCancelOrder.isVisible = detail.canCancel && isFirestoreOrderId(detail.orderId)
@@ -129,9 +129,12 @@ class CustomerOrderDetailFragment : Fragment() {
         }
     }
 
-    private fun bindBill(bill: CustomerBillUiModel) = with(binding) {
+    private fun bindBill(detail: CustomerOrderDetailUiModel) = with(binding) {
+        val bill = detail.bill
         tvSubtotalValue.text = formatPrice(bill.subtotal)
         tvDeliveryFeeValue.text = formatPrice(bill.deliveryFee)
+        tvDeliveryDistanceValue.text = detail.distanceKm?.let { formatDistance(it) }
+            ?: getString(R.string.common_not_provided)
         tvTaxesValue.text = formatPrice(bill.taxes)
         tvDiscountLabel.text = bill.discountLabel
         tvDiscountValue.text = formatSignedPrice(bill.discount)
@@ -239,6 +242,10 @@ class CustomerOrderDetailFragment : Fragment() {
         } else {
             String.format(Locale.US, "$%.2f", value)
         }
+    }
+
+    private fun formatDistance(distanceKm: Double): String {
+        return String.format(Locale.US, "%.1f km", distanceKm)
     }
 
     private val Int.dp: Int

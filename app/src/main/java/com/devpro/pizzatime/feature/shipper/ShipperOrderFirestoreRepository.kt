@@ -84,7 +84,7 @@ object ShipperOrderFirestoreRepository {
         val customerName = getString("customerName")
             ?.takeIf { it.isNotBlank() && it != customerEmail }
             ?: customerEmail.substringBefore("@").ifBlank { "Customer" }
-        val total = getDouble("total") ?: 0.0
+        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val statusStr = getString("status") ?: "READY"
         val paymentMethod = getString("paymentMethod") ?: "CASH"
 
@@ -104,7 +104,8 @@ object ShipperOrderFirestoreRepository {
         val customerName = getString("customerName")
             ?.takeIf { it.isNotBlank() && it != customerEmail }
             ?: customerEmail.substringBefore("@").ifBlank { "Customer" }
-        val total = getDouble("total") ?: 0.0
+        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
+        val deliveryFee = getDouble("deliveryFee") ?: 0.0
         val rawItems = get("items") as? List<*>
 
         return ShipperDeliveryDetailUiModel(
@@ -119,6 +120,8 @@ object ShipperOrderFirestoreRepository {
             address = getString("deliveryAddress").orNotProvided(),
             deliveryLat = getDouble("deliveryLat"),
             deliveryLng = getDouble("deliveryLng"),
+            distanceKm = getDouble("distanceKm"),
+            deliveryFee = String.format(Locale.US, "$%.2f", deliveryFee),
             courierNote = getString("note") ?: "",
             paymentAmount = String.format(Locale.US, "$%.2f", total),
             paymentMethod = (getString("paymentMethod") ?: "CASH").uppercase(Locale.US),

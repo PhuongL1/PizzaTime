@@ -100,7 +100,7 @@ object StaffOrderFirestoreRepository {
         if (statusStr == STATUS_CANCELLED) {
             return null
         }
-        val total = getDouble("total") ?: 0.0
+        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val orderType = getString("orderType") ?: "DELIVERY"
         val rawItems = get("items") as? List<*>
@@ -120,7 +120,7 @@ object StaffOrderFirestoreRepository {
         val customerEmail = getString("customerEmail") ?: ""
         val customerName = resolveCustomerName(getString("customerName"), customerEmail)
         val statusStr = getString("status") ?: "PENDING"
-        val total = getDouble("total") ?: 0.0
+        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val rawItems = get("items") as? List<*>
 
@@ -131,6 +131,8 @@ object StaffOrderFirestoreRepository {
             storeName = getString("storeName").orNotProvided(),
             pickupAddress = getString("pickupAddress").orNotProvided(),
             storePhone = getString("storePhone").orNotProvided(),
+            distanceKm = getDouble("distanceKm"),
+            deliveryFee = getDouble("deliveryFee") ?: 0.0,
             customerName = customerName,
             customerPhone = getString("customerPhone").orNotProvided(),
             deliveryAddress = getString("deliveryAddress").orNotProvided(),

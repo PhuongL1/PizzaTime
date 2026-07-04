@@ -16,6 +16,8 @@ data class ShipperDeliveryDetailUiModel(
     val customerPhone: String = "",
     val deliveryLat: Double? = null,
     val deliveryLng: Double? = null,
+    val distanceKm: Double? = null,
+    val deliveryFee: String = "",
 )
 
 data class ShipperPaymentItemUiModel(

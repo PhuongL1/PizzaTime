@@ -14,7 +14,11 @@ object FirebaseOrderRepository {
         customerId: String,
         customerEmail: String,
         items: List<CartItemUiModel>,
+        distanceKm: Double,
         deliveryFee: Double,
+        itemsSubtotal: Double,
+        discountAmount: Double,
+        finalTotal: Double,
         deliveryAddress: String = "",
         deliveryLat: Double?,
         deliveryLng: Double?,
@@ -22,12 +26,8 @@ object FirebaseOrderRepository {
         customerPhone: String = "",
         storeSettings: StoreSettingsUiModel,
         promoCode: String = "",
-        discount: Double = 0.0,
         onResult: (Result<String>) -> Unit,
     ) {
-        val subtotal = items.sumOf { it.price * it.quantity }
-        val total = subtotal - discount + deliveryFee
-
         val orderItems = items.map { item ->
             hashMapOf(
                 "productId" to item.id,
@@ -59,11 +59,15 @@ object FirebaseOrderRepository {
             "deliveryAddress" to deliveryAddress,
             "deliveryLat" to deliveryLat,
             "deliveryLng" to deliveryLng,
-            "subtotal" to subtotal,
+            "distanceKm" to distanceKm,
+            "itemsSubtotal" to itemsSubtotal,
+            "subtotal" to itemsSubtotal,
             "deliveryFee" to deliveryFee,
-            "discount" to discount,
+            "discountAmount" to discountAmount,
+            "discount" to discountAmount,
             "promoCode" to promoCode,
-            "total" to total,
+            "finalTotal" to finalTotal,
+            "total" to finalTotal,
             "note" to "",
             "items" to orderItems,
             "statusHistory" to listOf(

@@ -85,10 +85,10 @@ object CustomerOrderFirestoreRepository {
 
     private fun DocumentSnapshot.toOrderDetail(): CustomerOrderDetailUiModel {
         val statusStr = getString("status") ?: "PENDING"
-        val total = getDouble("total") ?: 0.0
-        val subtotal = getDouble("subtotal") ?: 0.0
+        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
+        val subtotal = getDouble("itemsSubtotal") ?: getDouble("subtotal") ?: 0.0
         val deliveryFee = getDouble("deliveryFee") ?: 0.0
-        val discount = getDouble("discount") ?: 0.0
+        val discount = getDouble("discountAmount") ?: getDouble("discount") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val rawItems = get("items") as? List<*>
         val rawStatusHistory = get("statusHistory") as? List<*>
@@ -118,6 +118,7 @@ object CustomerOrderFirestoreRepository {
             storeName = getString("storeName").orNotProvided(),
             pickupAddress = getString("pickupAddress").orNotProvided(),
             storePhone = getString("storePhone").orNotProvided(),
+            distanceKm = getDouble("distanceKm"),
             statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
             canCancel = statusStr == STATUS_PENDING,
         )

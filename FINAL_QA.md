@@ -34,6 +34,8 @@
 - Checkout is blocked if Store Settings is not accepting orders.
 - Checkout is blocked if the customer delivery address is blank.
 - Checkout is blocked if the customer delivery coordinates are blank.
+- Checkout shows item subtotal, promo discount when applied, delivery distance, delivery fee, and final total.
+- Promo discounts reduce item subtotal only; delivery fee is added after discount.
 - Tracking updates in realtime.
 - History shows customer orders.
 - Profile loads Firestore profile data.
@@ -76,6 +78,7 @@
 - Admin routes to Admin Dashboard.
 - Store Settings saves `appConfig/store` with pickup address, phone, hours, and accepting-orders state.
 - Store Settings map picker saves `pickupLat` and `pickupLng`.
+- Store Settings saves delivery fee config fields: `baseDeliveryFee`, `deliveryFeePerKm`, and `freeDeliveryMinSubtotal`.
 - Manage Menu loads products from Firestore.
 - Product add, edit, and availability toggle still work with Firestore.
 - Product image upload shows: "Image upload is temporarily disabled. Firebase Storage is not set up yet."
@@ -92,6 +95,7 @@
 - `orders/{orderId}` has status history entries.
 - New `orders/{orderId}` contains `storeName`, `pickupAddress`, `storePhone`, `deliveryAddress`, `customerName`, and `customerPhone`.
 - New `orders/{orderId}` contains `pickupLat`, `pickupLng`, `deliveryLat`, and `deliveryLng`.
+- New `orders/{orderId}` contains `distanceKm`, `deliveryFee`, `itemsSubtotal`, `discountAmount`, and `finalTotal`.
 - Existing `products/{id}.imageUrl` values display when valid; blank or invalid URLs use fallback drawables.
 - Firestore rules still block invalid role transitions.
 - Storage upload is disabled in no-Blaze demo mode.

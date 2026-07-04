@@ -31,6 +31,9 @@ object StoreSettingsRepository {
             "storePhone" to settings.storePhone.trim(),
             "openingHours" to settings.openingHours.trim(),
             "acceptingOrders" to settings.acceptingOrders,
+            "baseDeliveryFee" to settings.baseDeliveryFee,
+            "deliveryFeePerKm" to settings.deliveryFeePerKm,
+            "freeDeliveryMinSubtotal" to settings.freeDeliveryMinSubtotal,
             "updatedAt" to FieldValue.serverTimestamp(),
         )
 
@@ -55,6 +58,12 @@ object StoreSettingsRepository {
             openingHours = getString("openingHours").orEmpty()
                 .ifBlank { StoreSettingsUiModel.DEFAULT_OPENING_HOURS },
             acceptingOrders = getBoolean("acceptingOrders") ?: true,
+            baseDeliveryFee = getDouble("baseDeliveryFee")
+                ?: StoreSettingsUiModel.DEFAULT_BASE_DELIVERY_FEE,
+            deliveryFeePerKm = getDouble("deliveryFeePerKm")
+                ?: StoreSettingsUiModel.DEFAULT_DELIVERY_FEE_PER_KM,
+            freeDeliveryMinSubtotal = getDouble("freeDeliveryMinSubtotal")
+                ?: StoreSettingsUiModel.DEFAULT_FREE_DELIVERY_MIN_SUBTOTAL,
         )
     }
 

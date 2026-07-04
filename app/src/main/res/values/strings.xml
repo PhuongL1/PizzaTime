@@ -198,6 +198,8 @@
     <string name="checkout_order_note_hint">e.g. Please leave by the door, don\'t ring the bell...</string>
     <string name="checkout_your_order">YOUR ORDER</string>
     <string name="checkout_subtotal">Subtotal</string>
+    <string name="checkout_discount">Promo Discount</string>
+    <string name="checkout_delivery_distance">Delivery Distance</string>
     <string name="checkout_delivery_fee">Delivery Fee</string>
     <string name="checkout_total">Total</string>
     <string name="checkout_place_order">Place Order</string>
@@ -821,6 +823,7 @@
     <string name="customer_order_detail_pickup_from">PICKUP FROM</string>
     <string name="customer_order_detail_timeline_title">Order Timeline</string>
     <string name="customer_order_detail_subtotal">Subtotal</string>
+    <string name="customer_order_detail_delivery_distance">Delivery Distance</string>
     <string name="customer_order_detail_delivery_fee">Delivery Fee</string>
     <string name="customer_order_detail_taxes">Taxes (NY State)</string>
     <string name="customer_order_detail_total_amount">Total Amount</string>
@@ -1016,6 +1019,12 @@
     <string name="store_settings_store_phone_hint">0900000000</string>
     <string name="store_settings_opening_hours">OPENING HOURS</string>
     <string name="store_settings_opening_hours_hint">09:00 - 22:00</string>
+    <string name="store_settings_base_delivery_fee">BASE DELIVERY FEE</string>
+    <string name="store_settings_base_delivery_fee_hint">15000</string>
+    <string name="store_settings_delivery_fee_per_km">FEE PER KM</string>
+    <string name="store_settings_delivery_fee_per_km_hint">5000</string>
+    <string name="store_settings_free_delivery_min_subtotal">FREE DELIVERY MIN SUBTOTAL</string>
+    <string name="store_settings_free_delivery_min_subtotal_hint">0</string>
     <string name="store_settings_accepting_orders">Accepting Orders</string>
     <string name="store_settings_save">SAVE SETTINGS</string>
     <string name="store_settings_load_failed">Could not load store settings.</string>
@@ -1023,6 +1032,7 @@
     <string name="store_settings_pickup_address_required">Pickup address is required.</string>
     <string name="store_settings_pickup_location_required">Pickup location is required while accepting orders.</string>
     <string name="store_settings_store_phone_required">Store phone is required.</string>
+    <string name="store_settings_delivery_fee_invalid">Delivery fee values must be zero or greater.</string>
     <string name="store_settings_save_success">Store settings saved.</string>
     <string name="store_settings_save_failed">Could not save store settings.</string>
     <string name="store_settings_pick_on_map">PICK PICKUP LOCATION ON MAP</string>
@@ -1031,6 +1041,8 @@
     <string name="shipper_open_delivery_map">OPEN MAP</string>
     <string name="staff_order_detail_pickup_info">Pickup: %1$s, %2$s, %3$s</string>
     <string name="staff_order_detail_delivery_info">Delivery: %1$s, %2$s</string>
+    <string name="staff_order_detail_distance_fee">Distance: %1$s · Delivery fee: %2$s</string>
+    <string name="staff_order_detail_distance_missing">Distance: Not provided · Delivery fee: Not provided</string>
     <string name="map_picker_store_title">Pick Pickup Location</string>
     <string name="map_picker_delivery_title">Pick Delivery Location</string>
     <string name="map_picker_address_hint">Address</string>

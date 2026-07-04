@@ -19,6 +19,8 @@ data class StaffOrderDetailUiModel(
     val storeName: String = "",
     val pickupAddress: String = "",
     val storePhone: String = "",
+    val distanceKm: Double? = null,
+    val deliveryFee: Double = 0.0,
 ) {
     val mainItem: StaffOrderDetailItemUiModel?
         get() = items.firstOrNull()

@@ -119,6 +119,9 @@ Customer screens used in the demo:
    - choose the pickup point on the map so `pickupLat` and `pickupLng` are saved
    - `storePhone = 0900000000`
    - `openingHours = 09:00 - 22:00`
+   - `baseDeliveryFee = 15000`
+   - `deliveryFeePerKm = 5000`
+   - `freeDeliveryMinSubtotal = 0`
    - `acceptingOrders = true`
 4. Manage Menu:
    - edit products
@@ -179,6 +182,7 @@ firebase deploy --only functions --project pizzatime-de04c
 - Admin-created staff accounts are temporarily disabled until Cloud Functions are deployed.
 - Product image upload is temporarily disabled until Firebase Storage is set up; existing `imageUrl` values still display, with fallback drawables for blank or invalid URLs.
 - Customers cannot place orders until Store Settings has a pickup address, pickup coordinates, the store is accepting orders, and the customer has a delivery address with map coordinates.
+- Checkout uses straight-line distance from pickup coordinates to delivery coordinates to estimate delivery fee, and new orders store distance and fee snapshots.
 - Some secondary screens still use fallback demo data if Firestore is unavailable.
 
 ## Submission Notes

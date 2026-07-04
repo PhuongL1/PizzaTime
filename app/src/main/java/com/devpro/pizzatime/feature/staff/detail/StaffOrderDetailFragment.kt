@@ -75,10 +75,13 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
             order.deliveryAddress,
             order.customerPhone,
         )
-        tvEstimatedDelivery.text = getString(
-            R.string.staff_order_detail_estimated_delivery,
-            order.estimatedDeliveryTime,
-        )
+        tvEstimatedDelivery.text = order.distanceKm?.let {
+            getString(
+                R.string.staff_order_detail_distance_fee,
+                formatDistance(it),
+                formatPrice(order.deliveryFee),
+            )
+        } ?: getString(R.string.staff_order_detail_distance_missing)
 
         tvItemsTotal.text = resources.getQuantityString(
             R.plurals.staff_order_detail_items_total,
@@ -283,6 +286,10 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
 
     private fun formatPrice(value: Double): String {
         return String.format(Locale.US, "$%.2f", value)
+    }
+
+    private fun formatDistance(distanceKm: Double): String {
+        return String.format(Locale.US, "%.1f km", distanceKm)
     }
 
     override fun onDestroyView() {

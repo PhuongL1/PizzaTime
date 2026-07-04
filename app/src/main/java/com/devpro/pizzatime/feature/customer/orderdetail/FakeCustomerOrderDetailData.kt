@@ -45,6 +45,7 @@ object FakeCustomerOrderDetailData {
             deliveryAddressTitle = "DELIVERED TO",
             deliveryAddressLine1 = "Artisan Lofts, Unit 4B",
             deliveryAddressLine2 = "128 Mercer St, New York, NY",
+            distanceKm = 3.2,
         )
     }
 }

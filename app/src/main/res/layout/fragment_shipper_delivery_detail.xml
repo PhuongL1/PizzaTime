@@ -374,6 +374,24 @@
                     android:textSize="13sp"
                     tools:text="21.027800, 105.834200" />
 
+                <TextView
+                    android:id="@+id/tvDeliveryDistance"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_muted"
+                    android:textSize="13sp"
+                    tools:text="3.2 km" />
+
+                <TextView
+                    android:id="@+id/tvDeliveryFee"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:textColor="@color/pt_text_muted"
+                    android:textSize="13sp"
+                    tools:text="$4.50" />
+
                 <LinearLayout
                     android:id="@+id/courierNoteCard"
                     android:layout_width="match_parent"

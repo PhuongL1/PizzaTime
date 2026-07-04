@@ -80,9 +80,15 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
         edtStorePhone.setText(settings.storePhone)
         edtOpeningHours.setText(settings.openingHours)
         switchAcceptingOrders.isChecked = settings.acceptingOrders
+        edtBaseDeliveryFee.setText(formatNumber(settings.baseDeliveryFee))
+        edtDeliveryFeePerKm.setText(formatNumber(settings.deliveryFeePerKm))
+        edtFreeDeliveryMinSubtotal.setText(formatNumber(settings.freeDeliveryMinSubtotal))
     }
 
     private fun saveSettings() = with(binding) {
+        val baseDeliveryFee = edtBaseDeliveryFee.text.toString().trim().toDoubleOrNull()
+        val deliveryFeePerKm = edtDeliveryFeePerKm.text.toString().trim().toDoubleOrNull()
+        val freeDeliveryMinSubtotal = edtFreeDeliveryMinSubtotal.text.toString().trim().toDoubleOrNull()
         val settings = StoreSettingsUiModel(
             storeName = edtStoreName.text.toString().trim(),
             pickupAddress = edtPickupAddress.text.toString().trim(),
@@ -92,6 +98,9 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
             openingHours = edtOpeningHours.text.toString().trim()
                 .ifBlank { StoreSettingsUiModel.DEFAULT_OPENING_HOURS },
             acceptingOrders = switchAcceptingOrders.isChecked,
+            baseDeliveryFee = baseDeliveryFee ?: -1.0,
+            deliveryFeePerKm = deliveryFeePerKm ?: -1.0,
+            freeDeliveryMinSubtotal = freeDeliveryMinSubtotal ?: -1.0,
         )
 
         when {
@@ -117,6 +126,13 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
 
             settings.acceptingOrders && settings.storePhone.isBlank() -> {
                 showToast(R.string.store_settings_store_phone_required)
+                return@with
+            }
+
+            settings.baseDeliveryFee < 0 ||
+                settings.deliveryFeePerKm < 0 ||
+                settings.freeDeliveryMinSubtotal < 0 -> {
+                showToast(R.string.store_settings_delivery_fee_invalid)
                 return@with
             }
         }
@@ -174,6 +190,14 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
 
     private fun showToast(messageRes: Int) {
         Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    }
+
+    private fun formatNumber(value: Double): String {
+        return if (value % 1.0 == 0.0) {
+            value.toLong().toString()
+        } else {
+            value.toString()
+        }
     }
 
     override fun onDestroyView() {
