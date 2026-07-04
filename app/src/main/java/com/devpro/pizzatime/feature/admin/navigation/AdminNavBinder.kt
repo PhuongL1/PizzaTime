@@ -7,9 +7,9 @@ import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
-import com.devpro.pizzatime.feature.staff.navigation.openManagePromoCodes
-import com.devpro.pizzatime.feature.staff.navigation.openManageStaff
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
 
 enum class AdminBottomNavDestination {
@@ -50,10 +50,11 @@ fun Fragment.bindAdminBottomNav(
         currentTab = selectedDestination.toStaffTab(),
         onDashboardClick = onDashboardClick ?: { openAdminDashboard() },
         onKitchenClick = onManageMenuClick ?: { openManageMenu() },
-        onDeliveryClick = onManagePromoCodesClick ?: { openManagePromoCodes() },
-        onProfileClick = onManageStaffClick ?: { openManageStaff() },
+        onDeliveryClick = onManagePromoCodesClick ?: { openShipperDeliveryDashboard() },
+        onProfileClick = onManageStaffClick ?: { openCustomerAccount() },
     )
 }
+
 
 private fun AdminBottomNavDestination.toStaffTab(): StaffBottomNavTab {
     return when (this) {

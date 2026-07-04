@@ -1,12 +1,14 @@
 package com.devpro.pizzatime.feature.admin.product
 
 import android.app.AlertDialog
+import android.net.Uri
 import android.os.Bundle
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
@@ -15,6 +17,8 @@ import com.devpro.pizzatime.core.product.ProductOptionDefaults
 import com.devpro.pizzatime.databinding.FragmentAddEditProductBinding
 import com.devpro.pizzatime.feature.admin.menu.AdminMenuCategory
 import com.devpro.pizzatime.feature.admin.menu.AdminMenuFirestoreRepository
+import com.devpro.pizzatime.feature.admin.menu.CloudinaryConfig
+import com.devpro.pizzatime.feature.admin.menu.CloudinaryProductImageRepository
 import com.devpro.pizzatime.feature.admin.menu.AdminMenuUiModel
 import java.util.Locale
 
@@ -34,6 +38,17 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     private val selectedCrusts = linkedSetOf<String>()
     private val toppingOptions = mutableListOf<String>()
     private val selectedToppings = linkedSetOf<String>()
+    private var isUploadingImage = false
+
+    private val pickHeroImageLauncher =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
+            if (uri == null) {
+                setImageUploading(false)
+                return@registerForActivityResult
+            }
+
+            uploadHeroImage(uri)
+        }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -272,7 +287,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         }
 
         heroUploadCard.setOnClickListener {
-            showToast(R.string.add_edit_product_upload_toast)
+            pickHeroImage()
         }
 
         availabilityCard.setOnClickListener {
@@ -304,8 +319,54 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         }
     }
 
+    private fun pickHeroImage() {
+        if (isUploadingImage) return
+
+        if (!CloudinaryConfig.isConfigured) {
+            showToast(R.string.manage_menu_cloudinary_not_configured)
+            return
+        }
+
+        setImageUploading(true)
+        pickHeroImageLauncher.launch("image/*")
+    }
+
+    private fun uploadHeroImage(imageUri: Uri) {
+        CloudinaryProductImageRepository.uploadProductImage(
+            context = requireContext(),
+            imageUri = imageUri,
+        ) { result ->
+            if (_binding == null) {
+                isUploadingImage = false
+                return@uploadProductImage
+            }
+
+            setImageUploading(false)
+
+            result
+                .onSuccess { uploadedImageUrl ->
+                    imageUrl = uploadedImageUrl
+                    binding.etImageUrl.setText(uploadedImageUrl)
+                    binding.ivHeroImage.loadProductImage(uploadedImageUrl, R.drawable.img_pizza_time)
+                    showToast(R.string.manage_menu_upload_image_saved)
+                }
+                .onFailure {
+                    showToast(R.string.manage_menu_upload_image_failed)
+                }
+        }
+    }
+
+    private fun setImageUploading(uploading: Boolean) {
+        isUploadingImage = uploading
+        val currentBinding = _binding ?: return
+
+        currentBinding.heroUploadCard.isEnabled = !uploading
+        currentBinding.heroUploadCard.alpha = if (uploading) 0.6f else 1f
+        currentBinding.btnSaveProduct.isEnabled = !uploading
+    }
+
     private fun showCategoryDialog() {
-        val categories = AdminMenuCategory.values()
+        val categories = AdminMenuCategory.entries.toTypedArray()
         val labels = categories.map { it.name }.toTypedArray()
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.add_edit_product_category)
@@ -347,6 +408,11 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     }
 
     private fun saveProduct() = with(binding) {
+        if (isUploadingImage) {
+            showToast(R.string.manage_menu_uploading_image)
+            return
+        }
+
         val name = etPizzaName.text.toString().trim()
         val description = etDescription.text.toString().trim()
         val basePrice = etBasePrice.text.toString().trim().toDoubleOrNull()
@@ -540,6 +606,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     }
 
     override fun onDestroyView() {
+        isUploadingImage = false
         super.onDestroyView()
         _binding = null
     }
