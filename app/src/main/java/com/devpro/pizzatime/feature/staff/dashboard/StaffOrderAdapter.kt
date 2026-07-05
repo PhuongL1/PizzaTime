@@ -33,7 +33,7 @@ class StaffOrderAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(item: StaffOrderUiModel) = with(binding) {
-            tvOrderId.text = item.orderId
+            tvOrderId.text = item.displayOrderCode
             tvCustomerName.text = item.customerName
             tvTimeAgo.text = item.timeAgo
             tvOrderSummary.text = item.orderSummary

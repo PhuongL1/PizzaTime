@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.shipper.detail
 
 data class ShipperDeliveryDetailUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val customerName: String,
     val address: String,
     val courierNote: String,

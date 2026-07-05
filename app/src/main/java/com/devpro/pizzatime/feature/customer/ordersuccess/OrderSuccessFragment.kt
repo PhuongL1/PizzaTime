@@ -33,7 +33,10 @@ class OrderSuccessFragment : Fragment(R.layout.fragment_order_success) {
 
     private fun bindOrderSuccess() = with(binding) {
         ivHeroPizza.setImageResource(orderSuccess.heroImageRes)
-        tvOrderId.text = getString(R.string.order_success_order_id_format, orderSuccess.orderId)
+        tvOrderId.text = getString(
+            R.string.order_success_order_id_format,
+            orderSuccess.displayOrderCode.removePrefix("#"),
+        )
         tvTitle.text = orderSuccess.title
         tvMessage.text = orderSuccess.message
         tvEstimatedArrival.text = orderSuccess.estimatedArrival

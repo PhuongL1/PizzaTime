@@ -35,7 +35,7 @@ class ShipperDeliveryAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: ShipperDeliveryUiModel) = with(binding) {
-            tvAssignedOrderId.text = order.orderId
+            tvAssignedOrderId.text = order.displayOrderCode
             tvAssignedCustomerName.text = order.customerName
             tvAssignedAddress.text = order.address
 

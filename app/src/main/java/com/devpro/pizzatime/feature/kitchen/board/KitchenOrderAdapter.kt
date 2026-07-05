@@ -39,7 +39,7 @@ class KitchenOrderAdapter(
 
         fun bind(order: KitchenOrderUiModel) = with(binding) {
             tvOrderType.text = order.fulfillmentLabel
-            tvOrderId.text = order.orderId
+            tvOrderId.text = order.displayOrderCode
             tvOrderTime.text = order.timeLabel
 
             bindFoodItems(order)

@@ -12,6 +12,7 @@ enum class AdminOrderStatus {
 
 data class AdminOrderUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val customerName: String,
     val phone: String,
     val itemsSummary: String,

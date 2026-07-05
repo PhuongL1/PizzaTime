@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.customer.tracking
 
+import android.annotation.SuppressLint
 import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
@@ -13,6 +14,7 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentOrderTrackingBinding
 import com.devpro.pizzatime.databinding.ItemOrderTrackingStepBinding
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
@@ -59,6 +61,11 @@ class OrderTrackingFragment : Fragment() {
                     return@addSnapshotListener
                 }
                 val status = snapshot.getString("status") ?: "PENDING"
+                val displayOrderCode = OrderCodeGenerator.displayOrderCode(
+                    orderCode = snapshot.getString("orderCode"),
+                    orderId = snapshot.id,
+                )
+                binding.tvOrderNumber.text = "ORDER $displayOrderCode"
                 renderTrackingSteps(buildStepsFromStatus(status))
 
                 val items = snapshot.get("items") as? List<*>
@@ -147,6 +154,7 @@ class OrderTrackingFragment : Fragment() {
         }
     }
 
+    @SuppressLint("UseKtx")
     private fun updateStepState(
         itemBinding: ItemOrderTrackingStepBinding,
         state: TrackingStepState,

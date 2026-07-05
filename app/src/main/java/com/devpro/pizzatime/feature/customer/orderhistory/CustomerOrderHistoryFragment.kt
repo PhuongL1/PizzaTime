@@ -144,7 +144,10 @@ class CustomerOrderHistoryFragment : Fragment() {
         order: CustomerOrderHistoryItemUiModel,
     ) = with(itemBinding) {
         tvOrderedAt.text = order.orderedAt
-        tvOrderId.text = getString(R.string.customer_order_history_order_id, order.orderId)
+        tvOrderId.text = getString(
+            R.string.customer_order_history_order_id,
+            order.displayOrderCode.removePrefix("#"),
+        )
         tvStatus.text = order.status.label
         tvTotal.text = formatPrice(order.total)
         tvItemSummary.text = order.itemSummary.joinToString(separator = "\n")

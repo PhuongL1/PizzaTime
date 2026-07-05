@@ -69,7 +69,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                 if (!isAdded) return@updateOrderStatus
                 result
                     .onSuccess {
-                        showConfirmedToast(order.orderId)
+                        showConfirmedToast(order.displayOrderCode)
                     }
                     .onFailure { error ->
                         Toast.makeText(
@@ -81,7 +81,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             }
         } else {
             FakeStaffDashboardData.confirmOrder(order.orderId)
-            showConfirmedToast(order.orderId)
+            showConfirmedToast(order.displayOrderCode)
             renderOrders()
         }
     }

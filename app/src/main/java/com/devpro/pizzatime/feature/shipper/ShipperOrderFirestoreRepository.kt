@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.shipper
 
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryStatus
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailUiModel
@@ -90,6 +91,7 @@ object ShipperOrderFirestoreRepository {
 
         return ShipperDeliveryUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             customerName = customerName,
             address = getString("deliveryAddress").orNotProvided(),
             etaLabel = "",
@@ -111,6 +113,7 @@ object ShipperOrderFirestoreRepository {
 
         return ShipperDeliveryDetailUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             storeName = getString("storeName").orNotProvided(),
             pickupAddress = getString("pickupAddress").orNotProvided(),
             pickupLat = getDouble("pickupLat"),
@@ -146,6 +149,13 @@ object ShipperOrderFirestoreRepository {
     }
 
     private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: NOT_PROVIDED
+
+    private fun DocumentSnapshot.displayOrderCode(): String {
+        return OrderCodeGenerator.displayOrderCode(
+            orderCode = getString("orderCode"),
+            orderId = id,
+        )
+    }
 
     private fun String?.toPaymentMethodLabel(): String {
         return when (this?.uppercase(Locale.US)) {

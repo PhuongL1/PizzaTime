@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 
 data class KitchenOrderDetailUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val receivedAgo: String,
     val status: KitchenOrderDetailStatus,
     val item: KitchenOrderDetailItemUiModel,

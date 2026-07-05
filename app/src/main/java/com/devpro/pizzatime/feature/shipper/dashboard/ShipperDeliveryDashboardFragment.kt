@@ -46,7 +46,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
     }
 
     private fun bindActiveDelivery(activeDelivery: ShipperDeliveryUiModel) = with(binding) {
-        tvActiveOrderId.text = activeDelivery.orderId
+        tvActiveOrderId.text = activeDelivery.displayOrderCode
         tvActiveEta.text = activeDelivery.etaLabel
         tvActiveCustomerName.text = activeDelivery.customerName
         tvActiveAddress.text = activeDelivery.address

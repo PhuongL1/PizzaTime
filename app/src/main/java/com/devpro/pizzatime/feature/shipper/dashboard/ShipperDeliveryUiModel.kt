@@ -7,6 +7,7 @@ enum class ShipperDeliveryStatus {
 
 data class ShipperDeliveryUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val customerName: String,
     val address: String,
     val etaLabel: String,

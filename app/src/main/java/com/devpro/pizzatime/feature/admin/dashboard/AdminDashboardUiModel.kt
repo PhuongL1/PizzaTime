@@ -12,6 +12,7 @@ data class AdminDashboardUiModel(
 
 data class AdminRecentOrderUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val summary: String,
     val price: String,
 )

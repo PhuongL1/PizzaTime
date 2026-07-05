@@ -9,6 +9,7 @@ data class CustomerOrderHistoryUiModel(
 
 data class CustomerOrderHistoryItemUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val orderedAt: String,
     val status: CustomerOrderHistoryStatus,
     val itemSummary: List<String>,

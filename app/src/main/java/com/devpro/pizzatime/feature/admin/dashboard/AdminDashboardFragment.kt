@@ -29,7 +29,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         onOrderClick = { order ->
             Toast.makeText(
                 requireContext(),
-                getString(R.string.admin_recent_order_clicked, order.orderId),
+                getString(R.string.admin_recent_order_clicked, order.displayOrderCode),
                 Toast.LENGTH_SHORT,
             ).show()
         },

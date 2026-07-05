@@ -32,7 +32,7 @@ class AdminRecentOrderAdapter(
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: AdminRecentOrderUiModel) = with(binding) {
-            tvRecentOrderId.text = order.orderId
+            tvRecentOrderId.text = order.displayOrderCode
             tvRecentOrderSummary.text = order.summary
             tvRecentOrderPrice.text = order.price
 

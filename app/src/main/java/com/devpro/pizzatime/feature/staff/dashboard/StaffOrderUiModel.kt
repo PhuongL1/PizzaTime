@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.staff.dashboard
 
 data class StaffOrderUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val customerName: String,
     val timeAgo: String,
     val fulfillmentType: StaffFulfillmentType,

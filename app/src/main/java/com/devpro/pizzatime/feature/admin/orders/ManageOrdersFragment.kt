@@ -158,6 +158,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             .filter { order ->
                 searchQuery.isBlank() ||
                         order.orderId.contains(searchQuery, ignoreCase = true) ||
+                        order.displayOrderCode.contains(searchQuery, ignoreCase = true) ||
                         order.customerName.contains(searchQuery, ignoreCase = true) ||
                         order.phone.contains(searchQuery, ignoreCase = true)
             }

@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.customer.checkout
 
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -9,6 +10,9 @@ import com.google.firebase.firestore.FirebaseFirestore
 object FirebaseOrderRepository {
 
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
+    private const val MAX_ORDER_CODE_ATTEMPTS = 20
+    private const val UNIQUE_ORDER_CODE_FAILURE =
+        "Could not create a unique order code. Please try again."
 
     fun createOrder(
         customerId: String,
@@ -43,7 +47,7 @@ object FirebaseOrderRepository {
             )
         }
 
-        val order = hashMapOf(
+        val baseOrder = hashMapOf(
             "customerId" to customerId,
             "customerEmail" to customerEmail,
             "customerName" to customerName.ifBlank { customerEmail },
@@ -84,13 +88,52 @@ object FirebaseOrderRepository {
             "updatedAt" to FieldValue.serverTimestamp(),
         )
 
-        firestore.collection("orders")
-            .add(order)
-            .addOnSuccessListener { docRef ->
-                onResult(Result.success(docRef.id))
+        createOrderWithUniqueCode(
+            baseOrder = baseOrder,
+            attempt = 1,
+            onResult = onResult,
+        )
+    }
+
+    private fun createOrderWithUniqueCode(
+        baseOrder: HashMap<String, Any?>,
+        attempt: Int,
+        onResult: (Result<String>) -> Unit,
+    ) {
+        if (attempt > MAX_ORDER_CODE_ATTEMPTS) {
+            onResult(Result.failure(Exception(UNIQUE_ORDER_CODE_FAILURE)))
+            return
+        }
+
+        val orderCodeKey = OrderCodeGenerator.generateOrderCodeKey()
+        val orderDoc = firestore.collection("orders").document(orderCodeKey)
+        val order = HashMap(baseOrder).apply {
+            put("orderId", orderCodeKey)
+            put("orderCodeKey", orderCodeKey)
+            put("orderCode", OrderCodeGenerator.displayOrderCode(orderCodeKey))
+        }
+
+        firestore.runTransaction { transaction ->
+            val snapshot = transaction.get(orderDoc)
+            if (snapshot.exists()) {
+                throw OrderCodeCollisionException()
             }
-            .addOnFailureListener { e ->
-                onResult(Result.failure(Exception(e.message ?: "Failed to create order.")))
+            transaction.set(orderDoc, order)
+            orderCodeKey
+        }
+            .addOnSuccessListener { createdOrderId ->
+                onResult(Result.success(createdOrderId))
+            }
+            .addOnFailureListener { error ->
+                if (error is OrderCodeCollisionException) {
+                    createOrderWithUniqueCode(
+                        baseOrder = baseOrder,
+                        attempt = attempt + 1,
+                        onResult = onResult,
+                    )
+                } else {
+                    onResult(Result.failure(Exception(error.message ?: "Failed to create order.")))
+                }
             }
     }
 
@@ -108,5 +151,7 @@ object FirebaseOrderRepository {
             "createdAt" to Timestamp.now(),
         )
     }
+
+    private class OrderCodeCollisionException : Exception()
 }
 

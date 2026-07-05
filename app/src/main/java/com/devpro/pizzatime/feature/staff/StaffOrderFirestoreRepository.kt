@@ -7,6 +7,7 @@ import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailItemUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailTimelineUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailUiModel
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -107,6 +108,7 @@ object StaffOrderFirestoreRepository {
 
         return StaffOrderUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             customerName = customerName,
             timeAgo = createdAt.toTimeAgo(),
             fulfillmentType = mapFulfillmentType(orderType),
@@ -126,6 +128,7 @@ object StaffOrderFirestoreRepository {
 
         return StaffOrderDetailUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             receivedAgo = createdAt.toTimeAgo(),
             status = mapStatus(statusStr),
             storeName = getString("storeName").orNotProvided(),
@@ -222,6 +225,13 @@ object StaffOrderFirestoreRepository {
     }
 
     private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: NOT_PROVIDED
+
+    private fun DocumentSnapshot.displayOrderCode(): String {
+        return OrderCodeGenerator.displayOrderCode(
+            orderCode = getString("orderCode"),
+            orderId = id,
+        )
+    }
 
     private fun String?.toPaymentMethodLabel(): String {
         return when (this?.uppercase(Locale.US)) {

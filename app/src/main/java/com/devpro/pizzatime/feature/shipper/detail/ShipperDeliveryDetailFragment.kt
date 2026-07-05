@@ -67,10 +67,14 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     private fun isFirestoreOrderId(orderId: String): Boolean =
-        orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8
+        orderId.matches(ORDER_CODE_KEY_REGEX) ||
+            (orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8)
 
     private fun bindDetail(detail: ShipperDeliveryDetailUiModel) = with(binding) {
-        tvOrderTitle.text = getString(R.string.shipper_detail_order_title, detail.orderId.removePrefix("#"))
+        tvOrderTitle.text = getString(
+            R.string.shipper_detail_order_title,
+            detail.displayOrderCode,
+        )
         tvStoreName.text = detail.storeName
         tvPickupAddress.text = detail.pickupAddress
         tvStorePhone.text = detail.storePhone
@@ -146,7 +150,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             "ASSIGNED_TO_SHIPPER",
             "READY_FOR_DELIVERY",
             "READY_TO_DELIVER",
-                -> updateFirestoreStatus(detail.orderId, "DELIVERING")
+                -> updateFirestoreStatus(detail.orderId, detail.displayOrderCode, "DELIVERING")
 
             "DELIVERING" -> showCompleteDeliveryDialog(detail)
 
@@ -192,12 +196,16 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             )
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.shipper_complete_delivery_confirm) { _, _ ->
-                updateFirestoreStatus(detail.orderId, "DELIVERED")
+                updateFirestoreStatus(detail.orderId, detail.displayOrderCode, "DELIVERED")
             }
             .show()
     }
 
-    private fun updateFirestoreStatus(orderId: String, nextStatus: String) {
+    private fun updateFirestoreStatus(
+        orderId: String,
+        displayOrderCode: String,
+        nextStatus: String,
+    ) {
         if (isUpdatingStatus) {
             return
         }
@@ -214,7 +222,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                     renderActionButton(nextStatus)
                     Toast.makeText(
                         requireContext(),
-                        getString(R.string.shipper_detail_delivery_confirmed, orderId),
+                        getString(R.string.shipper_detail_delivery_confirmed, displayOrderCode),
                         Toast.LENGTH_SHORT,
                     ).show()
                 }
@@ -290,6 +298,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
 
     companion object {
         private const val ARG_ORDER_ID = "orderId"
+        private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")
 
         fun newInstance(orderId: String): ShipperDeliveryDetailFragment {
             return ShipperDeliveryDetailFragment().apply {

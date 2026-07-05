@@ -35,7 +35,10 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     }
 
     private fun bindOrder(order: KitchenOrderDetailUiModel) = with(binding) {
-        tvOrderId.text = getString(R.string.kitchen_order_detail_order_id_format, order.orderId)
+        tvOrderId.text = getString(
+            R.string.kitchen_order_detail_order_id_format,
+            order.displayOrderCode.removePrefix("#"),
+        )
         tvReceivedAgo.text = getString(R.string.kitchen_order_detail_received_ago, order.receivedAgo)
         tvStatus.text = mapStatusText(order.status)
 

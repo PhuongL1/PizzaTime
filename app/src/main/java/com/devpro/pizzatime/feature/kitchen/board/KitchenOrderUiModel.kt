@@ -9,6 +9,7 @@ enum class KitchenOrderStatus {
 
 data class KitchenOrderUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val fulfillmentLabel: String,
     val timeLabel: String,
     val status: KitchenOrderStatus,

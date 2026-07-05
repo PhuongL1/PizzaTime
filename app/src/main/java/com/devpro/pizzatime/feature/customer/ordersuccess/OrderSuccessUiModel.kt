@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 
 data class OrderSuccessUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val title: String,
     val message: String,
     val estimatedArrival: String,

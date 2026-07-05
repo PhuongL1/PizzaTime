@@ -55,11 +55,15 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     }
 
     private fun isFirestoreOrderId(orderId: String): Boolean {
-        return orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8
+        return orderId.matches(ORDER_CODE_KEY_REGEX) ||
+            (orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8)
     }
 
     private fun bindOrderDetail(order: StaffOrderDetailUiModel) = with(binding) {
-        tvOrderId.text = getString(R.string.staff_order_detail_order_title, order.orderId)
+        tvOrderId.text = getString(
+            R.string.staff_order_detail_order_title,
+            order.displayOrderCode.removePrefix("#"),
+        )
         tvReceivedAgo.text = getString(R.string.staff_order_detail_received, order.receivedAgo)
         tvStatus.text = mapStatusText(order.status)
 
@@ -313,6 +317,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         private const val CANCEL_ORDER_DIALOG_TAG = "CancelOrderConfirmationDialog"
         private const val ASSIGN_SHIPPER_DIALOG_TAG = "AssignShipperDialog"
         private const val ORDER_STATUS_CANCELLED = "CANCELLED"
+        private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")
 
         fun newInstance(orderId: String): StaffOrderDetailFragment {
             return StaffOrderDetailFragment().apply {

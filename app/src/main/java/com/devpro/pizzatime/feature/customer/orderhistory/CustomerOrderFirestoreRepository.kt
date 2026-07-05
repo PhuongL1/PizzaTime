@@ -5,6 +5,7 @@ import com.devpro.pizzatime.feature.customer.orderdetail.CustomerBillUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderItemUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderStatusHistoryUiModel
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -75,6 +76,7 @@ object CustomerOrderFirestoreRepository {
 
         return CustomerOrderHistoryItemUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             orderedAt = createdAt?.toHistoryDateString() ?: "",
             status = mapHistoryStatus(statusStr),
             itemSummary = buildItemSummary(rawItems),
@@ -95,6 +97,7 @@ object CustomerOrderFirestoreRepository {
 
         return CustomerOrderDetailUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             statusLabel = statusStr,
             orderTime = createdAt?.toDisplayTime() ?: "",
             heroImageRes = R.drawable.img_pizza_time,
@@ -218,6 +221,13 @@ object CustomerOrderFirestoreRepository {
     private fun String?.orSystemRole(): String = this?.takeIf { it.isNotBlank() } ?: "System"
 
     private fun String?.orNotProvided(): String = this?.takeIf { it.isNotBlank() } ?: "Not provided"
+
+    private fun DocumentSnapshot.displayOrderCode(): String {
+        return OrderCodeGenerator.displayOrderCode(
+            orderCode = getString("orderCode"),
+            orderId = id,
+        )
+    }
 
     private fun String?.toPaymentMethodLabel(): String {
         return when (this?.uppercase(Locale.US)) {

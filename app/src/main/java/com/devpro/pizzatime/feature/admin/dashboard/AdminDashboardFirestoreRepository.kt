@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.admin.dashboard
 
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import java.util.Locale
@@ -45,13 +46,20 @@ object AdminDashboardFirestoreRepository {
     }
 
     private fun DocumentSnapshot.toRecentOrder(): AdminRecentOrderUiModel {
-        val shortId = id.takeLast(4).uppercase(Locale.US)
         val total = getDouble("total") ?: 0.0
         val rawItems = get("items") as? List<*>
         return AdminRecentOrderUiModel(
-            orderId = "Order #$shortId",
+            orderId = id,
+            displayOrderCode = "Order ${displayOrderCode()}",
             summary = buildSummary(rawItems),
             price = String.format(Locale.US, "$%.2f", total),
+        )
+    }
+
+    private fun DocumentSnapshot.displayOrderCode(): String {
+        return OrderCodeGenerator.displayOrderCode(
+            orderCode = getString("orderCode"),
+            orderId = id,
         )
     }
 

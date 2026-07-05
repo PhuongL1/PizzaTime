@@ -5,6 +5,7 @@ import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderStatus
 
 data class StaffOrderDetailUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val receivedAgo: String,
     val status: StaffOrderStatus,
     val customerName: String,

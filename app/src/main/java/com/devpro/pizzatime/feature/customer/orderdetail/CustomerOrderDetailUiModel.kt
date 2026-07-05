@@ -4,6 +4,7 @@ import androidx.annotation.DrawableRes
 
 data class CustomerOrderDetailUiModel(
     val orderId: String,
+    val displayOrderCode: String = orderId,
     val statusLabel: String,
     val orderTime: String,
     @param:DrawableRes val heroImageRes: Int,

@@ -78,11 +78,15 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     private fun isFirestoreOrderId(orderId: String): Boolean =
-        orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8
+        orderId.matches(ORDER_CODE_KEY_REGEX) ||
+            (orderId.isNotBlank() && !orderId.startsWith("#") && orderId.length > 8)
 
     private fun bindOrderDetail(detail: CustomerOrderDetailUiModel) = with(binding) {
         tvStatus.text = detail.statusLabel
-        tvOrderId.text = getString(R.string.customer_order_detail_order_id, detail.orderId)
+        tvOrderId.text = getString(
+            R.string.customer_order_detail_order_id,
+            detail.displayOrderCode.removePrefix("#"),
+        )
         tvOrderTime.text = detail.orderTime
         ivHeroImage.setImageResource(detail.heroImageRes)
         tvHeroMessage.text = detail.heroMessage
@@ -358,6 +362,7 @@ class CustomerOrderDetailFragment : Fragment() {
     companion object {
         private const val ARG_ORDER_ID = "arg_order_id"
         private const val DEFAULT_ORDER_ID = "PT-9821"
+        private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")
 
         fun newInstance(orderId: String): CustomerOrderDetailFragment {
             return CustomerOrderDetailFragment().apply {

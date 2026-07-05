@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.kitchen.board
 
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
+import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -64,6 +65,7 @@ object KitchenOrderFirestoreRepository {
 
         return KitchenOrderUiModel(
             orderId = id,
+            displayOrderCode = displayOrderCode(),
             fulfillmentLabel = mapFulfillmentLabel(orderType),
             timeLabel = createdAt.toTimeLabel(),
             status = kitchenStatus,
@@ -106,6 +108,13 @@ object KitchenOrderFirestoreRepository {
     private fun buildReadyNote(rawItems: List<*>?): String {
         val count = rawItems?.size ?: 0
         return "$count Items Ready"
+    }
+
+    private fun DocumentSnapshot.displayOrderCode(): String {
+        return OrderCodeGenerator.displayOrderCode(
+            orderCode = getString("orderCode"),
+            orderId = id,
+        )
     }
 
     private fun Timestamp?.toTimeLabel(): String {

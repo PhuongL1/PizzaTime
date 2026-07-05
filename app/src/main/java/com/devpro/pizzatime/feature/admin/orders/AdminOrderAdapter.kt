@@ -51,7 +51,7 @@ class AdminOrderAdapter(
         fun bind(order: AdminOrderUiModel) = with(binding) {
             tvOrderId.text = root.context.getString(
                 R.string.manage_orders_order_id_format,
-                order.orderId,
+                order.displayOrderCode.removePrefix("#"),
             )
             tvCustomerName.text = order.customerName
             tvItemsSummary.text = order.itemsSummary
