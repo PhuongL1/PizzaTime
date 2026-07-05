@@ -11,7 +11,7 @@
         android:id="@+id/customerTopBar"
         layout="@layout/layout_customer_top_bar"
         android:layout_width="0dp"
-        android:layout_height="66dp"
+        android:layout_height="58dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -22,9 +22,10 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fillViewport="false"
-        android:paddingStart="30dp"
-        android:paddingTop="44dp"
-        android:paddingEnd="30dp"
+        android:overScrollMode="never"
+        android:paddingStart="24dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="0dp"
         app:layout_constraintBottom_toTopOf="@id/customerBottomNav"
         app:layout_constraintEnd_toEndOf="parent"
@@ -43,7 +44,7 @@
                 android:fontFamily="serif"
                 android:includeFontPadding="false"
                 android:textColor="@color/pt_text_primary_dark_bg"
-                android:textSize="37sp"
+                android:textSize="30sp"
                 android:textStyle="bold"
                 tools:text="Rewards &amp; Promos" />
 
@@ -51,18 +52,18 @@
                 android:id="@+id/tvSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:lineSpacingExtra="4dp"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="2dp"
                 android:textColor="@color/pt_text_secondary_dark_bg"
-                android:textSize="17sp"
+                android:textSize="13sp"
                 android:textStyle="bold"
                 tools:text="Elevate your late-night ritual with exclusive artisan offers." />
 
             <HorizontalScrollView
                 android:id="@+id/tabsScroll"
                 android:layout_width="match_parent"
-                android:layout_height="58dp"
-                android:layout_marginTop="38dp"
+                android:layout_height="46dp"
+                android:layout_marginTop="26dp"
                 android:clipToPadding="false"
                 android:overScrollMode="never"
                 android:scrollbars="none">
@@ -76,57 +77,57 @@
                     <TextView
                         android:id="@+id/chipActive"
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
+                        android:layout_height="36dp"
                         android:background="@drawable/bg_customer_promo_chip_selected"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
                         android:gravity="center"
                         android:letterSpacing="0.08"
-                        android:minWidth="110dp"
-                        android:paddingStart="22dp"
-                        android:paddingEnd="22dp"
+                        android:minWidth="76dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/customer_promo_tab_active"
                         android:textColor="@color/pt_text_dark"
-                        android:textSize="13sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/chipPastRewards"
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="12dp"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
                         android:background="@drawable/bg_customer_promo_chip_outline"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
                         android:gravity="center"
                         android:letterSpacing="0.08"
-                        android:minWidth="150dp"
-                        android:paddingStart="22dp"
-                        android:paddingEnd="22dp"
+                        android:minWidth="116dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/customer_promo_tab_past_rewards"
                         android:textColor="@color/pt_text_secondary_dark_bg"
-                        android:textSize="13sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/chipPointsHistory"
                         android:layout_width="wrap_content"
-                        android:layout_height="48dp"
-                        android:layout_marginStart="12dp"
+                        android:layout_height="36dp"
+                        android:layout_marginStart="8dp"
                         android:background="@drawable/bg_customer_promo_chip_outline"
                         android:clickable="true"
                         android:focusable="true"
                         android:foreground="?attr/selectableItemBackground"
                         android:gravity="center"
                         android:letterSpacing="0.08"
-                        android:minWidth="150dp"
-                        android:paddingStart="22dp"
-                        android:paddingEnd="22dp"
+                        android:minWidth="118dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/customer_promo_tab_points_history"
                         android:textColor="@color/pt_text_secondary_dark_bg"
-                        android:textSize="13sp"
+                        android:textSize="11sp"
                         android:textStyle="bold" />
                 </LinearLayout>
             </HorizontalScrollView>
@@ -135,40 +136,42 @@
                 android:id="@+id/activePromosContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="34dp"
+                android:layout_marginTop="22dp"
                 android:orientation="vertical" />
 
             <TextView
                 android:id="@+id/tvUsedExpiredTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="8dp"
+                android:layout_marginTop="4dp"
                 android:letterSpacing="0.12"
                 android:text="@string/customer_promo_used_expired"
                 android:textColor="@color/pt_text_secondary_dark_bg"
-                android:textSize="13sp"
+                android:textSize="12sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/pastPromosContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="14dp"
                 android:orientation="vertical" />
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="60dp" />
+                android:layout_height="72dp" />
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
-
 
     <include
         android:id="@+id/customerBottomNav"
         layout="@layout/layout_customer_bottom_nav"
         android:layout_width="0dp"
-        android:layout_height="88dp"
+        android:layout_height="82dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

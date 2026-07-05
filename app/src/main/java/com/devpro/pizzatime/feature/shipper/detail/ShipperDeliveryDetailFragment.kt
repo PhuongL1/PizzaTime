@@ -20,6 +20,7 @@ import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.devpro.pizzatime.shared.location.isValidLatitude
@@ -288,7 +289,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                     openKitchenBoard()
                 },
                 onProfileClick = {
-                    showComingSoon(R.string.staff_nav_profile)
+                    openCustomerAccount()
                 },
             )
         }

@@ -1153,4 +1153,5 @@
     <string name="staff_drawer_schedule_toast">Staff schedule is coming soon.</string>
     <string name="staff_drawer_support_toast">Support is coming soon.</string>
     <string name="staff_drawer_logout_toast">Logged out.</string>
+    <string name="account_store_info_view_only_toast">Chỉ admin mới có thể chỉnh sửa</string>
 </resources>

@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/registerRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -13,33 +14,35 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="24dp"
+        android:paddingStart="30dp"
         android:paddingTop="18dp"
-        android:paddingEnd="24dp"
-        android:paddingBottom="36dp">
+        android:paddingEnd="30dp"
+        android:paddingBottom="28dp"
+        tools:ignore="NestedWeights">
+
 
         <!-- TOP BAR -->
         <FrameLayout
-            android:id="@+id/registerTopBar"
+            android:id="@+id/loginHeader"
             android:layout_width="match_parent"
-            android:layout_height="64dp">
+            android:layout_height="44dp">
 
             <ImageView
                 android:id="@+id/btnBack"
-                android:layout_width="48dp"
-                android:layout_height="48dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:layout_gravity="start|center_vertical"
                 android:background="@drawable/bg_login_back_button"
                 android:clickable="true"
                 android:contentDescription="@string/common_back_content_description"
                 android:focusable="true"
                 android:foreground="?attr/selectableItemBackgroundBorderless"
-                android:padding="13dp"
+                android:padding="11dp"
                 android:scaleType="centerInside"
                 android:src="@drawable/ic_back" />
 
             <TextView
-                android:id="@+id/tvRegisterBrand"
+                android:id="@+id/tvLoginBrand"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_gravity="center"
@@ -47,7 +50,7 @@
                 android:includeFontPadding="false"
                 android:text="@string/app_name"
                 android:textColor="@color/pt_gold"
-                android:textSize="40sp" />
+                android:textSize="30sp" />
 
         </FrameLayout>
 
@@ -56,24 +59,24 @@
             android:id="@+id/tvRegisterTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="56dp"
+            android:layout_marginTop="10dp"
             android:fontFamily="serif"
             android:includeFontPadding="false"
             android:text="@string/register_title"
             android:textColor="@color/pt_text_primary"
-            android:textSize="36sp"
+            android:textSize="28sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/tvRegisterSubtitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
+            android:layout_marginTop="8dp"
             android:fontFamily="sans-serif-medium"
-            android:lineSpacingExtra="5dp"
+            android:lineSpacingExtra="3dp"
             android:text="@string/register_subtitle"
             android:textColor="@color/pt_text_secondary"
-            android:textSize="18sp"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <!-- FORM -->
@@ -81,18 +84,18 @@
             android:id="@+id/tvLabelFullName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="48dp"
+            android:layout_marginTop="32dp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.08"
             android:text="@string/register_label_full_name"
             android:textColor="@color/pt_text_primary"
-            android:textSize="14sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/edtFullName"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="46dp"
             android:layout_marginTop="8dp"
             android:autofillHints="name"
             android:background="@drawable/bg_input_dark"
@@ -104,24 +107,24 @@
             android:singleLine="true"
             android:textColor="@color/pt_text_primary"
             android:textColorHint="@color/pt_text_muted"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvLabelEmail"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.08"
             android:text="@string/register_label_email"
             android:textColor="@color/pt_text_primary"
-            android:textSize="14sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/edtEmail"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="46dp"
             android:layout_marginTop="8dp"
             android:autofillHints="emailAddress"
             android:background="@drawable/bg_input_dark"
@@ -133,24 +136,24 @@
             android:singleLine="true"
             android:textColor="@color/pt_text_primary"
             android:textColorHint="@color/pt_text_muted"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvLabelPhone"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.08"
             android:text="@string/register_label_phone"
             android:textColor="@color/pt_text_primary"
-            android:textSize="14sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/edtPhone"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="46dp"
             android:layout_marginTop="8dp"
             android:autofillHints="phone"
             android:background="@drawable/bg_input_dark"
@@ -162,24 +165,24 @@
             android:singleLine="true"
             android:textColor="@color/pt_text_primary"
             android:textColorHint="@color/pt_text_muted"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvLabelPassword"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.08"
             android:text="@string/register_label_password"
             android:textColor="@color/pt_text_primary"
-            android:textSize="14sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/edtPassword"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="46dp"
             android:layout_marginTop="8dp"
             android:autofillHints="password"
             android:background="@drawable/bg_input_dark"
@@ -191,24 +194,24 @@
             android:singleLine="true"
             android:textColor="@color/pt_text_primary"
             android:textColorHint="@color/pt_text_muted"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <TextView
             android:id="@+id/tvLabelConfirm"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="22dp"
+            android:layout_marginTop="15dp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.08"
             android:text="@string/register_label_confirm"
             android:textColor="@color/pt_text_primary"
-            android:textSize="14sp"
+            android:textSize="11sp"
             android:textStyle="bold" />
 
         <EditText
             android:id="@+id/edtConfirmPassword"
             android:layout_width="match_parent"
-            android:layout_height="56dp"
+            android:layout_height="46dp"
             android:layout_marginTop="8dp"
             android:autofillHints="password"
             android:background="@drawable/bg_input_dark"
@@ -220,21 +223,21 @@
             android:singleLine="true"
             android:textColor="@color/pt_text_primary"
             android:textColorHint="@color/pt_text_muted"
-            android:textSize="16sp" />
+            android:textSize="14sp" />
 
         <!-- TERMS -->
         <LinearLayout
             android:id="@+id/termsRow"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="20dp"
             android:gravity="top"
             android:orientation="horizontal">
 
             <View
                 android:id="@+id/checkboxTerms"
-                android:layout_width="20dp"
-                android:layout_height="20dp"
+                android:layout_width="16dp"
+                android:layout_height="16dp"
                 android:layout_marginTop="3dp"
                 android:background="@drawable/bg_register_checkbox" />
 
@@ -242,11 +245,11 @@
                 android:id="@+id/tvTerms"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="12dp"
+                android:layout_marginStart="8dp"
                 android:layout_weight="1"
-                android:lineSpacingExtra="3dp"
+                android:lineSpacingExtra="2dp"
                 android:textColor="@color/pt_text_primary"
-                android:textSize="16sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 android:text="@string/register_terms_prefix" />
 
@@ -256,15 +259,15 @@
         <TextView
             android:id="@+id/btnCreateAccount"
             android:layout_width="match_parent"
-            android:layout_height="66dp"
-            android:layout_marginTop="28dp"
+            android:layout_height="48dp"
+            android:layout_marginTop="12dp"
             android:background="@drawable/bg_button_primary_gold"
             android:clickable="true"
             android:focusable="true"
             android:gravity="center"
             android:text="@string/register_create_account"
             android:textColor="@color/pt_text_dark"
-            android:textSize="22sp"
+            android:textSize="18sp"
             android:textStyle="bold" />
 
 
@@ -273,7 +276,7 @@
             android:id="@+id/socialDivider"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="36dp"
+            android:layout_marginTop="28dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -287,8 +290,8 @@
                 android:id="@+id/tvOrJoinWith"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginEnd="16dp"
+                android:layout_marginStart="12dp"
+                android:layout_marginEnd="12dp"
                 android:fontFamily="sans-serif-black"
                 android:letterSpacing="0.12"
                 android:text="@string/register_or_join_with"
@@ -308,13 +311,13 @@
             android:id="@+id/socialButtons"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="12dp"
             android:orientation="horizontal">
 
             <TextView
                 android:id="@+id/btnGoogle"
                 android:layout_width="0dp"
-                android:layout_height="54dp"
+                android:layout_height="48dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_social_button"
                 android:clickable="true"
@@ -328,8 +331,8 @@
             <TextView
                 android:id="@+id/btnFacebook"
                 android:layout_width="0dp"
-                android:layout_height="54dp"
-                android:layout_marginStart="20dp"
+                android:layout_height="48dp"
+                android:layout_marginStart="12dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_social_button"
                 android:clickable="true"
@@ -347,7 +350,7 @@
             android:id="@+id/tvExperienceTitle"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="88dp"
+            android:layout_marginTop="54dp"
             android:fontFamily="sans-serif-black"
             android:letterSpacing="0.06"
             android:text="@string/register_experience_title"
@@ -358,15 +361,15 @@
         <LinearLayout
             android:id="@+id/experienceGrid"
             android:layout_width="match_parent"
-            android:layout_height="360dp"
-            android:layout_marginTop="22dp"
+            android:layout_height="260dp"
+            android:layout_marginTop="15dp"
             android:orientation="horizontal">
 
             <ImageView
                 android:id="@+id/imgExperienceOven"
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginEnd="10dp"
+                android:layout_marginEnd="6dp"
                 android:layout_weight="1"
                 android:background="@drawable/bg_register_experience_card"
                 android:contentDescription="@string/register_image_oven_content_description"
@@ -376,7 +379,7 @@
             <LinearLayout
                 android:layout_width="0dp"
                 android:layout_height="match_parent"
-                android:layout_marginStart="10dp"
+                android:layout_marginStart="6dp"
                 android:layout_weight="1"
                 android:orientation="vertical">
 
@@ -388,13 +391,14 @@
                     android:background="@drawable/bg_register_experience_card"
                     android:contentDescription="@string/register_image_kitchen_content_description"
                     android:scaleType="centerCrop"
-                    android:src="@drawable/img_welcome_hero" />
+                    android:src="@drawable/img_welcome_hero"
+                    tools:ignore="NestedWeights" />
 
                 <LinearLayout
                     android:id="@+id/cardArtisanQuality"
                     android:layout_width="match_parent"
                     android:layout_height="0dp"
-                    android:layout_marginTop="18dp"
+                    android:layout_marginTop="12dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_register_experience_card"
                     android:gravity="center"
@@ -406,13 +410,13 @@
                         android:layout_height="wrap_content"
                         android:text="★"
                         android:textColor="@color/pt_gold"
-                        android:textSize="42sp" />
+                        android:textSize="32sp" />
 
                     <TextView
                         android:id="@+id/tvQualityText"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="4dp"
                         android:fontFamily="sans-serif-black"
                         android:letterSpacing="0.08"
                         android:text="@string/register_artisan_quality"

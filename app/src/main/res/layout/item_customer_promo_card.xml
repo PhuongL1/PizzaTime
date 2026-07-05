@@ -9,7 +9,7 @@
     <ImageView
         android:id="@+id/ivPromoImage"
         android:layout_width="match_parent"
-        android:layout_height="172dp"
+        android:layout_height="138dp"
         android:contentDescription="@string/customer_promo_image_description"
         android:scaleType="centerCrop"
         tools:src="@drawable/img_pizza_time" />
@@ -18,14 +18,14 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingStart="28dp"
-        android:paddingTop="26dp"
-        android:paddingEnd="28dp"
-        android:paddingBottom="28dp">
+        android:paddingStart="18dp"
+        android:paddingTop="16dp"
+        android:paddingEnd="18dp"
+        android:paddingBottom="18dp">
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="34dp"
+            android:layout_height="28dp"
             android:baselineAligned="false"
             android:gravity="center_vertical"
             android:orientation="horizontal">
@@ -37,20 +37,20 @@
                 android:layout_weight="1"
                 android:letterSpacing="0.08"
                 android:textColor="@color/pt_copper"
-                android:textSize="13sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 tools:text="LIMITED EDITION" />
 
             <TextView
                 android:id="@+id/tvStatus"
                 android:layout_width="wrap_content"
-                android:layout_height="32dp"
+                android:layout_height="26dp"
                 android:background="@drawable/bg_customer_promo_status_active"
                 android:gravity="center"
-                android:paddingStart="14dp"
-                android:paddingEnd="14dp"
+                android:paddingStart="12dp"
+                android:paddingEnd="12dp"
                 android:textColor="@color/pt_text_primary_dark_bg"
-                android:textSize="12sp"
+                android:textSize="10sp"
                 android:textStyle="bold"
                 tools:text="2 DAYS LEFT" />
         </LinearLayout>
@@ -59,26 +59,27 @@
             android:id="@+id/tvCode"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
+            android:layout_marginTop="10dp"
             android:fontFamily="serif"
+            android:includeFontPadding="false"
             android:textColor="@color/pt_text_primary_dark_bg"
-            android:textSize="31sp"
+            android:textSize="24sp"
             tools:text="MIDNIGHT20" />
 
         <TextView
             android:id="@+id/tvDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="10dp"
-            android:lineSpacingExtra="4dp"
+            android:layout_marginTop="8dp"
+            android:lineSpacingExtra="3dp"
             android:textColor="@color/pt_text_secondary_dark_bg"
-            android:textSize="17sp"
+            android:textSize="13sp"
             tools:text="20% off all signature wood-fired pizzas after 10 PM." />
 
         <LinearLayout
             android:layout_width="match_parent"
-            android:layout_height="52dp"
-            android:layout_marginTop="24dp"
+            android:layout_height="42dp"
+            android:layout_marginTop="18dp"
             android:baselineAligned="false"
             android:gravity="bottom"
             android:orientation="horizontal">
@@ -94,24 +95,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/pt_text_secondary_dark_bg"
-                    android:textSize="11sp"
+                    android:textSize="9sp"
                     tools:text="EXPIRES" />
 
                 <TextView
                     android:id="@+id/tvMetaValue"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="4dp"
+                    android:layout_marginTop="2dp"
                     android:textColor="@color/pt_text_primary_dark_bg"
-                    android:textSize="14sp"
+                    android:textSize="12sp"
                     android:textStyle="bold"
                     tools:text="Oct 24, 2024" />
             </LinearLayout>
 
             <TextView
                 android:id="@+id/btnApply"
-                android:layout_width="120dp"
-                android:layout_height="44dp"
+                android:layout_width="82dp"
+                android:layout_height="32dp"
                 android:background="@drawable/bg_customer_promo_apply_button"
                 android:clickable="true"
                 android:focusable="true"
@@ -120,7 +121,7 @@
                 android:letterSpacing="0.08"
                 android:text="@string/customer_promo_apply"
                 android:textColor="@color/pt_text_dark"
-                android:textSize="13sp"
+                android:textSize="11sp"
                 android:textStyle="bold" />
         </LinearLayout>
     </LinearLayout>

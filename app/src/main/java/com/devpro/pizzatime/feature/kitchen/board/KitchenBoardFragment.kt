@@ -12,8 +12,10 @@ import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.databinding.FragmentKitchenBoardBinding
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.google.firebase.firestore.ListenerRegistration
 
 class KitchenBoardFragment : Fragment() {
@@ -72,13 +74,13 @@ class KitchenBoardFragment : Fragment() {
             root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.KITCHEN,
             onDashboardClick = {
-                backToPreviousStaffScreen()
+                openStaffDashboard()
             },
             onDeliveryClick = {
                 openShipperDeliveryDashboard()
             },
             onProfileClick = {
-                showComingSoon(R.string.staff_nav_profile)
+                openCustomerAccount()
             },
         )
     }

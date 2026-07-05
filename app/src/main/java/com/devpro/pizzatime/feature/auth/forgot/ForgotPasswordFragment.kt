@@ -31,7 +31,7 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
         }
 
         btnBack.setOnClickListener {
-            openLoginScreen()
+            parentFragmentManager.popBackStack()
         }
     }
 

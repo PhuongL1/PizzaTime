@@ -14,6 +14,7 @@ import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
@@ -112,7 +113,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
                     openKitchenBoard()
                 },
                 onProfileClick = {
-                    showComingSoon(R.string.staff_nav_profile)
+                    openCustomerAccount()
                 },
             )
         }

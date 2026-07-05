@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:overScrollMode="never"
-        android:paddingBottom="128dp"
+        android:paddingBottom="112dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -19,24 +19,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
-            android:paddingBottom="34dp">
+            android:paddingStart="18dp"
+            android:paddingEnd="18dp"
+            android:paddingBottom="28dp">
 
             <LinearLayout
                 android:id="@+id/trackingTopBar"
                 android:layout_width="match_parent"
-                android:layout_height="66dp"
+                android:layout_height="58dp"
                 android:background="@drawable/bg_top_bar_dark"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp">
 
                 <ImageView
                     android:id="@+id/btnMenu"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:contentDescription="@string/menu_drawer_content_description"
                     android:src="@drawable/ic_menu" />
 
@@ -51,12 +51,12 @@
                     android:letterSpacing="0.12"
                     android:text="@string/detail_brand"
                     android:textColor="@color/pt_gold"
-                    android:textSize="32sp" />
+                    android:textSize="27sp" />
 
                 <ImageView
                     android:id="@+id/btnCart"
-                    android:layout_width="32dp"
-                    android:layout_height="32dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:contentDescription="@string/detail_cart_content_description"
                     android:src="@drawable/ic_bag" />
 
@@ -65,7 +65,7 @@
             <FrameLayout
                 android:id="@+id/mapSection"
                 android:layout_width="match_parent"
-                android:layout_height="540dp"
+                android:layout_height="326dp"
                 android:background="@drawable/bg_tracking_map_placeholder">
 
                 <TextView
@@ -75,7 +75,7 @@
                     android:layout_gravity="center"
                     android:text="@string/tracking_map_location"
                     android:textColor="#2B2B2B"
-                    android:textSize="27sp"
+                    android:textSize="20sp"
                     android:textStyle="bold" />
 
                 <View
@@ -86,15 +86,15 @@
                 <LinearLayout
                     android:id="@+id/etaCard"
                     android:layout_width="match_parent"
-                    android:layout_height="156dp"
-                    android:layout_marginStart="34dp"
-                    android:layout_marginTop="34dp"
-                    android:layout_marginEnd="34dp"
+                    android:layout_height="92dp"
+                    android:layout_marginStart="16dp"
+                    android:layout_marginTop="18dp"
+                    android:layout_marginEnd="16dp"
                     android:background="@drawable/bg_tracking_eta_card"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="28dp"
-                    android:paddingEnd="28dp">
+                    android:paddingStart="16dp"
+                    android:paddingEnd="16dp">
 
                     <LinearLayout
                         android:layout_width="0dp"
@@ -109,35 +109,36 @@
                             android:letterSpacing="0.10"
                             android:text="@string/tracking_order_number"
                             android:textColor="@color/pt_gold"
-                            android:textSize="15sp"
+                            android:textSize="11sp"
                             android:textStyle="bold" />
 
                         <TextView
                             android:id="@+id/tvEta"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="4dp"
                             android:fontFamily="serif"
                             android:includeFontPadding="false"
                             android:text="@string/tracking_eta"
                             android:textColor="@color/pt_text_primary"
-                            android:textSize="38sp" />
+                            android:textSize="28sp" />
 
                         <TextView
                             android:id="@+id/tvEtaLabel"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginTop="8dp"
+                            android:layout_marginTop="4dp"
                             android:text="@string/tracking_eta_label"
                             android:textColor="@color/pt_text_secondary"
-                            android:textSize="18sp" />
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
 
                     </LinearLayout>
 
                     <View
                         android:id="@+id/etaDriverMarker"
-                        android:layout_width="80dp"
-                        android:layout_height="80dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_circle_gold_soft" />
 
                 </LinearLayout>
@@ -148,15 +149,15 @@
                 android:id="@+id/liveStatusCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="34dp"
-                android:layout_marginTop="52dp"
-                android:layout_marginEnd="34dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="28dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_tracking_status_card"
                 android:orientation="vertical"
-                android:paddingStart="28dp"
-                android:paddingTop="28dp"
-                android:paddingEnd="28dp"
-                android:paddingBottom="26dp">
+                android:paddingStart="16dp"
+                android:paddingTop="18dp"
+                android:paddingEnd="16dp"
+                android:paddingBottom="18dp">
 
                 <TextView
                     android:id="@+id/tvLiveStatus"
@@ -164,14 +165,14 @@
                     android:layout_height="wrap_content"
                     android:text="@string/tracking_live_status"
                     android:textColor="@color/pt_text_primary"
-                    android:textSize="28sp"
+                    android:textSize="21sp"
                     android:textStyle="bold" />
 
                 <LinearLayout
                     android:id="@+id/statusStepContainer"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
+                    android:layout_marginTop="16dp"
                     android:orientation="vertical" />
 
             </LinearLayout>
@@ -179,20 +180,20 @@
             <LinearLayout
                 android:id="@+id/trackingProductCard"
                 android:layout_width="match_parent"
-                android:layout_height="138dp"
-                android:layout_marginStart="34dp"
-                android:layout_marginTop="34dp"
-                android:layout_marginEnd="34dp"
+                android:layout_height="118dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="28dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_tracking_product_card"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="28dp"
-                android:paddingEnd="24dp">
+                android:paddingStart="16dp"
+                android:paddingEnd="14dp">
 
                 <ImageView
                     android:id="@+id/imgProduct"
-                    android:layout_width="86dp"
-                    android:layout_height="86dp"
+                    android:layout_width="64dp"
+                    android:layout_height="64dp"
                     android:contentDescription="@string/tracking_product_name"
                     android:scaleType="centerCrop"
                     android:src="@drawable/img_welcome_hero" />
@@ -200,7 +201,7 @@
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -209,38 +210,40 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:textColor="@color/pt_text_primary"
-                        android:textSize="28sp"
+                        android:textSize="20sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvProductOption"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="8dp"
+                        android:layout_marginTop="3dp"
                         android:textColor="@color/pt_text_secondary"
-                        android:textSize="17sp" />
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvProductPrice"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="6dp"
+                        android:layout_marginTop="3dp"
                         android:textColor="@color/pt_text_secondary"
-                        android:textSize="18sp" />
+                        android:textSize="14sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
                 <FrameLayout
                     android:id="@+id/btnProductDetail"
-                    android:layout_width="62dp"
-                    android:layout_height="62dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="@drawable/bg_tracking_arrow_circle"
                     android:clickable="true"
                     android:focusable="true">
 
                     <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:layout_gravity="center"
                         android:contentDescription="@string/menu_open_pizza"
                         android:src="@drawable/ic_arrow_right" />
@@ -252,21 +255,22 @@
             <TextView
                 android:id="@+id/btnSupport"
                 android:layout_width="match_parent"
-                android:layout_height="78dp"
-                android:layout_marginStart="34dp"
-                android:layout_marginTop="34dp"
-                android:layout_marginEnd="34dp"
+                android:layout_height="58dp"
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="28dp"
+                android:layout_marginEnd="8dp"
                 android:background="@drawable/bg_support_button"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
                 android:text="@string/tracking_need_support"
                 android:textColor="@color/pt_text_primary"
-                android:textSize="26sp"
+                android:textSize="21sp"
                 android:textStyle="bold" />
+
             <View
                 android:layout_width="match_parent"
-                android:layout_height="100dp" />
+                android:layout_height="82dp" />
 
         </LinearLayout>
 

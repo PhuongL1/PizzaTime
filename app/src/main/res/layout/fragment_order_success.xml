@@ -10,7 +10,7 @@
     <View
         android:id="@+id/topHeader"
         android:layout_width="0dp"
-        android:layout_height="128dp"
+        android:layout_height="108dp"
         android:background="@drawable/bg_order_success_header"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -21,10 +21,11 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:fontFamily="serif"
+        android:includeFontPadding="false"
         android:letterSpacing="0.26"
         android:text="@string/order_success_brand"
         android:textColor="@color/pt_copper"
-        android:textSize="32sp"
+        android:textSize="28sp"
         android:textStyle="bold"
         app:layout_constraintBottom_toBottomOf="@id/topHeader"
         app:layout_constraintEnd_toEndOf="@id/topHeader"
@@ -37,14 +38,15 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fillViewport="true"
+        android:overScrollMode="never"
         android:paddingStart="28dp"
         android:paddingEnd="28dp"
-        android:paddingBottom="34dp"
+        android:paddingBottom="24dp"
+        android:scrollbars="none"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toBottomOf="@id/topHeader">
-
 
         <LinearLayout
             android:layout_width="match_parent"
@@ -52,27 +54,23 @@
             android:gravity="center_horizontal"
             android:orientation="vertical">
 
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="30dp" />
-
             <FrameLayout
                 android:id="@+id/heroArea"
-                android:layout_width="312dp"
-                android:layout_height="312dp"
-                android:layout_marginTop="-18dp">
+                android:layout_width="256dp"
+                android:layout_height="252dp"
+                android:layout_marginTop="-6dp">
 
                 <View
-                    android:layout_width="300dp"
-                    android:layout_height="300dp"
+                    android:layout_width="242dp"
+                    android:layout_height="242dp"
                     android:layout_gravity="center"
                     android:alpha="0.34"
                     android:background="@drawable/bg_order_success_glow_circle" />
 
                 <ImageView
                     android:id="@+id/ivHeroPizza"
-                    android:layout_width="238dp"
-                    android:layout_height="238dp"
+                    android:layout_width="214dp"
+                    android:layout_height="214dp"
                     android:layout_gravity="center"
                     android:background="@drawable/bg_order_success_image_circle"
                     android:clipToOutline="true"
@@ -83,33 +81,28 @@
 
                 <TextView
                     android:id="@+id/tvCheckIcon"
-                    android:layout_width="72dp"
-                    android:layout_height="72dp"
+                    android:layout_width="58dp"
+                    android:layout_height="58dp"
                     android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="34dp"
-                    android:layout_marginBottom="42dp"
+                    android:layout_marginEnd="22dp"
+                    android:layout_marginBottom="24dp"
                     android:background="@drawable/bg_order_success_check_circle"
                     android:gravity="center"
                     android:text="@string/order_success_check_icon"
                     android:textColor="@color/pt_text_dark"
-                    android:textSize="30sp"
+                    android:textSize="24sp"
                     android:textStyle="bold" />
             </FrameLayout>
-
-            <View
-                android:layout_width="match_parent"
-                android:layout_height="30dp" />
-
 
             <TextView
                 android:id="@+id/tvOrderId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-18dp"
+                android:layout_marginTop="-4dp"
                 android:gravity="center"
                 android:letterSpacing="0.10"
                 android:textColor="@color/pt_copper"
-                android:textSize="13sp"
+                android:textSize="11sp"
                 android:textStyle="bold"
                 tools:text="ORDER ID #PT-9823" />
 
@@ -117,11 +110,12 @@
                 android:id="@+id/tvTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="10dp"
                 android:fontFamily="serif"
                 android:gravity="center"
+                android:includeFontPadding="false"
                 android:textColor="@color/pt_text_primary_dark_bg"
-                android:textSize="38sp"
+                android:textSize="30sp"
                 android:textStyle="bold"
                 tools:text="Order Confirmed" />
 
@@ -129,41 +123,41 @@
                 android:id="@+id/tvMessage"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
-                android:layout_marginTop="20dp"
-                android:layout_marginEnd="18dp"
+                android:layout_marginStart="22dp"
+                android:layout_marginTop="14dp"
+                android:layout_marginEnd="22dp"
                 android:gravity="center"
-                android:lineSpacingExtra="6dp"
+                android:lineSpacingExtra="5dp"
                 android:textColor="@color/pt_text_secondary_dark_bg"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold"
                 tools:text="Your artisan creation is being prepared with care in our wood-fired oven." />
 
             <LinearLayout
                 android:id="@+id/infoCard"
                 android:layout_width="match_parent"
-                android:layout_height="92dp"
-                android:layout_marginStart="26dp"
-                android:layout_marginTop="46dp"
-                android:layout_marginEnd="26dp"
+                android:layout_height="70dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="34dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/bg_order_success_info_card"
                 android:baselineAligned="false"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp">
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp">
 
                 <ImageView
                     android:id="@+id/tvClockIcon"
-                    android:layout_width="38dp"
-                    android:layout_height="38dp"
-                    android:gravity="center"
-                    android:src="@drawable/ic_clock"/>
+                    android:layout_width="24dp"
+                    android:layout_height="24dp"
+                    android:contentDescription="@string/order_success_estimated_arrival"
+                    android:src="@drawable/ic_clock" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="20dp"
+                    android:layout_marginStart="12dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -173,28 +167,28 @@
                         android:letterSpacing="0.08"
                         android:text="@string/order_success_estimated_arrival"
                         android:textColor="@color/pt_text_secondary_dark_bg"
-                        android:textSize="10sp" />
+                        android:textSize="9sp" />
 
                     <TextView
                         android:id="@+id/tvEstimatedArrival"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="3dp"
                         android:textColor="@color/pt_text_primary_dark_bg"
-                        android:textSize="18sp"
+                        android:textSize="17sp"
                         android:textStyle="bold"
                         tools:text="25-35 min" />
                 </LinearLayout>
 
                 <View
                     android:layout_width="1dp"
-                    android:layout_height="48dp"
+                    android:layout_height="36dp"
                     android:background="@color/pt_stroke_dark" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="22dp"
+                    android:layout_marginStart="18dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -205,13 +199,13 @@
                         android:letterSpacing="0.08"
                         android:text="@string/order_success_status"
                         android:textColor="@color/pt_text_secondary_dark_bg"
-                        android:textSize="10sp" />
+                        android:textSize="9sp" />
 
                     <TextView
                         android:id="@+id/tvStatusValue"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="3dp"
                         android:gravity="end"
                         android:textColor="@color/pt_copper"
                         android:textSize="18sp"
@@ -223,10 +217,10 @@
             <TextView
                 android:id="@+id/btnTrackPizza"
                 android:layout_width="match_parent"
-                android:layout_height="72dp"
-                android:layout_marginStart="26dp"
-                android:layout_marginTop="48dp"
-                android:layout_marginEnd="26dp"
+                android:layout_height="56dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="30dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/bg_order_success_primary_button"
                 android:clickable="true"
                 android:focusable="true"
@@ -234,15 +228,15 @@
                 android:gravity="center"
                 android:text="@string/order_success_track_pizza"
                 android:textColor="@color/pt_text_dark"
-                android:textSize="19sp" />
+                android:textSize="16sp" />
 
             <TextView
                 android:id="@+id/btnReturnHome"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
-                android:layout_marginStart="26dp"
-                android:layout_marginTop="14dp"
-                android:layout_marginEnd="26dp"
+                android:layout_height="54dp"
+                android:layout_marginStart="6dp"
+                android:layout_marginTop="12dp"
+                android:layout_marginEnd="6dp"
                 android:background="@drawable/bg_order_success_secondary_button"
                 android:clickable="true"
                 android:focusable="true"
@@ -250,13 +244,12 @@
                 android:gravity="center"
                 android:text="@string/order_success_return_home"
                 android:textColor="@color/pt_text_primary_dark_bg"
-                android:textSize="18sp"
+                android:textSize="15sp"
                 android:textStyle="bold" />
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="30dp" />
-
+                android:layout_height="24dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>

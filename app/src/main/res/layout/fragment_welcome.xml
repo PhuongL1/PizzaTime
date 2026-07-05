@@ -16,7 +16,7 @@
 
         <FrameLayout
             android:layout_width="match_parent"
-            android:layout_height="520dp">
+            android:layout_height="540dp">
 
             <ImageView
                 android:id="@+id/imgHero"
@@ -39,12 +39,12 @@
             <LinearLayout
                 android:id="@+id/topBar"
                 android:layout_width="match_parent"
-                android:layout_height="64dp"
+                android:layout_height="60dp"
                 android:layout_gravity="top"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="20dp"
-                android:paddingEnd="20dp">
+                android:paddingStart="18dp"
+                android:paddingEnd="18dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -55,8 +55,8 @@
 
                     <ImageView
                         android:id="@+id/imgLocation"
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="19dp"
+                        android:layout_height="19dp"
                         android:contentDescription="@string/welcome_location_label"
                         android:scaleType="fitCenter"
                         android:src="@drawable/ic_location" />
@@ -65,9 +65,9 @@
                         android:id="@+id/tvLocation"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="7dp"
+                        android:layout_marginStart="6dp"
                         android:fontFamily="sans-serif-medium"
-                        android:letterSpacing="0.07"
+                        android:letterSpacing="0.06"
                         android:lineSpacingExtra="1dp"
                         android:text="@string/welcome_location_value"
                         android:textAllCaps="true"
@@ -85,13 +85,13 @@
                     android:includeFontPadding="false"
                     android:text="@string/app_name"
                     android:textColor="@color/pt_gold"
-                    android:textSize="32sp" />
+                    android:textSize="38sp" />
 
                 <com.google.android.material.imageview.ShapeableImageView
                     android:id="@+id/imgAvatar"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
-                    android:layout_marginStart="12dp"
+                    android:layout_width="32dp"
+                    android:layout_height="32dp"
+                    android:layout_marginStart="10dp"
                     android:contentDescription="@string/welcome_avatar_content_description"
                     android:scaleType="centerCrop"
                     android:src="@drawable/bg_avatar"
@@ -108,47 +108,48 @@
                 android:layout_gravity="bottom"
                 android:gravity="center_horizontal"
                 android:orientation="vertical"
-                android:paddingStart="24dp"
-                android:paddingEnd="24dp"
+                android:layout_marginBottom="64dp"
+                android:paddingStart="26dp"
+                android:paddingEnd="26dp"
                 android:paddingBottom="24dp">
 
                 <TextView
                     android:id="@+id/tvChip"
                     android:layout_width="wrap_content"
-                    android:layout_height="38dp"
+                    android:layout_height="32dp"
                     android:background="@drawable/bg_welcome_chip"
                     android:fontFamily="sans-serif-black"
                     android:gravity="center"
                     android:includeFontPadding="false"
-                    android:letterSpacing="0.13"
-                    android:paddingStart="22dp"
-                    android:paddingEnd="22dp"
+                    android:letterSpacing="0.16"
+                    android:paddingStart="18dp"
+                    android:paddingEnd="18dp"
                     android:text="@string/welcome_chip"
                     android:textAllCaps="true"
                     android:textColor="@color/pt_gold"
-                    android:textSize="12sp"
+                    android:textSize="11sp"
                     android:textStyle="bold" />
 
                 <TextView
                     android:id="@+id/tvHeroTitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="15dp"
+                    android:layout_marginTop="14dp"
                     android:fontFamily="serif"
                     android:gravity="center"
                     android:includeFontPadding="false"
                     android:lineSpacingExtra="1dp"
                     android:text="@string/welcome_hero_title"
                     android:textColor="@color/pt_text_primary"
-                    android:textSize="27sp" />
+                    android:textSize="28sp" />
 
                 <TextView
                     android:id="@+id/tvHeroSubtitle"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="13dp"
+                    android:layout_marginTop="14dp"
                     android:gravity="center"
-                    android:lineSpacingExtra="4dp"
+                    android:lineSpacingExtra="5dp"
                     android:text="@string/welcome_hero_subtitle"
                     android:textColor="@color/pt_text_secondary"
                     android:textSize="14sp" />
@@ -161,10 +162,11 @@
             android:id="@+id/actionSection"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginTop="-77dp"
             android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="18dp"
-            android:paddingEnd="24dp">
+            android:paddingStart="20dp"
+            android:paddingTop="0dp"
+            android:paddingEnd="20dp">
 
             <TextView
                 android:id="@+id/btnStartOrdering"
@@ -176,14 +178,14 @@
                 android:gravity="center"
                 android:text="@string/welcome_start_ordering"
                 android:textColor="@color/pt_text_dark"
-                android:textSize="17sp"
-                android:textStyle="bold" />
+                android:textSize="18sp"
+                android:textStyle="normal" />
 
             <TextView
                 android:id="@+id/btnLogin"
                 android:layout_width="match_parent"
                 android:layout_height="54dp"
-                android:layout_marginTop="13dp"
+                android:layout_marginTop="12dp"
                 android:background="@drawable/bg_welcome_button_outline"
                 android:clickable="true"
                 android:focusable="true"
@@ -197,9 +199,9 @@
                 android:id="@+id/tvScrollToDiscover"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="36dp"
+                android:layout_marginTop="40dp"
                 android:gravity="center"
-                android:letterSpacing="0.18"
+                android:letterSpacing="0.16"
                 android:text="@string/welcome_scroll_to_discover"
                 android:textColor="@color/pt_text_muted"
                 android:textSize="11sp"
@@ -207,7 +209,7 @@
 
             <View
                 android:layout_width="1dp"
-                android:layout_height="40dp"
+                android:layout_height="42dp"
                 android:layout_gravity="center_horizontal"
                 android:layout_marginTop="10dp"
                 android:background="@drawable/pt_gold_dark" />
@@ -219,25 +221,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="24dp"
-            android:paddingTop="38dp"
-            android:paddingEnd="24dp">
+            android:paddingStart="20dp"
+            android:paddingTop="28dp"
+            android:paddingEnd="20dp">
 
             <LinearLayout
                 android:id="@+id/cardWoodFired"
                 android:layout_width="match_parent"
-                android:layout_height="170dp"
+                android:layout_height="148dp"
                 android:background="@drawable/bg_welcome_feature_card"
                 android:gravity="bottom"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="16dp">
 
                 <ImageView
                     android:id="@+id/imgFire"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:layout_gravity="start"
-                    android:layout_marginBottom="36dp"
+                    android:layout_marginBottom="28dp"
                     android:contentDescription="@string/welcome_wood_fired_content_description"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_fire" />
@@ -247,7 +249,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/welcome_wood_fired_title"
                     android:textColor="@color/pt_text_primary"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -256,26 +258,26 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/welcome_wood_fired_subtitle"
                     android:textColor="@color/pt_text_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/cardMidnightDelivery"
                 android:layout_width="match_parent"
-                android:layout_height="170dp"
-                android:layout_marginTop="18dp"
+                android:layout_height="148dp"
+                android:layout_marginTop="14dp"
                 android:background="@drawable/bg_welcome_feature_card"
                 android:gravity="bottom"
                 android:orientation="vertical"
-                android:padding="18dp">
+                android:padding="16dp">
 
                 <ImageView
                     android:id="@+id/imgDelivery"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="26dp"
+                    android:layout_height="26dp"
                     android:layout_gravity="start"
-                    android:layout_marginBottom="36dp"
+                    android:layout_marginBottom="28dp"
                     android:contentDescription="@string/welcome_delivery_content_description"
                     android:scaleType="fitCenter"
                     android:src="@drawable/ic_midnight_delivery" />
@@ -285,7 +287,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/welcome_delivery_title"
                     android:textColor="@color/pt_text_primary"
-                    android:textSize="20sp"
+                    android:textSize="18sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -294,7 +296,7 @@
                     android:layout_marginTop="4dp"
                     android:text="@string/welcome_delivery_subtitle"
                     android:textColor="@color/pt_text_secondary"
-                    android:textSize="14sp" />
+                    android:textSize="13sp" />
 
             </LinearLayout>
 
@@ -302,10 +304,10 @@
                 android:id="@+id/tvFooter"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="44dp"
-                android:layout_marginBottom="30dp"
+                android:layout_marginTop="34dp"
+                android:layout_marginBottom="24dp"
                 android:gravity="center"
-                android:letterSpacing="0.22"
+                android:letterSpacing="0.2"
                 android:text="@string/welcome_footer"
                 android:textColor="@color/pt_text_muted"
                 android:textSize="11sp"
