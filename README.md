@@ -193,18 +193,17 @@ PizzaTime dùng để:
 ### Ảnh minh họa giao diện
 
 <p align="center">
-  <img src="docs/screenshots/customer-home.png" width="220" alt="Customer Home" />
-  <img src="docs/screenshots/pizza-detail.png" width="220" alt="Pizza Detail" />
-  <img src="docs/screenshots/checkout.png" width="220" alt="Checkout" />
+  <img src="docs/screens/customer-home.png" width="220" alt="Customer Home" />
+  <img src="docs/screens/pizza-detail.png" width="220" alt="Pizza Detail" />
+  <img src="docs/screens/checkout.png" width="220" alt="Checkout" />
 </p>
 
 <p align="center">
-  <img src="docs/screenshots/admin-dashboard.png" width="220" alt="Admin Dashboard" />
-  <img src="docs/screenshots/Reports-&-Analytics.png" width="220" alt="Reports & Analytics" />
-  <img src="docs/screenshots/shipper-detail.png" width="220" alt="Shipper Detail" />
+  <img src="docs/screens/admin-dashboard.png" width="220" alt="Admin Dashboard" />
+  <img src="docs/screens/Reports-&-Analytics.png" width="220" alt="Reports & Analytics" />
+  <img src="docs/screens/shipper-detail.png" width="220" alt="Shipper Detail" />
 </p>
 
-> Lưu ý: các ảnh phía trên sẽ chỉ hiện sau khi bạn thêm file ảnh thật vào thư mục `docs/screenshots/` và push lên GitHub.
 
 ---
 
