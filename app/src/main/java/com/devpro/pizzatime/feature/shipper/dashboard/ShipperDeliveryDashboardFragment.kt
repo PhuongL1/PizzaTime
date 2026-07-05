@@ -6,7 +6,11 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.FakeSessionStore
+import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDashboardBinding
+import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
+import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
@@ -92,19 +96,26 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
     }
 
     private fun setupBottomNav() {
-        bindStaffBottomNav(
-            root = binding.staffBottomNav.root,
-            currentTab = StaffBottomNavTab.DELIVERY,
-            onDashboardClick = {
-                openStaffDashboard()
-            },
-            onKitchenClick = {
-                openKitchenBoard()
-            },
-            onProfileClick = {
-                showComingSoon(R.string.staff_nav_profile)
-            },
-        )
+        if (FakeSessionStore.currentRole == UserRole.ADMIN) {
+            bindAdminBottomNav(
+                root = binding.staffBottomNav.root,
+                selectedDestination = AdminBottomNavDestination.SHIPPER,
+            )
+        } else {
+            bindStaffBottomNav(
+                root = binding.staffBottomNav.root,
+                currentTab = StaffBottomNavTab.DELIVERY,
+                onDashboardClick = {
+                    openStaffDashboard()
+                },
+                onKitchenClick = {
+                    openKitchenBoard()
+                },
+                onProfileClick = {
+                    showComingSoon(R.string.staff_nav_profile)
+                },
+            )
+        }
     }
 
     private fun startDelivery(order: ShipperDeliveryUiModel) {

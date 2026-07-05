@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.account
 
 import androidx.annotation.DrawableRes
+import com.devpro.pizzatime.core.session.UserRole
 
 data class CustomerAccountUiModel(
     val fullName: String,
@@ -15,4 +16,6 @@ data class CustomerAccountUiModel(
     @param:DrawableRes val avatarRes: Int,
     val lifetimeSpendText: String = "",
     val completedOrdersText: String = "",
+    val role: UserRole = UserRole.CUSTOMER,
+    val active: Boolean = true,
 )

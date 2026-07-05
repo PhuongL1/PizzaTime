@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.account
 
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.UserRole
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -84,6 +85,8 @@ object CustomerProfileFirestoreRepository {
                 ?: fallback.lifetimeSpendText,
             completedOrdersText = getLong("completedOrders")?.toString()
                 ?: fallback.completedOrdersText,
+            role = UserRole.fromString(getString("role")) ?: fallback.role,
+            active = getBoolean("active") ?: fallback.active,
         )
     }
 
