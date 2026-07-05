@@ -193,15 +193,15 @@ PizzaTime dùng để:
 ### Ảnh minh họa giao diện
 
 <p align="center">
-  <img src="docs/screens/customer-home.png" width="220" alt="Customer Home" />
-  <img src="docs/screens/pizza-detail.png" width="220" alt="Pizza Detail" />
-  <img src="docs/screens/checkout.png" width="220" alt="Checkout" />
+  <img src="docs/design/screens/customer-home.png" width="220" alt="Customer Home" />
+  <img src="docs/design/screens/pizza-detail.png" width="220" alt="Pizza Detail" />
+  <img src="docs/design/screens/checkout.png" width="220" alt="Checkout" />
 </p>
 
 <p align="center">
-  <img src="docs/screens/admin-dashboard.png" width="220" alt="Admin Dashboard" />
-  <img src="docs/screens/Reports-&-Analytics.png" width="220" alt="Reports & Analytics" />
-  <img src="docs/screens/shipper-detail.png" width="220" alt="Shipper Detail" />
+  <img src="docs/design/screens/admin-dashboard.png" width="220" alt="Admin Dashboard" />
+  <img src="docs/design/screens/Reports%20&%20Analytics.png" width="220" alt="Reports & Analytics" />
+  <img src="docs/design/screens/shipper-detail.png" width="220" alt="Shipper Detail" />
 </p>
 
 
