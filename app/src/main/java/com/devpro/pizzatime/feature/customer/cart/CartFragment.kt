@@ -208,8 +208,8 @@ class CartFragment : Fragment() {
                             ).show()
                         }
 
-                        CheckoutConsistencyRepository.PromoValidationResult.Invalid -> {
-                            clearInvalidPromo()
+                        is CheckoutConsistencyRepository.PromoValidationResult.Invalid -> {
+                            showPromoValidationMessage(promoResult.reason)
                         }
                     }
                 }
@@ -227,6 +227,26 @@ class CartFragment : Fragment() {
             R.string.cart_promo_code_not_valid,
             Toast.LENGTH_SHORT,
         ).show()
+    }
+
+    private fun showPromoValidationMessage(
+        reason: CheckoutConsistencyRepository.PromoValidationFailureReason,
+    ) {
+        when (reason) {
+            CheckoutConsistencyRepository.PromoValidationFailureReason.NOT_ELIGIBLE -> {
+                CartStore.clearPromo()
+                renderSummary(CartStore.items)
+                Toast.makeText(
+                    requireContext(),
+                    R.string.promo_not_eligible_for_this_cart,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+
+            CheckoutConsistencyRepository.PromoValidationFailureReason.UNAVAILABLE -> {
+                clearInvalidPromo()
+            }
+        }
     }
 
     private fun formatMoney(value: Double): String {

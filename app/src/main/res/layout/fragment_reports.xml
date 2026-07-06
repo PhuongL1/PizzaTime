@@ -30,16 +30,12 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="24dp">
 
-                <ImageButton
-                    android:id="@+id/btnMenu"
-                    android:layout_width="48dp"
-                    android:layout_height="48dp"
-                    android:background="@android:color/transparent"
-                    android:contentDescription="@string/menu"
-                    android:minWidth="48dp"
-                    android:minHeight="48dp"
-                    android:padding="10dp"
-                    android:src="@drawable/ic_menu" />
+                <ImageView
+                    android:id="@+id/btnBack"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/detail_back_content_description"
+                    android:src="@drawable/ic_back" />
 
                 <TextView
                     android:id="@+id/tvBrandName"
@@ -149,6 +145,16 @@
                             android:textColor="@color/pt_text_secondary"
                             android:textSize="14sp"
                             android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvDeliveryEarningsValue"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="8dp"
+                            android:textColor="@color/pt_text_secondary"
+                            android:textSize="14sp"
+                            android:textStyle="bold"
+                            tools:text="Delivery earnings: $320.00" />
                     </LinearLayout>
                 </LinearLayout>
 

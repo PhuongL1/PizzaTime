@@ -96,9 +96,8 @@ class ManageStaffFragment : Fragment() {
 
             showCreateStaffDialog()
         }
-
-        tvMenu.setOnClickListener {
-            showComingSoon(getString(R.string.menu))
+        btnBack.setOnClickListener {
+            parentFragmentManager.popBackStack()
         }
     }
 

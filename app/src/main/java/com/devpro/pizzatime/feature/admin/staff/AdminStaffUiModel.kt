@@ -8,6 +8,7 @@ enum class AdminStaffRole {
     SHIPPER,
     ADMIN,
     STAFF,
+    CUSTOMER,
 }
 
 enum class AdminStaffStatus {

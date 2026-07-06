@@ -10,7 +10,7 @@ object AdminStaffFirestoreRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
 
-    private val STAFF_ROLES = setOf("STAFF", "KITCHEN", "SHIPPER", "ADMIN")
+    private val STAFF_ROLES = setOf("STAFF", "KITCHEN", "SHIPPER", "ADMIN", "CUSTOMER")
 
     fun loadStaff(onResult: (Result<List<AdminStaffUiModel>>) -> Unit) {
         firestore.collection("users")
@@ -64,6 +64,7 @@ object AdminStaffFirestoreRepository {
             "KITCHEN" -> AdminStaffRole.KITCHEN
             "SHIPPER" -> AdminStaffRole.SHIPPER
             "ADMIN" -> AdminStaffRole.ADMIN
+            "CUSTOMER" -> AdminStaffRole.CUSTOMER
             else -> AdminStaffRole.STAFF
         }
     }

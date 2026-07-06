@@ -55,7 +55,7 @@ object CheckoutConsistencyRepository {
                                         )
                                     }
 
-                                    PromoValidationResult.Invalid -> {
+                                    is PromoValidationResult.Invalid -> {
                                         onResult(Result.success(CheckoutConsistencyResult.PromoInvalid))
                                     }
                                 }
@@ -116,14 +116,14 @@ object CheckoutConsistencyRepository {
         firestore.collection("promoCodes").document(normalizedCode)
             .get()
             .addOnSuccessListener { doc ->
-                if (!doc.exists() || doc.getBoolean("active") != true) {
-                    onResult(Result.success(PromoValidationResult.Invalid))
+                if (!doc.exists() || doc.isUnavailable()) {
+                    onResult(Result.success(PromoValidationResult.Invalid(PromoValidationFailureReason.UNAVAILABLE)))
                     return@addOnSuccessListener
                 }
 
                 val minOrderAmount = doc.getDouble("minOrderAmount") ?: 0.0
                 if (subtotal < minOrderAmount) {
-                    onResult(Result.success(PromoValidationResult.Invalid))
+                    onResult(Result.success(PromoValidationResult.Invalid(PromoValidationFailureReason.NOT_ELIGIBLE)))
                     return@addOnSuccessListener
                 }
 
@@ -136,7 +136,7 @@ object CheckoutConsistencyRepository {
                 }
 
                 if (discount <= 0.0) {
-                    onResult(Result.success(PromoValidationResult.Invalid))
+                    onResult(Result.success(PromoValidationResult.Invalid(PromoValidationFailureReason.UNAVAILABLE)))
                     return@addOnSuccessListener
                 }
 
@@ -155,6 +155,35 @@ object CheckoutConsistencyRepository {
         }
     }
 
+    private fun DocumentSnapshot.isUnavailable(): Boolean {
+        if (getBoolean("active") != true) {
+            return true
+        }
+        if (isExpired()) {
+            return true
+        }
+        val maxUses = getLong("maxUses") ?: getLong("usageLimit")
+        if (maxUses != null) {
+            val usedCount = getLong("usedCount") ?: getLong("usageCount") ?: getLong("redeemedCount") ?: 0L
+            if (usedCount >= maxUses) {
+                return true
+            }
+        }
+        return false
+    }
+
+    private fun DocumentSnapshot.isExpired(): Boolean {
+        val expiryTimestamp = listOfNotNull(
+            getTimestamp("expiresAt"),
+            getTimestamp("endAt"),
+            getTimestamp("validUntil"),
+            getTimestamp("expiryAt"),
+        ).firstOrNull()
+        return expiryTimestamp?.toDate()?.time?.let { expiryMillis ->
+            expiryMillis <= System.currentTimeMillis()
+        } ?: false
+    }
+
     private sealed class ProductValidationResult {
         data class Valid(val items: List<CartItemUiModel>) : ProductValidationResult()
         data class PriceChanged(val items: List<CartItemUiModel>) : ProductValidationResult()
@@ -163,7 +192,14 @@ object CheckoutConsistencyRepository {
 
     sealed class PromoValidationResult {
         data class Valid(val promoCode: String, val discount: Double) : PromoValidationResult()
-        data object Invalid : PromoValidationResult()
+        data class Invalid(
+            val reason: PromoValidationFailureReason = PromoValidationFailureReason.UNAVAILABLE,
+        ) : PromoValidationResult()
+    }
+
+    enum class PromoValidationFailureReason {
+        UNAVAILABLE,
+        NOT_ELIGIBLE,
     }
 }
 

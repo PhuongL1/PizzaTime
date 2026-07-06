@@ -14,6 +14,7 @@ data class BestSellerUiModel(
 
 data class AdminReportUiModel(
     val totalRevenue: String,
+    val totalDeliveryEarnings: String,
     val totalOrdersText: String,
     val pendingOrdersText: String,
     val deliveredOrdersText: String,

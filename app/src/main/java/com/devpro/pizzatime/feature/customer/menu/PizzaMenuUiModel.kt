@@ -11,6 +11,8 @@ data class PizzaMenuUiModel(
     val rating: String,
     @param:DrawableRes val imageRes: Int,
     val imageUrl: String = "",
+    val categoryId: String = "",
+    val categoryName: String = "",
     val sizeOptions: List<String> = emptyList(),
     val crustOptions: List<String> = emptyList(),
     val toppingOptions: List<String> = emptyList(),

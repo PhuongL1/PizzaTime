@@ -131,14 +131,17 @@
     <string name="home_open_product">Open product</string>
     <string name="home_add_to_favorite">Add to favorite</string>
     <string name="menu_brand">PIZZATIME</string>
-    <string name="menu_search_hint">Search our signature bakes...</string>
-    <string name="menu_filter_content_description">Filter menu</string>
+    <string name="menu_search_hint">Search pizzas</string>
+    <string name="menu_filter_content_description">Filters</string>
     <string name="menu_drawer_content_description">Open menu</string>
     <string name="menu_cart_content_description">Open cart</string>
+    <string name="menu_category_all">All</string>
     <string name="menu_category_signature">Signature</string>
     <string name="menu_category_classic">Classic</string>
     <string name="menu_category_veggie">Veggie</string>
     <string name="menu_category_build_your_own">Build Your Own</string>
+    <string name="menu_filters_updated">Filters updated.</string>
+    <string name="menu_no_results">No pizzas found.</string>
     <string name="menu_add_to_cart">Add to cart</string>
     <string name="menu_open_pizza">Open pizza detail</string>
     <string name="menu_nav_menu">Menu</string>
@@ -180,6 +183,10 @@
     <string name="cart_proceed_checkout">Proceed to Checkout →</string>
     <string name="cart_promo_applied_successfully">Promo applied successfully.</string>
     <string name="cart_promo_code_not_valid">Promo code is not valid.</string>
+    <string name="promo_add_items_first">Add items first.</string>
+    <string name="promo_applied">Promo applied.</string>
+    <string name="promo_unavailable">Promo unavailable.</string>
+    <string name="promo_not_eligible_for_this_cart">Promo not eligible for this cart.</string>
     <string name="cart_remove_item">Remove item</string>
     <string name="cart_increase_quantity">Increase quantity</string>
     <string name="cart_decrease_quantity">Decrease quantity</string>
@@ -476,7 +483,7 @@
     <string name="kitchen_order_detail_cancelled_toast">%1$s cancelled.</string>
     <string name="kitchen_order_detail_load_failed">Could not load order detail.</string>
     <string name="kitchen_order_detail_update_failed">Could not update order status.</string>
-    <string name="kitchen_order_detail_no_value">Không có</string>
+    <string name="kitchen_order_detail_no_value">No</string>
 
     <!-- Shipper Delivery Dashboard -->
     <string name="shipper_active_delivery">Active Delivery</string>
@@ -494,13 +501,13 @@
     <string name="shipper_completed_label">COMPLETED</string>
     <string name="shipper_tips_amount">$142</string>
     <string name="shipper_tips_label">TIPS EARNED</string>
-    <string name="shipper_no_active_delivery">Không có đơn nào cần giao</string>
-    <string name="shipper_delivery_earnings_label">Tiền ship đã nhận</string>
-    <string name="shipper_delivered_history_title">Lịch sử đơn đã giao</string>
-    <string name="shipper_active_orders_title">Đơn đang giao</string>
-    <string name="shipper_no_delivery_history">Chưa có lịch sử giao hàng</string>
-    <string name="shipper_view_delivered_history">LỊCH SỬ ĐƠN ĐÃ GIAO  &gt;</string>
-    <string name="shipper_show_active_orders">ĐƠN ĐANG GIAO  &gt;</string>
+    <string name="shipper_no_active_delivery">No active deliveries</string>
+    <string name="shipper_delivery_earnings_label">Delivery earnings</string>
+    <string name="shipper_delivered_history_title">Order history</string>
+    <string name="shipper_active_orders_title">Assigned</string>
+    <string name="shipper_no_delivery_history">No delivery history</string>
+    <string name="shipper_view_delivered_history">VIEW DELIVERED HISTORY  &gt;</string>
+    <string name="shipper_show_active_orders">SHOW ACTIVE ORDERS  &gt;</string>
     <string name="shipper_view_full_history">VIEW FULL HISTORY  &gt;</string>
     <string name="shipper_message_navigation_started">Navigation started</string>
     <string name="shipper_message_call_customer">Calling customer</string>
@@ -527,6 +534,7 @@
     <string name="admin_dashboard_headline">Artisan Dashboard</string>
     <string name="admin_dashboard_subtitle">Overseeing the night\'s craft. Your boutique metrics are ready.</string>
     <string name="admin_total_revenue">TOTAL REVENUE</string>
+    <string name="admin_total_delivery_earnings">Delivery Earnings</string>
     <string name="admin_today_total">TODAY\'S TOTAL</string>
     <string name="admin_live_dispatch">Live Dispatch</string>
     <string name="admin_pending">PENDING</string>
@@ -748,7 +756,7 @@
     <string name="admin_staff_create_success">Staff account created.</string>
     <string name="admin_staff_create_failed">Could not create staff account.</string>
     <string name="admin_staff_toggle_failed">Could not update staff status.</string>
-    <string name="all_staff">ALL STAFF</string>
+    <string name="all_staff">All Staff</string>
     <string name="kitchen">KITCHEN</string>
     <string name="shipper">SHIPPER</string>
     <string name="admin">ADMIN</string>
@@ -954,10 +962,15 @@
     <string name="customer_menu_subtitle_support">Need help?</string>
     <string name="customer_menu_subtitle_logout">End current session</string>
     <!-- promos-->
+    <string name="customer_promo_title">Rewards &amp; Promos</string>
+    <string name="customer_promo_subtitle">Active offers and past rewards.</string>
     <string name="customer_promo_tab_active">Active</string>
     <string name="customer_promo_tab_past_rewards">Past Rewards</string>
     <string name="customer_promo_tab_points_history">Points History</string>
     <string name="customer_promo_used_expired">USED &amp; EXPIRED</string>
+    <string name="no_active_promos">No active promos.</string>
+    <string name="no_past_rewards">No past rewards.</string>
+    <string name="no_points_history">No points history.</string>
     <string name="customer_promo_apply">APPLY</string>
     <string name="customer_promo_image_description">Promo image</string>
     <string name="customer_promo_cart_toast">Cart coming soon</string>

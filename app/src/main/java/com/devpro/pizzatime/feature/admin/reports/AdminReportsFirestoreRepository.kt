@@ -27,12 +27,14 @@ object AdminReportsFirestoreRepository {
         val cancelledCount = count { it.statusValue() in cancelledStatuses }
         val pendingCount = count { it.statusValue() !in finalStatuses }
         val revenue = deliveredOrders.sumOf { it.numberValue("total") }
+        val deliveryEarnings = deliveredOrders.sumOf { it.numberValue("deliveryFee") }
         val deliveredCount = deliveredOrders.size
         val totalCount = size
         val bestSellers = buildBestSellers()
 
         return AdminReportUiModel(
             totalRevenue = String.format(Locale.US, "$%.2f", revenue),
+            totalDeliveryEarnings = String.format(Locale.US, "$%.2f", deliveryEarnings),
             totalOrdersText = "$totalCount total orders",
             pendingOrdersText = pendingCount.toString(),
             deliveredOrdersText = "$deliveredCount delivered",

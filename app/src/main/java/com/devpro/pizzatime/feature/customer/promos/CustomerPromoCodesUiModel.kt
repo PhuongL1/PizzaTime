@@ -26,4 +26,5 @@ enum class CustomerPromoState {
     ACTIVE,
     USED,
     EXPIRED,
+    UNAVAILABLE,
 }

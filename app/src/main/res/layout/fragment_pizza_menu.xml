@@ -11,7 +11,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:overScrollMode="never"
-        android:paddingBottom="120dp"
+        android:paddingBottom="118dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -19,24 +19,24 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="28dp"
-            android:paddingEnd="28dp"
-            android:paddingBottom="24dp">
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
+            android:paddingBottom="22dp">
 
             <LinearLayout
                 android:id="@+id/menuTopBar"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
+                android:layout_height="50dp"
                 android:background="@drawable/bg_top_bar_dark"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="18dp"
-                android:paddingEnd="18dp">
+                android:paddingStart="14dp"
+                android:paddingEnd="14dp">
 
                 <ImageView
                     android:id="@+id/btnOpenDrawer"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:contentDescription="@string/menu_drawer_content_description"
                     android:src="@drawable/ic_menu" />
 
@@ -48,15 +48,15 @@
                     android:fontFamily="serif"
                     android:gravity="center"
                     android:includeFontPadding="false"
-                    android:letterSpacing="0.12"
+                    android:letterSpacing="0.14"
                     android:text="@string/menu_brand"
                     android:textColor="@color/pt_gold"
-                    android:textSize="26sp" />
+                    android:textSize="25sp" />
 
                 <ImageView
                     android:id="@+id/btnOpenCart"
-                    android:layout_width="30dp"
-                    android:layout_height="30dp"
+                    android:layout_width="28dp"
+                    android:layout_height="28dp"
                     android:contentDescription="@string/menu_cart_content_description"
                     android:src="@drawable/ic_bag" />
 
@@ -65,53 +65,58 @@
             <LinearLayout
                 android:id="@+id/searchFilterRow"
                 android:layout_width="match_parent"
-                android:layout_height="58dp"
-                android:layout_marginTop="22dp"
+                android:layout_height="54dp"
+                android:layout_marginTop="18dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/searchBar"
                     android:layout_width="0dp"
-                    android:layout_height="58dp"
+                    android:layout_height="54dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_input_round_dark"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp">
+                    android:paddingStart="15dp"
+                    android:paddingEnd="15dp">
 
                     <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
+                        android:layout_width="22dp"
+                        android:layout_height="22dp"
                         android:contentDescription="@string/menu_search_hint"
                         android:src="@drawable/ic_search" />
 
-                    <TextView
+                    <EditText
                         android:id="@+id/tvSearchHint"
                         android:layout_width="0dp"
                         android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
+                        android:layout_marginStart="13dp"
                         android:layout_weight="1"
-                        android:text="@string/menu_search_hint"
-                        android:textColor="@color/pt_text_muted"
-                        android:textSize="15sp" />
+                        android:background="@null"
+                        android:hint="@string/menu_search_hint"
+                        android:imeOptions="actionSearch"
+                        android:inputType="text"
+                        android:singleLine="true"
+                        android:textColor="@color/pt_text_primary"
+                        android:textColorHint="@color/pt_text_muted"
+                        android:textSize="14sp" />
 
                 </LinearLayout>
 
                 <FrameLayout
                     android:id="@+id/btnFilter"
-                    android:layout_width="58dp"
-                    android:layout_height="58dp"
-                    android:layout_marginStart="10dp"
+                    android:layout_width="54dp"
+                    android:layout_height="54dp"
+                    android:layout_marginStart="8dp"
                     android:background="@drawable/bg_filter_square"
                     android:clickable="true"
                     android:contentDescription="@string/menu_filter_content_description"
                     android:focusable="true">
 
                     <ImageView
-                        android:layout_width="28dp"
-                        android:layout_height="28dp"
+                        android:layout_width="26dp"
+                        android:layout_height="26dp"
                         android:layout_gravity="center"
                         android:contentDescription="@string/menu_filter_content_description"
                         android:src="@drawable/ic_filter" />
@@ -124,7 +129,7 @@
                 android:id="@+id/categoryScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
+                android:layout_marginTop="18dp"
                 android:overScrollMode="never"
                 android:scrollbars="none">
 
@@ -137,7 +142,7 @@
                     <TextView
                         android:id="@+id/chipSignature"
                         android:layout_width="112dp"
-                        android:layout_height="42dp"
+                        android:layout_height="38dp"
                         android:background="@drawable/bg_chip_selected_gold"
                         android:gravity="center"
                         android:letterSpacing="0.10"
@@ -148,9 +153,9 @@
 
                     <TextView
                         android:id="@+id/chipClassic"
-                        android:layout_width="104dp"
-                        android:layout_height="42dp"
-                        android:layout_marginStart="14dp"
+                        android:layout_width="102dp"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
@@ -161,9 +166,9 @@
 
                     <TextView
                         android:id="@+id/chipVeggie"
-                        android:layout_width="104dp"
-                        android:layout_height="42dp"
-                        android:layout_marginStart="14dp"
+                        android:layout_width="102dp"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
@@ -174,9 +179,9 @@
 
                     <TextView
                         android:id="@+id/chipBuildYourOwn"
-                        android:layout_width="140dp"
-                        android:layout_height="42dp"
-                        android:layout_marginStart="14dp"
+                        android:layout_width="138dp"
+                        android:layout_height="38dp"
+                        android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
@@ -193,7 +198,7 @@
                 android:id="@+id/pizzaMenuContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="34dp"
+                android:layout_marginTop="28dp"
                 android:orientation="vertical" />
 
         </LinearLayout>
@@ -206,8 +211,8 @@
         android:layout_width="match_parent"
         android:layout_height="88dp"
         android:layout_gravity="bottom"
-        android:layout_marginStart="16dp"
-        android:layout_marginEnd="16dp"
-        android:layout_marginBottom="18dp" />
+        android:layout_marginStart="14dp"
+        android:layout_marginEnd="14dp"
+        android:layout_marginBottom="16dp" />
 
 </FrameLayout>

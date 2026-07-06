@@ -55,10 +55,11 @@ class AdminStaffAdapter(
 
         private fun AdminStaffRole.toDisplayText(): String {
             return when (this) {
-                AdminStaffRole.KITCHEN -> "🍴 KITCHEN"
-                AdminStaffRole.SHIPPER -> "🚚 SHIPPER"
-                AdminStaffRole.ADMIN -> "🛡 ADMIN"
-                AdminStaffRole.STAFF -> "♙ STAFF"
+                AdminStaffRole.KITCHEN -> "KITCHEN"
+                AdminStaffRole.SHIPPER -> "SHIPPER"
+                AdminStaffRole.ADMIN -> "ADMIN"
+                AdminStaffRole.STAFF -> "STAFF"
+                AdminStaffRole.CUSTOMER -> "CUSTOMER"
             }
         }
 
