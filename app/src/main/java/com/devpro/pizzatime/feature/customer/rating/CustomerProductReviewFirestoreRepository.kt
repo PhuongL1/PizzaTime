@@ -1,5 +1,8 @@
 package com.devpro.pizzatime.feature.customer.rating
 
+import android.util.Log
+import com.google.firebase.firestore.DocumentReference
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.SetOptions
@@ -14,23 +17,49 @@ object CustomerProductReviewFirestoreRepository {
         customerId: String,
         onResult: (Result<Map<String, Int>>) -> Unit,
     ) {
-        firestore.collection("productReviews")
-            .whereEqualTo("orderId", orderId)
-            .get()
-            .addOnSuccessListener { snapshot ->
-                val ratings = snapshot.documents.mapNotNull { doc ->
-                    if (doc.getString("customerId") != customerId) {
-                        return@mapNotNull null
-                    }
-                    val productId = doc.getString("productId") ?: return@mapNotNull null
-                    val rating = doc.getLong("rating")?.toInt()
-                        ?: doc.getDouble("rating")?.toInt()
-                        ?: return@mapNotNull null
-                    productId to rating
-                }.toMap()
-                onResult(Result.success(ratings))
-            }
-            .addOnFailureListener { error -> onResult(Result.failure(error)) }
+        resolveOrderDocument(
+            orderId = orderId,
+            customerId = customerId,
+        ) { resolved ->
+            resolved
+                .onSuccess { orderSnapshot ->
+                    firestore.collection("productReviews")
+                        .whereEqualTo("orderId", orderSnapshot.id)
+                        .get()
+                        .addOnSuccessListener { snapshot ->
+                            val ratings = snapshot.documents.mapNotNull { doc ->
+                                if (doc.getString("customerId") != customerId) {
+                                    return@mapNotNull null
+                                }
+                                val productId = doc.getString("productId")?.trim().orEmpty()
+                                if (productId.isBlank()) {
+                                    return@mapNotNull null
+                                }
+                                val rating = doc.getLong("rating")?.toInt()
+                                    ?: doc.getDouble("rating")?.toInt()
+                                    ?: return@mapNotNull null
+                                productId to rating
+                            }.toMap()
+                            onResult(Result.success(ratings))
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e(
+                                TAG,
+                                "loadOrderRatings failed orderId=$orderId resolvedOrderId=${orderSnapshot.id} customerId=$customerId",
+                                error,
+                            )
+                            onResult(Result.failure(error))
+                        }
+                }
+                .onFailure { error ->
+                    Log.e(
+                        TAG,
+                        "loadOrderRatings could not resolve orderId=$orderId customerId=$customerId",
+                        error,
+                    )
+                    onResult(Result.failure(error))
+                }
+        }
     }
 
     fun submitOrderRatings(
@@ -39,81 +68,276 @@ object CustomerProductReviewFirestoreRepository {
         ratings: Map<String, Int>,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        val sanitizedRatings = ratings.filterValues { it in 1..5 }
+        val rawOrderId = orderId.trim()
+        val normalizedOrderId = normalizeOrderLookupKey(orderId)
+        val sanitizedRatings = ratings.entries
+            .mapNotNull { entry ->
+                val productId = entry.key.trim()
+                val rating = entry.value
+                if (productId.isBlank() || rating !in 1..5) {
+                    if (productId.isBlank()) {
+                        Log.w(TAG, "submitOrderRatings skipped blank productId orderId=$rawOrderId customerId=$customerId")
+                    }
+                    null
+                } else {
+                    productId to rating
+                }
+            }
+            .distinctBy { it.first }
+            .toMap()
+
         if (sanitizedRatings.isEmpty()) {
             onResult(Result.failure(Exception("Select a rating.")))
             return
         }
 
-        firestore.runTransaction { transaction ->
-            val orderRef = firestore.collection("orders").document(orderId)
-            val orderSnap = transaction.get(orderRef)
-            val orderCustomerId = orderSnap.getString("customerId")
-            val status = orderSnap.getString("status")?.uppercase(Locale.US).orEmpty()
-            if (orderCustomerId != customerId || status != "DELIVERED") {
-                throw IllegalStateException("Could not save rating.")
-            }
+        resolveOrderDocument(
+            orderId = rawOrderId,
+            customerId = customerId,
+        ) { resolved ->
+            resolved
+                .onSuccess { orderSnapshot ->
+                    val orderCustomerId = orderSnapshot.getString("customerId").orEmpty()
+                    val orderStatus = orderSnapshot.getString("status")?.uppercase(Locale.US).orEmpty()
+                    if (orderCustomerId != customerId || orderStatus != STATUS_DELIVERED) {
+                        val error = IllegalStateException("Delivered order validation failed.")
+                        Log.e(
+                            TAG,
+                            "submitOrderRatings validation failed orderId=$rawOrderId normalizedOrderId=$normalizedOrderId resolvedOrderId=${orderSnapshot.id} customerId=$customerId orderCustomerId=$orderCustomerId status=$orderStatus productIds=${sanitizedRatings.keys.sorted()}",
+                            error,
+                        )
+                        onResult(Result.failure(error))
+                        return@onSuccess
+                    }
 
-            sanitizedRatings.forEach { (productId, rating) ->
-                val reviewId = buildReviewId(orderId, productId, customerId)
-                val reviewRef = firestore.collection("productReviews").document(reviewId)
+                    val batch = firestore.batch()
+                    sanitizedRatings.forEach { (productId, rating) ->
+                        val reviewId = buildReviewId(orderSnapshot.id, productId, customerId)
+                        val reviewRef = firestore.collection("productReviews").document(reviewId)
+                        batch.set(
+                            reviewRef,
+                            mapOf(
+                                "reviewId" to reviewId,
+                                "orderId" to orderSnapshot.id,
+                                "productId" to productId,
+                                "customerId" to customerId,
+                                "rating" to rating,
+                                "createdAt" to FieldValue.serverTimestamp(),
+                                "updatedAt" to FieldValue.serverTimestamp(),
+                            ),
+                            SetOptions.merge(),
+                        )
+                    }
+
+                    batch.commit()
+                        .addOnSuccessListener {
+                            updateProductAggregatesBestEffort(
+                                productIds = sanitizedRatings.keys.toList(),
+                                resolvedOrderId = orderSnapshot.id,
+                                customerId = customerId,
+                            )
+                            onResult(Result.success(Unit))
+                        }
+                        .addOnFailureListener { error ->
+                            Log.e(
+                                TAG,
+                                "submitOrderRatings failed orderId=$rawOrderId normalizedOrderId=$normalizedOrderId resolvedOrderId=${orderSnapshot.id} customerId=$customerId productIds=${sanitizedRatings.keys.sorted()}",
+                                error,
+                            )
+                            onResult(Result.failure(error))
+                        }
+                }
+                .onFailure { error ->
+                    Log.e(
+                        TAG,
+                        "submitOrderRatings failed orderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId productIds=${sanitizedRatings.keys.sorted()}",
+                        error,
+                    )
+                    onResult(Result.failure(error))
+                }
+        }
+    }
+
+    private fun updateProductAggregatesBestEffort(
+        productIds: List<String>,
+        resolvedOrderId: String,
+        customerId: String,
+    ) {
+        productIds.distinct().forEach { productId ->
+            refreshProductAggregate(
+                productId = productId,
+                resolvedOrderId = resolvedOrderId,
+                customerId = customerId,
+            )
+        }
+    }
+
+    private fun refreshProductAggregate(
+        productId: String,
+        resolvedOrderId: String,
+        customerId: String,
+    ) {
+        firestore.collection("productReviews")
+            .whereEqualTo("productId", productId)
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val ratings = snapshot.documents.mapNotNull { document ->
+                    document.getLong("rating")?.toInt()
+                        ?: document.getDouble("rating")?.toInt()
+                }.filter { it in 1..5 }
+
+                val total = ratings.sum()
+                val count = ratings.size
+                val average = if (count > 0) total.toDouble() / count else 0.0
                 val productRef = firestore.collection("products").document(productId)
 
-                val reviewSnap = transaction.get(reviewRef)
-                val productSnap = transaction.get(productRef)
+                productRef.get()
+                    .addOnSuccessListener { productSnapshot ->
+                        if (!productSnapshot.exists()) {
+                            Log.w(
+                                TAG,
+                                "refreshProductAggregate skipped missing product productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                            )
+                            return@addOnSuccessListener
+                        }
 
-                val existingRating = reviewSnap.getLong("rating")?.toInt()
-                val currentCount = (productSnap.getLong("ratingCount") ?: 0L).toInt().coerceAtLeast(0)
-                val currentTotal = (productSnap.getLong("ratingTotal")
-                    ?: productSnap.getDouble("ratingTotal")?.toLong()
-                    ?: 0L).toInt().coerceAtLeast(0)
-
-                val nextCount = if (existingRating == null) {
-                    currentCount + 1
-                } else {
-                    currentCount.coerceAtLeast(1)
-                }
-                val nextTotal = when {
-                    existingRating == null -> currentTotal + rating
-                    currentTotal <= 0 -> rating
-                    else -> (currentTotal - existingRating + rating).coerceAtLeast(rating)
-                }
-                val nextAverage = if (nextCount > 0) nextTotal.toDouble() / nextCount else 0.0
-
-                val reviewData = linkedMapOf<String, Any?>(
-                    "reviewId" to reviewId,
-                    "orderId" to orderId,
-                    "productId" to productId,
-                    "customerId" to customerId,
-                    "rating" to rating,
-                    "createdAt" to (reviewSnap.get("createdAt") ?: FieldValue.serverTimestamp()),
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                )
-
-                transaction.set(
-                    reviewRef,
-                    reviewData,
-                    SetOptions.merge(),
-                )
-
-                val productData = linkedMapOf<String, Any>(
-                    "averageRating" to nextAverage,
-                    "ratingCount" to nextCount,
-                    "ratingTotal" to nextTotal,
-                    "updatedAt" to FieldValue.serverTimestamp(),
-                )
-
-                transaction.update(
-                    productRef,
-                    productData,
+                        productRef.set(
+                            mapOf(
+                                "averageRating" to average,
+                                "ratingCount" to count,
+                                "ratingTotal" to total,
+                                "updatedAt" to FieldValue.serverTimestamp(),
+                            ),
+                            SetOptions.merge(),
+                        ).addOnFailureListener { error ->
+                            Log.e(
+                                TAG,
+                                "refreshProductAggregate failed productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                                error,
+                            )
+                        }
+                    }
+                    .addOnFailureListener { error ->
+                        Log.e(
+                            TAG,
+                            "refreshProductAggregate could not read product productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                            error,
+                        )
+                    }
+            }
+            .addOnFailureListener { error ->
+                Log.e(
+                    TAG,
+                    "refreshProductAggregate could not read reviews productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                    error,
                 )
             }
-            null
-        }.addOnSuccessListener {
-            onResult(Result.success(Unit))
-        }.addOnFailureListener { error ->
-            onResult(Result.failure(error))
+    }
+
+    private fun resolveOrderDocument(
+        orderId: String,
+        customerId: String,
+        onResult: (Result<DocumentSnapshot>) -> Unit,
+    ) {
+        val rawOrderId = orderId.trim()
+        val normalizedOrderId = normalizeOrderLookupKey(orderId)
+        val directCandidates = linkedSetOf<String>().apply {
+            if (normalizedOrderId.isNotBlank()) add(normalizedOrderId)
+            if (rawOrderId.isNotBlank()) add(rawOrderId)
+        }.toList()
+
+        fun tryDirect(index: Int) {
+            if (index >= directCandidates.size) {
+                tryFieldFallbacks(
+                    normalizedOrderId = normalizedOrderId,
+                    rawOrderId = rawOrderId,
+                    customerId = customerId,
+                    onResult = onResult,
+                )
+                return
+            }
+
+            val candidate = directCandidates[index]
+            firestore.collection("orders").document(candidate)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    if (snapshot.exists()) {
+                        onResult(Result.success(snapshot))
+                    } else {
+                        tryDirect(index + 1)
+                    }
+                }
+                .addOnFailureListener { error ->
+                    Log.e(
+                        TAG,
+                        "resolveOrderDocument direct lookup failed candidate=$candidate rawOrderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId",
+                        error,
+                    )
+                    tryDirect(index + 1)
+                }
         }
+
+        tryDirect(index = 0)
+    }
+
+    private fun tryFieldFallbacks(
+        normalizedOrderId: String,
+        rawOrderId: String,
+        customerId: String,
+        onResult: (Result<DocumentSnapshot>) -> Unit,
+    ) {
+        val displayOrderCode = when {
+            rawOrderId.startsWith("#") -> rawOrderId
+            normalizedOrderId.isNotBlank() -> "#$normalizedOrderId"
+            else -> rawOrderId.takeIf { it.isNotBlank() }.orEmpty()
+        }
+
+        val lookups = listOf(
+            "orderId" to normalizedOrderId,
+            "orderCodeKey" to normalizedOrderId,
+            "orderCode" to displayOrderCode,
+        ).filter { it.second.isNotBlank() }
+
+        fun tryLookup(index: Int) {
+            if (index >= lookups.size) {
+                val error = IllegalStateException("Delivered order not found.")
+                Log.e(
+                    TAG,
+                    "resolveOrderDocument failed rawOrderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId",
+                    error,
+                )
+                onResult(Result.failure(error))
+                return
+            }
+
+            val (field, value) = lookups[index]
+            firestore.collection("orders")
+                .whereEqualTo(field, value)
+                .limit(1)
+                .get()
+                .addOnSuccessListener { snapshot ->
+                    val match = snapshot.documents.firstOrNull()
+                    if (match != null) {
+                        onResult(Result.success(match))
+                    } else {
+                        tryLookup(index + 1)
+                    }
+                }
+                .addOnFailureListener { error ->
+                    Log.e(
+                        TAG,
+                        "resolveOrderDocument fallback failed field=$field value=$value rawOrderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId",
+                        error,
+                    )
+                    tryLookup(index + 1)
+                }
+        }
+
+        tryLookup(index = 0)
+    }
+
+    private fun normalizeOrderLookupKey(orderId: String): String {
+        return orderId.trim().removePrefix("#")
     }
 
     private fun buildReviewId(orderId: String, productId: String, customerId: String): String {
@@ -121,4 +345,7 @@ object CustomerProductReviewFirestoreRepository {
             .joinToString("_")
             .replace(Regex("[^A-Za-z0-9_\\-]"), "_")
     }
+
+    private const val STATUS_DELIVERED = "DELIVERED"
+    private const val TAG = "ProductReviewRepo"
 }

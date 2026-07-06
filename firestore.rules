@@ -245,6 +245,8 @@ service cloud.firestore {
           "updatedAt"
         ])
         && request.resource.data.reviewId == reviewId
+        && request.resource.data.orderId is string
+        && request.resource.data.productId is string
         && request.resource.data.customerId == request.auth.uid
         && request.resource.data.rating is int
         && request.resource.data.rating >= 1
@@ -314,8 +316,7 @@ service cloud.firestore {
     }
 
     match /productReviews/{reviewId} {
-      allow read: if isActiveUser()
-        && (isAdmin() || resource.data.customerId == request.auth.uid);
+      allow read: if isActiveUser();
       allow create, update: if validProductReviewWrite(reviewId);
       allow delete: if isAdmin() || (isCustomer() && resource.data.customerId == request.auth.uid);
     }

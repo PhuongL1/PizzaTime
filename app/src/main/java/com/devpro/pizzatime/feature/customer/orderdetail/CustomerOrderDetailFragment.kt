@@ -2,7 +2,9 @@ package com.devpro.pizzatime.feature.customer.orderdetail
 
 import android.app.AlertDialog
 import android.graphics.Typeface
+import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -35,6 +37,7 @@ class CustomerOrderDetailFragment : Fragment() {
     private var currentOrderId: String = ""
     private var currentOrderDetail: CustomerOrderDetailUiModel? = null
     private var existingRatings: Map<String, Int> = emptyMap()
+    private var isRealOrderLoaded = false
     private var isCancellingOrder = false
     private var isLoadingRatings = false
     private var isSubmittingRatings = false
@@ -73,18 +76,21 @@ class CustomerOrderDetailFragment : Fragment() {
     private fun loadOrder(orderId: String) {
         currentOrderId = orderId
         existingRatings = emptyMap()
+        isRealOrderLoaded = false
         if (isFirestoreOrderId(orderId)) {
             CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
                 if (_binding == null || !isAdded) return@loadOrderDetail
                 val detail = result.getOrElse {
                     FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
                 }
+                isRealOrderLoaded = result.isSuccess
                 currentOrderDetail = detail
                 bindOrderDetail(detail)
                 loadRatingState(detail)
             }
         } else {
             val detail = FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
+            isRealOrderLoaded = false
             currentOrderDetail = detail
             bindOrderDetail(detail)
         }
@@ -110,7 +116,7 @@ class CustomerOrderDetailFragment : Fragment() {
         bindStatusHistory(detail.statusHistory)
 
         val delivered = detail.statusLabel.uppercase(Locale.US) == "DELIVERED"
-        btnRateOrder.isVisible = delivered
+        btnRateOrder.isVisible = delivered && isRealOrderLoaded
         btnRateOrder.text = if (existingRatings.isNotEmpty()) {
             getString(R.string.update_rating)
         } else {
@@ -227,7 +233,7 @@ class CustomerOrderDetailFragment : Fragment() {
 
     private fun loadRatingState(detail: CustomerOrderDetailUiModel) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
-        if (uid.isNullOrBlank() || detail.items.isEmpty()) {
+        if (uid.isNullOrBlank() || detail.items.isEmpty() || !isRealOrderLoaded) {
             existingRatings = emptyMap()
             binding.btnRateOrder.text = getString(R.string.rate_order)
             return
@@ -259,41 +265,51 @@ class CustomerOrderDetailFragment : Fragment() {
             Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
             return
         }
+        if (!isRealOrderLoaded) {
+            Toast.makeText(requireContext(), R.string.could_not_save_rating, Toast.LENGTH_SHORT).show()
+            return
+        }
 
         if (detail.statusLabel.uppercase(Locale.US) != "DELIVERED") {
             return
         }
-        if (detail.items.isEmpty()) {
+        val rateableItems = detail.items.distinctBy { item ->
+            item.productId.trim().ifBlank { item.name.trim().lowercase(Locale.US) }
+        }
+        if (rateableItems.isEmpty()) {
             Toast.makeText(requireContext(), R.string.select_a_rating, Toast.LENGTH_SHORT).show()
             return
         }
 
         val container = LinearLayout(requireContext()).apply {
             orientation = LinearLayout.VERTICAL
-            setPadding(24.dp, 12.dp, 24.dp, 0)
+            setPadding(24.dp, 20.dp, 24.dp, 8.dp)
+            background = ColorDrawable(requireContext().getColor(R.color.pt_surface_dark))
         }
 
-        val selectedRatings = detail.items.associate { item ->
+        val selectedRatings = rateableItems.associate { item ->
             item.productId to (existingRatings[item.productId] ?: 0)
         }.toMutableMap()
         var updateSaveButtonState: (() -> Unit)? = null
 
-        detail.items.forEachIndexed { index, item ->
+        rateableItems.forEachIndexed { index, item ->
             val title = TextView(requireContext()).apply {
                 text = item.name
                 setTextColor(requireContext().getColor(R.color.pt_cream))
-                textSize = 16f
+                textSize = 18f
                 setTypeface(typeface, Typeface.BOLD)
                 if (index > 0) {
-                    setPadding(0, 18.dp, 0, 0)
+                    setPadding(0, 20.dp, 0, 0)
                 }
             }
 
             val subtitle = TextView(requireContext()).apply {
                 text = item.description
                 setTextColor(requireContext().getColor(R.color.pt_text_primary_dark_bg))
-                textSize = 13f
-                setPadding(0, 4.dp, 0, 8.dp)
+                alpha = 0.9f
+                textSize = 15f
+                setTypeface(typeface, Typeface.BOLD)
+                setPadding(0, 6.dp, 0, 10.dp)
                 isVisible = item.description.isNotBlank()
             }
 
@@ -312,6 +328,7 @@ class CustomerOrderDetailFragment : Fragment() {
         }
 
         val content = ScrollView(requireContext()).apply {
+            background = ColorDrawable(requireContext().getColor(R.color.pt_surface_dark))
             addView(container)
         }
 
@@ -323,9 +340,15 @@ class CustomerOrderDetailFragment : Fragment() {
             .create()
 
         dialog.setOnShowListener {
+            dialog.window?.setBackgroundDrawable(
+                ColorDrawable(requireContext().getColor(R.color.pt_surface_dark)),
+            )
             val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            val cancelButton = dialog.getButton(AlertDialog.BUTTON_NEGATIVE)
+            saveButton.setTextColor(requireContext().getColor(R.color.pt_copper))
+            cancelButton.setTextColor(requireContext().getColor(R.color.pt_text_primary_dark_bg))
             updateSaveButtonState = {
-                val hasAllRatings = detail.items.isNotEmpty() && detail.items.all {
+                val hasAllRatings = rateableItems.isNotEmpty() && rateableItems.all {
                     (selectedRatings[it.productId] ?: 0) in 1..5
                 }
                 saveButton.isEnabled = hasAllRatings
@@ -335,10 +358,10 @@ class CustomerOrderDetailFragment : Fragment() {
             updateSaveButtonState?.invoke()
             saveButton.setOnClickListener {
                 if (isSubmittingRatings) return@setOnClickListener
-                val payload = detail.items.associate { item ->
+                val payload = rateableItems.associate { item ->
                     item.productId to (selectedRatings[item.productId] ?: 0)
                 }.filterValues { it in 1..5 }
-                if (payload.size != detail.items.size) {
+                if (payload.size != rateableItems.size) {
                     Toast.makeText(requireContext(), R.string.select_a_rating, Toast.LENGTH_SHORT).show()
                     return@setOnClickListener
                 }
@@ -359,7 +382,8 @@ class CustomerOrderDetailFragment : Fragment() {
                             Toast.makeText(requireContext(), R.string.rating_saved, Toast.LENGTH_SHORT).show()
                             dialog.dismiss()
                         }
-                        .onFailure {
+                        .onFailure { error ->
+                            Log.e(TAG, "Submit rating failed", error)
                             Toast.makeText(
                                 requireContext(),
                                 R.string.could_not_save_rating,
@@ -387,20 +411,21 @@ class CustomerOrderDetailFragment : Fragment() {
             val starNumber = index + 1
             row.addView(
                 TextView(requireContext()).apply {
-                    layoutParams = LinearLayout.LayoutParams(44.dp, 44.dp).apply {
+                    layoutParams = LinearLayout.LayoutParams(52.dp, 52.dp).apply {
                         if (index > 0) {
                             marginStart = 6.dp
                         }
                     }
                     gravity = android.view.Gravity.CENTER
                     text = STAR_CHAR
-                    textSize = 22f
+                    textSize = 30f
                     setTypeface(typeface, Typeface.BOLD)
                     setTextColor(
                         requireContext().getColor(
-                            if (starNumber <= selectedRating) R.color.pt_copper else R.color.pt_cream,
+                            if (starNumber <= selectedRating) R.color.pt_gold else R.color.pt_text_primary_dark_bg,
                         ),
                     )
+                    alpha = if (starNumber <= selectedRating) 1f else 0.66f
                     setOnClickListener {
                         onRatingSelected(starNumber)
                         updateStarRow(row, starNumber)
@@ -419,9 +444,10 @@ class CustomerOrderDetailFragment : Fragment() {
             val starNumber = index + 1
             star.setTextColor(
                 requireContext().getColor(
-                    if (starNumber <= selectedRating) R.color.pt_copper else R.color.pt_cream,
+                    if (starNumber <= selectedRating) R.color.pt_gold else R.color.pt_text_primary_dark_bg,
                 ),
             )
+            star.alpha = if (starNumber <= selectedRating) 1f else 0.66f
         }
     }
 
@@ -593,6 +619,7 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     companion object {
+        private const val TAG = "CustomerOrderDetail"
         private const val ARG_ORDER_ID = "arg_order_id"
         private const val DEFAULT_ORDER_ID = "PT-9821"
         private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")

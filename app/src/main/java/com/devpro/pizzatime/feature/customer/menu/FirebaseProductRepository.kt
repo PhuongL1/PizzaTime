@@ -14,10 +14,60 @@ object FirebaseProductRepository {
             .get()
             .addOnSuccessListener { snapshot ->
                 val products = snapshot.documents.mapNotNull { mapDocument(it) }
-                onResult(products)
+                loadReviewAverages(
+                    baseProducts = products,
+                    onResult = onResult,
+                )
             }
             .addOnFailureListener {
                 onResult(emptyList())
+            }
+    }
+
+    private fun loadReviewAverages(
+        baseProducts: List<ProductUiModel>,
+        onResult: (List<ProductUiModel>) -> Unit,
+    ) {
+        firestore.collection("productReviews")
+            .get()
+            .addOnSuccessListener { snapshot ->
+                val ratingsByProductId = snapshot.documents
+                    .mapNotNull { document ->
+                        val productId = document.getString("productId")?.trim().orEmpty()
+                        val rating = document.getLong("rating")?.toInt()
+                            ?: document.getDouble("rating")?.toInt()
+                        if (productId.isBlank() || rating !in 1..5) {
+                            null
+                        } else {
+                            productId to rating
+                        }
+                    }
+                    .groupBy(
+                        keySelector = { it.first },
+                        valueTransform = { it.second },
+                    )
+
+                val mergedProducts = baseProducts.map { product ->
+                    val ratings: List<Int> = ratingsByProductId[product.id]
+                        ?.filterNotNull()
+                        .orEmpty()
+                    if (ratings.isEmpty()) {
+                        product
+                    } else {
+                        val ratingCount = ratings.size
+                        val ratingTotal = ratings.fold(0) { total, rating -> total + rating }
+                        val averageRating = ratingTotal.toDouble() / ratingCount
+                        product.copy(
+                            rating = averageRating,
+                            averageRating = averageRating,
+                            ratingCount = ratingCount,
+                        )
+                    }
+                }
+                onResult(mergedProducts)
+            }
+            .addOnFailureListener {
+                onResult(baseProducts)
             }
     }
 
