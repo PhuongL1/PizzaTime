@@ -477,17 +477,26 @@
     <!-- Shipper Delivery Dashboard -->
     <string name="shipper_active_delivery">Active Delivery</string>
     <string name="shipper_active_order_count">1 ORDER</string>
+    <string name="shipper_active_order_count_format">%1$d ORDER</string>
     <string name="shipper_order_id_label">ORDER ID:</string>
     <string name="shipper_order_label">ORDER</string>
     <string name="shipper_navigate">Navigate</string>
     <string name="shipper_call">CALL</string>
     <string name="shipper_assigned">Assigned</string>
     <string name="shipper_ready_count">2 READY</string>
+    <string name="shipper_ready_count_format">%1$d READY</string>
     <string name="shipper_start_delivery">START DELIVERY</string>
     <string name="shipper_completed_count">12</string>
     <string name="shipper_completed_label">COMPLETED</string>
     <string name="shipper_tips_amount">$142</string>
     <string name="shipper_tips_label">TIPS EARNED</string>
+    <string name="shipper_no_active_delivery">Không có đơn nào cần giao</string>
+    <string name="shipper_delivery_earnings_label">Tiền ship đã nhận</string>
+    <string name="shipper_delivered_history_title">Lịch sử đơn đã giao</string>
+    <string name="shipper_active_orders_title">Đơn đang giao</string>
+    <string name="shipper_no_delivery_history">Chưa có lịch sử giao hàng</string>
+    <string name="shipper_view_delivered_history">LỊCH SỬ ĐƠN ĐÃ GIAO  &gt;</string>
+    <string name="shipper_show_active_orders">ĐƠN ĐANG GIAO  &gt;</string>
     <string name="shipper_view_full_history">VIEW FULL HISTORY  &gt;</string>
     <string name="shipper_message_navigation_started">Navigation started</string>
     <string name="shipper_message_call_customer">Calling customer</string>

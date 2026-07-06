@@ -80,6 +80,17 @@
         tools:text="404 Echo Park Ln, Apt 4" />
 
     <TextView
+        android:id="@+id/tvAssignedMeta"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:textColor="#D8C8BC"
+        android:textSize="13sp"
+        android:visibility="gone"
+        tools:text="Delivered Jul 06, 08:30 PM • PAID • Cash collected"
+        tools:visibility="visible" />
+
+    <TextView
         android:id="@+id/btnStartDelivery"
         android:layout_width="match_parent"
         android:layout_height="66dp"

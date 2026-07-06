@@ -242,6 +242,20 @@
 
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/tvActiveDeliveryEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="96dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_shipper_active_card"
+                android:gravity="center"
+                android:text="@string/shipper_no_active_delivery"
+                android:textColor="#D8C8BC"
+                android:textSize="17sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:id="@+id/assignedHeader"
                 android:layout_width="match_parent"
@@ -282,6 +296,20 @@
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never" />
 
+            <TextView
+                android:id="@+id/tvDeliveryListEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="86dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_shipper_assigned_card"
+                android:gravity="center"
+                android:text="@string/shipper_no_active_delivery"
+                android:textColor="#D8C8BC"
+                android:textSize="15sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:visibility="visible" />
+
             <LinearLayout
                 android:id="@+id/shipperStatsRow"
                 android:layout_width="match_parent"
@@ -299,6 +327,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvCompletedCount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/shipper_completed_count"
@@ -306,6 +335,7 @@
                         android:textSize="48sp" />
 
                     <TextView
+                        android:id="@+id/tvCompletedLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
@@ -327,6 +357,7 @@
                     android:orientation="vertical">
 
                     <TextView
+                        android:id="@+id/tvDeliveryEarnings"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:text="@string/shipper_tips_amount"
@@ -334,10 +365,11 @@
                         android:textSize="48sp" />
 
                     <TextView
+                        android:id="@+id/tvDeliveryEarningsLabel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
-                        android:text="@string/shipper_tips_label"
+                        android:text="@string/shipper_delivery_earnings_label"
                         android:textColor="#D8C8BC"
                         android:textSize="13sp"
                         android:textStyle="bold" />

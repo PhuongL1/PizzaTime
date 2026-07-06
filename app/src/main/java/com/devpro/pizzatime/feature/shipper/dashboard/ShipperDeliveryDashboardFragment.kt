@@ -3,6 +3,7 @@ package com.devpro.pizzatime.feature.shipper.dashboard
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
@@ -38,19 +39,36 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         },
     )
     private var ordersListener: ListenerRegistration? = null
+    private var latestDashboard = ShipperDashboardUiModel(
+        activeOrders = emptyList(),
+        deliveredOrders = emptyList(),
+        activeOrderCount = 0,
+        readyOrderCount = 0,
+        completedOrderCount = 0,
+        deliveryEarnings = 0.0,
+    )
+    private var showingHistory = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
 
         _binding = FragmentShipperDeliveryDashboardBinding.bind(view)
 
-        bindActiveDelivery(FakeShipperDeliveryData.getActiveDelivery())
+        renderDashboard(latestDashboard)
         setupAssignedDeliveries()
         setupBottomNav()
         listenFirestoreOrders()
     }
 
-    private fun bindActiveDelivery(activeDelivery: ShipperDeliveryUiModel) = with(binding) {
+    private fun bindActiveDelivery(activeDelivery: ShipperDeliveryUiModel?) = with(binding) {
+        activeDeliveryCard.isVisible = activeDelivery != null
+        tvActiveDeliveryEmpty.isVisible = activeDelivery == null
+        if (activeDelivery == null) {
+            btnNavigate.setOnClickListener(null)
+            btnCallCustomer.setOnClickListener(null)
+            return@with
+        }
+
         tvActiveOrderId.text = activeDelivery.displayOrderCode
         tvActiveEta.text = activeDelivery.etaLabel
         tvActiveCustomerName.text = activeDelivery.customerName
@@ -75,25 +93,64 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         layoutManager = LinearLayoutManager(requireContext())
         adapter = deliveryAdapter
         isNestedScrollingEnabled = false
-        deliveryAdapter.submitList(FakeShipperDeliveryData.getAssignedDeliveries())
     }
 
     private fun listenFirestoreOrders() {
         ordersListener?.remove()
-        ordersListener = ShipperOrderFirestoreRepository.listenOrders { result ->
-            if (!isAdded) return@listenOrders
-            result.onSuccess { orders ->
-                val shipperId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-                val visibleOrders = orders.filter { order ->
-                    order.shipperId.isBlank() || order.shipperId == shipperId
-                }
-                val activeDelivery = visibleOrders.firstOrNull { it.status == ShipperDeliveryStatus.ACTIVE }
-                if (activeDelivery != null) {
-                    bindActiveDelivery(activeDelivery)
-                }
-                deliveryAdapter.submitList(visibleOrders)
+        val shipperId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        ordersListener = ShipperOrderFirestoreRepository.listenDashboard(shipperId) { result ->
+            if (!isAdded) return@listenDashboard
+            result.onSuccess { dashboard ->
+                latestDashboard = dashboard
+                renderDashboard(dashboard)
             }
         }
+    }
+
+    private fun renderDashboard(dashboard: ShipperDashboardUiModel) = with(binding) {
+        val activeDelivery = dashboard.activeOrders.firstOrNull {
+            it.status == ShipperDeliveryStatus.ACTIVE
+        } ?: dashboard.activeOrders.firstOrNull()
+        bindActiveDelivery(activeDelivery)
+
+        tvActiveOrderCount.text = getString(
+            R.string.shipper_active_order_count_format,
+            dashboard.activeOrderCount,
+        )
+        tvReadyCount.text = getString(
+            R.string.shipper_ready_count_format,
+            dashboard.readyOrderCount,
+        )
+        tvCompletedCount.text = dashboard.completedOrderCount.toString()
+        tvCompletedLabel.setText(R.string.shipper_completed_label)
+        tvDeliveryEarnings.text = formatMoney(dashboard.deliveryEarnings)
+        tvDeliveryEarningsLabel.setText(R.string.shipper_delivery_earnings_label)
+
+        val listItems = if (showingHistory) dashboard.deliveredOrders else dashboard.activeOrders
+        tvAssignedTitle.setText(
+            if (showingHistory) {
+                R.string.shipper_delivered_history_title
+            } else {
+                R.string.shipper_active_orders_title
+            },
+        )
+        tvViewHistory.setText(
+            if (showingHistory) {
+                R.string.shipper_show_active_orders
+            } else {
+                R.string.shipper_view_delivered_history
+            },
+        )
+        rvAssignedDeliveries.isVisible = listItems.isNotEmpty()
+        tvDeliveryListEmpty.isVisible = listItems.isEmpty()
+        tvDeliveryListEmpty.setText(
+            if (showingHistory) {
+                R.string.shipper_no_delivery_history
+            } else {
+                R.string.shipper_no_active_delivery
+            },
+        )
+        deliveryAdapter.submitList(listItems)
     }
 
     private fun setupBottomNav() {
@@ -117,6 +174,11 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
                 },
             )
         }
+
+        binding.tvViewHistory.setOnClickListener {
+            showingHistory = !showingHistory
+            renderDashboard(latestDashboard)
+        }
     }
 
     private fun startDelivery(order: ShipperDeliveryUiModel) {
@@ -129,6 +191,10 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
             getString(R.string.staff_coming_soon_message, getString(titleRes)),
             Toast.LENGTH_SHORT,
         ).show()
+    }
+
+    private fun formatMoney(value: Double): String {
+        return String.format(java.util.Locale.US, "$%.2f", value)
     }
 
     override fun onDestroyView() {

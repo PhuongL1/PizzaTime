@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.shipper.dashboard
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
+import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -38,16 +39,23 @@ class ShipperDeliveryAdapter(
             tvAssignedOrderId.text = order.displayOrderCode
             tvAssignedCustomerName.text = order.customerName
             tvAssignedAddress.text = order.address
+            tvAssignedMeta.isVisible = order.etaLabel.isNotBlank() || order.paymentLabel.isNotBlank()
+            tvAssignedMeta.text = listOf(order.etaLabel, order.paymentLabel)
+                .filter { it.isNotBlank() }
+                .joinToString(" • ")
 
             tvPaymentBadge.text = if (order.paymentAmount.isNotBlank()) {
                 order.paymentAmount
             } else {
                 order.paymentLabel
             }
-            btnStartDelivery.text = if (order.status == ShipperDeliveryStatus.ACTIVE) {
-                root.context.getString(R.string.shipper_detail_delivered_cash_collected)
-            } else {
-                root.context.getString(R.string.shipper_detail_start_delivery)
+            btnStartDelivery.text = when (order.status) {
+                ShipperDeliveryStatus.ACTIVE ->
+                    root.context.getString(R.string.shipper_detail_delivered_cash_collected)
+                ShipperDeliveryStatus.DELIVERED ->
+                    root.context.getString(R.string.staff_action_view_details)
+                ShipperDeliveryStatus.ASSIGNED ->
+                    root.context.getString(R.string.shipper_detail_start_delivery)
             }
 
             root.setOnClickListener {

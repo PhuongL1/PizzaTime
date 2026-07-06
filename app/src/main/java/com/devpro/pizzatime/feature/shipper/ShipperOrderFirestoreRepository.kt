@@ -3,18 +3,41 @@ package com.devpro.pizzatime.feature.shipper
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryStatus
+import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDashboardUiModel
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperPaymentItemUiModel
+import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 object ShipperOrderFirestoreRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val shipperStatuses = listOf("READY", "ASSIGNED_TO_SHIPPER", "DELIVERING")
+    private val shipperStatuses = listOf(
+        "READY",
+        "READY_FOR_DELIVERY",
+        "READY_TO_DELIVER",
+        "ASSIGNED_TO_SHIPPER",
+        "DELIVERING",
+    )
+    private val activeStatuses = setOf(
+        "READY",
+        "READY_FOR_DELIVERY",
+        "READY_TO_DELIVER",
+        "ASSIGNED_TO_SHIPPER",
+        "DELIVERING",
+    )
+    private val readyStatuses = setOf(
+        "READY",
+        "READY_FOR_DELIVERY",
+        "READY_TO_DELIVER",
+        "ASSIGNED_TO_SHIPPER",
+    )
 
     fun loadOrders(onResult: (Result<List<ShipperDeliveryUiModel>>) -> Unit) {
         firestore.collection("orders")
@@ -40,6 +63,22 @@ object ShipperOrderFirestoreRepository {
                     ?.mapNotNull { it.toShipperDeliveryUiModel() }
                     ?: emptyList()
                 onResult(Result.success(orders))
+            }
+    }
+
+    fun listenDashboard(
+        shipperId: String,
+        onResult: (Result<ShipperDashboardUiModel>) -> Unit,
+    ): ListenerRegistration {
+        return firestore.collection("orders")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    onResult(Result.failure(error))
+                    return@addSnapshotListener
+                }
+
+                val docs = snapshot?.documents ?: emptyList()
+                onResult(Result.success(docs.toDashboard(shipperId)))
             }
     }
 
@@ -85,20 +124,34 @@ object ShipperOrderFirestoreRepository {
         val customerName = getString("customerName")
             ?.takeIf { it.isNotBlank() && it != customerEmail }
             ?: customerEmail.substringBefore("@").ifBlank { "Customer" }
-        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val statusStr = getString("status") ?: "READY"
         val paymentMethod = getString("paymentMethod").toPaymentMethodLabel()
+        val amount = if (statusStr == "DELIVERED") {
+            getDouble("deliveryFee") ?: 0.0
+        } else {
+            getDouble("finalTotal") ?: getDouble("total") ?: 0.0
+        }
+        val paymentLabel = if (statusStr == "DELIVERED") {
+            buildDeliveredPaymentLabel()
+        } else {
+            paymentMethod.uppercase(Locale.US)
+        }
 
         return ShipperDeliveryUiModel(
             orderId = id,
             displayOrderCode = displayOrderCode(),
             customerName = customerName,
             address = getString("deliveryAddress").orNotProvided(),
-            etaLabel = "",
-            paymentLabel = paymentMethod.uppercase(Locale.US),
-            paymentAmount = String.format(Locale.US, "$%.2f", total),
-            status = if (statusStr == "DELIVERING") ShipperDeliveryStatus.ACTIVE else ShipperDeliveryStatus.ASSIGNED,
+            etaLabel = deliveredAtLabel(),
+            paymentLabel = paymentLabel,
+            paymentAmount = String.format(Locale.US, "$%.2f", amount),
+            status = when (statusStr) {
+                "DELIVERING" -> ShipperDeliveryStatus.ACTIVE
+                "DELIVERED" -> ShipperDeliveryStatus.DELIVERED
+                else -> ShipperDeliveryStatus.ASSIGNED
+            },
             shipperId = getString("shipperId").orEmpty(),
+            rawStatus = statusStr,
         )
     }
 
@@ -172,6 +225,70 @@ object ShipperOrderFirestoreRepository {
             status == "DELIVERED" -> "Paid"
             else -> "Unpaid"
         }
+    }
+
+    private fun List<DocumentSnapshot>.toDashboard(shipperId: String): ShipperDashboardUiModel {
+        val activeOrders = mapNotNull { doc ->
+            val status = doc.statusValue()
+            if (status !in activeStatuses || !doc.isVisibleActiveOrder(shipperId, status)) {
+                return@mapNotNull null
+            }
+            doc.toShipperDeliveryUiModel()
+        }.sortedWith(
+            compareBy<ShipperDeliveryUiModel>(
+                { if (it.rawStatus == "DELIVERING") 0 else 1 },
+                { it.displayOrderCode },
+            ),
+        )
+
+        val deliveredDocs = filter { doc ->
+            doc.statusValue() == "DELIVERED" && doc.isCompletedByShipper(shipperId)
+        }
+        val deliveredOrders = deliveredDocs
+            .sortedByDescending { it.getTimestamp("deliveredAt")?.seconds ?: 0L }
+            .map { it.toShipperDeliveryUiModel() }
+
+        return ShipperDashboardUiModel(
+            activeOrders = activeOrders,
+            deliveredOrders = deliveredOrders,
+            activeOrderCount = activeOrders.size,
+            readyOrderCount = activeOrders.count { it.rawStatus in readyStatuses },
+            completedOrderCount = deliveredOrders.size,
+            deliveryEarnings = deliveredDocs.sumOf { it.getDouble("deliveryFee") ?: 0.0 },
+        )
+    }
+
+    private fun DocumentSnapshot.statusValue(): String {
+        return getString("status").orEmpty().uppercase(Locale.US)
+    }
+
+    private fun DocumentSnapshot.isVisibleActiveOrder(shipperId: String, status: String): Boolean {
+        val assignedShipperId = getString("shipperId").orEmpty()
+        return when (status) {
+            "READY", "READY_FOR_DELIVERY", "READY_TO_DELIVER" ->
+                assignedShipperId.isBlank() || assignedShipperId == shipperId
+            "ASSIGNED_TO_SHIPPER", "DELIVERING" -> assignedShipperId == shipperId
+            else -> false
+        }
+    }
+
+    private fun DocumentSnapshot.isCompletedByShipper(shipperId: String): Boolean {
+        return getString("shipperId") == shipperId || getString("collectedByShipperId") == shipperId
+    }
+
+    private fun DocumentSnapshot.deliveredAtLabel(): String {
+        val deliveredAt = getTimestamp("deliveredAt") ?: return ""
+        return "Delivered ${deliveredAt.toDisplayDateTime()}"
+    }
+
+    private fun DocumentSnapshot.buildDeliveredPaymentLabel(): String {
+        val paymentStatus = getString("paymentStatus").orEmpty().ifBlank { "UNPAID" }
+        val cashLabel = if (getBoolean("cashCollected") == true) "Cash collected" else "Cash pending"
+        return "${paymentStatus.uppercase(Locale.US)} • $cashLabel"
+    }
+
+    private fun Timestamp.toDisplayDateTime(): String {
+        return SimpleDateFormat("MMM dd, hh:mm a", Locale.US).format(Date(seconds * 1000))
     }
 
     private const val NOT_PROVIDED = "Not provided"
