@@ -178,6 +178,8 @@
     <string name="cart_discount">Discount</string>
     <string name="cart_total">Total</string>
     <string name="cart_proceed_checkout">Proceed to Checkout →</string>
+    <string name="cart_promo_applied_successfully">Promo applied successfully.</string>
+    <string name="cart_promo_code_not_valid">Promo code is not valid.</string>
     <string name="cart_remove_item">Remove item</string>
     <string name="cart_increase_quantity">Increase quantity</string>
     <string name="cart_decrease_quantity">Decrease quantity</string>
@@ -194,6 +196,9 @@
     <string name="checkout_card_last4">**** 4432</string>
     <string name="checkout_apple_pay">Apple Pay</string>
     <string name="checkout_cash_on_arrival">Cash on Arrival</string>
+    <string name="checkout_cash_on_delivery">Cash on Delivery</string>
+    <string name="checkout_coming_soon">Coming soon</string>
+    <string name="checkout_payment_method_coming_soon">This payment method is coming soon.</string>
     <string name="checkout_order_note">ORDER NOTE</string>
     <string name="checkout_order_note_hint">e.g. Please leave by the door, don\'t ring the bell...</string>
     <string name="checkout_your_order">YOUR ORDER</string>
@@ -208,6 +213,7 @@
     <string name="checkout_prices_changed">Prices have changed. Please review your order again.</string>
     <string name="checkout_promo_invalid">Promo code is no longer valid. Please review your order again.</string>
     <string name="checkout_verify_failed">Could not verify your order. Please try again.</string>
+    <string name="checkout_place_order_failed">Could not place order. Please try again.</string>
     <string name="checkout_store_pickup_missing">Store pickup address is not configured yet.</string>
     <string name="checkout_store_closed">Store is not accepting orders right now.</string>
     <string name="checkout_delivery_address_missing">Please add a delivery address before placing your order.</string>

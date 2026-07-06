@@ -218,7 +218,8 @@
                     android:id="@+id/paymentCreditCard"
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
-                    android:background="@drawable/bg_payment_selected"
+                    android:alpha="0.55"
+                    android:background="@drawable/bg_payment_unselected"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
@@ -236,7 +237,7 @@
                         android:layout_marginStart="14dp"
                         android:layout_weight="1"
                         android:text="@string/checkout_credit_card"
-                        android:textColor="@color/pt_text_primary"
+                        android:textColor="@color/pt_text_secondary"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -244,8 +245,8 @@
                         android:id="@+id/tvCardLast4"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:text="@string/checkout_card_last4"
-                        android:textColor="@color/pt_text_primary"
+                        android:text="@string/checkout_coming_soon"
+                        android:textColor="@color/pt_text_muted"
                         android:textSize="13sp"
                         android:textStyle="bold" />
 
@@ -256,6 +257,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
                     android:layout_marginTop="9dp"
+                    android:alpha="0.55"
                     android:background="@drawable/bg_payment_unselected"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
@@ -269,12 +271,21 @@
                         android:src="@drawable/ic_apple_pay" />
 
                     <TextView
-                        android:layout_width="match_parent"
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="14dp"
+                        android:layout_weight="1"
                         android:text="@string/checkout_apple_pay"
                         android:textColor="@color/pt_text_secondary"
                         android:textSize="15sp" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="@string/checkout_coming_soon"
+                        android:textColor="@color/pt_text_muted"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
 
                 </LinearLayout>
 
@@ -283,7 +294,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="54dp"
                     android:layout_marginTop="9dp"
-                    android:background="@drawable/bg_payment_unselected"
+                    android:background="@drawable/bg_payment_selected"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
@@ -292,15 +303,15 @@
                     <ImageView
                         android:layout_width="24dp"
                         android:layout_height="24dp"
-                        android:contentDescription="@string/checkout_cash_on_arrival"
+                        android:contentDescription="@string/checkout_cash_on_delivery"
                         android:src="@drawable/ic_cash" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="14dp"
-                        android:text="@string/checkout_cash_on_arrival"
-                        android:textColor="@color/pt_text_secondary"
+                        android:text="@string/checkout_cash_on_delivery"
+                        android:textColor="@color/pt_text_primary"
                         android:textSize="15sp" />
 
                 </LinearLayout>

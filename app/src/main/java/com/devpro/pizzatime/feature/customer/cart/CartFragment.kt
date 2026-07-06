@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.customer.cart
 
+import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,6 +15,7 @@ import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCartBinding
 import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
+import com.devpro.pizzatime.feature.customer.checkout.CheckoutConsistencyRepository
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import java.util.Locale
 
@@ -62,7 +64,12 @@ class CartFragment : Fragment() {
         }
 
         if (!hasItems) {
+            CartStore.clearPromo()
             return
+        }
+
+        if (CartStore.selectedPromoCode.isNotBlank()) {
+            binding.tvPromoHint.setText(CartStore.selectedPromoCode)
         }
 
         cartItems.forEachIndexed { index, item ->
@@ -129,19 +136,16 @@ class CartFragment : Fragment() {
         return parts.joinToString(" • ")
     }
 
+    @SuppressLint("SetTextI18n")
     private fun renderSummary(cartItems: List<CartItemUiModel>) {
         val subtotal = cartItems.sumOf { item ->
             item.price * item.quantity
         }
 
         val deliveryFee = FakeCartData.deliveryFee
-        val discount = if (subtotal > 0) {
-            FakeCartData.discount
-        } else {
-            0.0
-        }
+        val discount = CartStore.promoDiscountAmount.coerceIn(0.0, subtotal)
 
-        val total = subtotal + deliveryFee - discount
+        val total = (subtotal - discount).coerceAtLeast(0.0) + deliveryFee
 
         binding.tvSubtotal.text = formatMoney(subtotal)
         binding.tvDeliveryFee.text = formatMoney(deliveryFee)
@@ -150,16 +154,12 @@ class CartFragment : Fragment() {
     }
 
     private fun setupActions() {
-        binding.btnMenu.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
         binding.btnApplyPromo.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                "Promo applied demo",
-                Toast.LENGTH_SHORT
-            ).show()
+            applyPromoCode()
         }
 
         binding.btnProceedCheckout.setOnClickListener {
@@ -176,8 +176,61 @@ class CartFragment : Fragment() {
             .commit()
     }
 
+    private fun applyPromoCode() {
+        val promoCode = binding.tvPromoHint.text?.toString().orEmpty().trim()
+        val subtotal = CartStore.items.sumOf { item ->
+            item.price * item.quantity
+        }
+        if (promoCode.isBlank() || subtotal <= 0.0) {
+            clearInvalidPromo()
+            return
+        }
+
+        CheckoutConsistencyRepository.validatePromoCode(
+            promoCode = promoCode,
+            subtotal = subtotal,
+        ) { result ->
+            if (_binding == null) return@validatePromoCode
+            result
+                .onSuccess { promoResult ->
+                    when (promoResult) {
+                        is CheckoutConsistencyRepository.PromoValidationResult.Valid -> {
+                            CartStore.setPromo(
+                                code = promoResult.promoCode,
+                                discountAmount = promoResult.discount,
+                            )
+                            binding.tvPromoHint.setText(promoResult.promoCode)
+                            renderSummary(CartStore.items)
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.cart_promo_applied_successfully,
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                        }
+
+                        CheckoutConsistencyRepository.PromoValidationResult.Invalid -> {
+                            clearInvalidPromo()
+                        }
+                    }
+                }
+                .onFailure {
+                    clearInvalidPromo()
+                }
+        }
+    }
+
+    private fun clearInvalidPromo() {
+        CartStore.clearPromo()
+        renderSummary(CartStore.items)
+        Toast.makeText(
+            requireContext(),
+            R.string.cart_promo_code_not_valid,
+            Toast.LENGTH_SHORT,
+        ).show()
+    }
+
     private fun formatMoney(value: Double): String {
-        return String.format(Locale.US, "\$%.2f", value)
+        return String.format(Locale.US, "$%.2f", value)
     }
 
     private val Int.dp: Int

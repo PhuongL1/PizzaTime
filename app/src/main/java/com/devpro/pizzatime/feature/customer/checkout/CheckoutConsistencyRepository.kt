@@ -36,7 +36,7 @@ object CheckoutConsistencyRepository {
                     return@addOnSuccessListener
                 }
 
-                validatePromo(
+                validatePromoCode(
                     promoCode = promoCode,
                     subtotal = productResult.items.sumOf { it.price * it.quantity },
                     onResult = { promoResult ->
@@ -102,7 +102,7 @@ object CheckoutConsistencyRepository {
         }
     }
 
-    private fun validatePromo(
+    fun validatePromoCode(
         promoCode: String,
         subtotal: Double,
         onResult: (Result<PromoValidationResult>) -> Unit,
@@ -161,7 +161,7 @@ object CheckoutConsistencyRepository {
         data object Unavailable : ProductValidationResult()
     }
 
-    private sealed class PromoValidationResult {
+    sealed class PromoValidationResult {
         data class Valid(val promoCode: String, val discount: Double) : PromoValidationResult()
         data object Invalid : PromoValidationResult()
     }

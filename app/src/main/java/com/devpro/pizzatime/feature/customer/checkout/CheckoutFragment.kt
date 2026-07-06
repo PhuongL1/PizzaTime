@@ -57,6 +57,8 @@ class CheckoutFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         orderItems = CartStore.items.map { it.toCheckoutItem() }
+        appliedPromoCode = CartStore.selectedPromoCode
+        appliedDiscount = CartStore.promoDiscountAmount
         renderDeliveryDetails(
             name = getString(R.string.checkout_delivery_name),
             phone = getString(R.string.checkout_delivery_phone),
@@ -66,6 +68,7 @@ class CheckoutFragment : Fragment() {
         renderSummary()
         setupMapPickerResult()
         setupActions()
+        renderPaymentMethods()
         loadCustomerDeliveryDetails()
         loadStoreSettings()
     }
@@ -179,15 +182,15 @@ class CheckoutFragment : Fragment() {
         }
 
         binding.paymentCreditCard.setOnClickListener {
-            Toast.makeText(requireContext(), "Credit Card selected", Toast.LENGTH_SHORT).show()
+            showToast(R.string.checkout_payment_method_coming_soon)
         }
 
         binding.paymentApplePay.setOnClickListener {
-            Toast.makeText(requireContext(), "Apple Pay selected", Toast.LENGTH_SHORT).show()
+            showToast(R.string.checkout_payment_method_coming_soon)
         }
 
         binding.paymentCash.setOnClickListener {
-            Toast.makeText(requireContext(), "Cash on Arrival selected", Toast.LENGTH_SHORT).show()
+            renderPaymentMethods()
         }
 
         binding.btnPlaceOrder.setOnClickListener {
@@ -255,6 +258,7 @@ class CheckoutFragment : Fragment() {
                 orderItems = CartStore.items.map { it.toCheckoutItem() }
                 appliedDiscount = 0.0
                 appliedPromoCode = ""
+                CartStore.clearPromo()
                 renderOrderItems(orderItems)
                 updateDeliveryEstimate()
                 setPlaceOrderLoading(false)
@@ -264,6 +268,7 @@ class CheckoutFragment : Fragment() {
             CheckoutConsistencyResult.PromoInvalid -> {
                 appliedDiscount = 0.0
                 appliedPromoCode = ""
+                CartStore.clearPromo()
                 updateDeliveryEstimate()
                 setPlaceOrderLoading(false)
                 showToast(R.string.checkout_promo_invalid)
@@ -274,6 +279,7 @@ class CheckoutFragment : Fragment() {
                 orderItems = CartStore.items.map { it.toCheckoutItem() }
                 appliedDiscount = validationResult.discount
                 appliedPromoCode = validationResult.promoCode
+                CartStore.setPromo(validationResult.promoCode, validationResult.discount)
                 updateDeliveryEstimate()
                 loadStoreSettingsForOrder { storeSettings, deliveryEstimate ->
                     createValidatedOrder(
@@ -383,14 +389,22 @@ class CheckoutFragment : Fragment() {
                     }
                     .onFailure { error ->
                         setPlaceOrderLoading(false)
-                        Toast.makeText(
-                            requireContext(),
-                            error.message ?: "Failed to place order.",
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        showToast(R.string.checkout_place_order_failed)
                     }
             },
         )
+    }
+
+    private fun renderPaymentMethods() = with(binding) {
+        paymentCash.setBackgroundResource(R.drawable.bg_payment_selected)
+        paymentCreditCard.setBackgroundResource(R.drawable.bg_payment_unselected)
+        paymentApplePay.setBackgroundResource(R.drawable.bg_payment_unselected)
+        paymentCash.alpha = 1.0f
+        paymentCreditCard.alpha = 0.55f
+        paymentApplePay.alpha = 0.55f
+        paymentCreditCard.isEnabled = true
+        paymentApplePay.isEnabled = true
+        paymentCash.isEnabled = true
     }
 
     private fun setPlaceOrderLoading(loading: Boolean) {

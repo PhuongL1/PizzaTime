@@ -34,11 +34,11 @@
                 android:paddingEnd="8dp">
 
                 <ImageView
-                    android:id="@+id/btnMenu"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:contentDescription="@string/menu_drawer_content_description"
-                    android:src="@drawable/ic_menu" />
+                    android:id="@+id/btnBack"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp"
+                    android:contentDescription="@string/detail_back_content_description"
+                    android:src="@drawable/ic_back" />
 
                 <TextView
                     android:id="@+id/tvCartBrand"

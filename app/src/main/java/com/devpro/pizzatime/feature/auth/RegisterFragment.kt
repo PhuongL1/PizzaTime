@@ -16,7 +16,10 @@ class RegisterFragment : Fragment() {
     private lateinit var viewModel: RegisterViewModel
 
     private var _binding: FragmentRegisterBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentRegisterBinding
+        get() = checkNotNull(_binding) {
+            "FragmentRegisterBinding is only valid between onCreateView and onDestroyView."
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,

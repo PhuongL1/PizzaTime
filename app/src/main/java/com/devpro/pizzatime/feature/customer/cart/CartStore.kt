@@ -6,6 +6,10 @@ object CartStore {
 
     private val cartItems = mutableListOf<CartItemUiModel>()
     private var ownerUserId: String? = null
+    var selectedPromoCode: String = ""
+        private set
+    var promoDiscountAmount: Double = 0.0
+        private set
 
     val items: List<CartItemUiModel>
         get() {
@@ -23,6 +27,7 @@ object CartStore {
         val previousOwnerId = ownerUserId
         if (previousOwnerId != null && previousOwnerId != newOwnerId) {
             cartItems.clear()
+            clearPromo()
         }
 
         ownerUserId = newOwnerId
@@ -31,6 +36,7 @@ object CartStore {
     fun clearForLogout() {
         ownerUserId = null
         cartItems.clear()
+        clearPromo()
     }
 
     fun addItem(item: CartItemUiModel) {
@@ -45,6 +51,7 @@ object CartStore {
         } else {
             cartItems.add(item)
         }
+        clearPromo()
     }
 
     fun increaseQuantity(cartKey: String) {
@@ -54,6 +61,7 @@ object CartStore {
 
         val item = cartItems[index]
         cartItems[index] = item.copy(quantity = item.quantity + 1)
+        clearPromo()
     }
 
     fun decreaseQuantity(cartKey: String) {
@@ -68,21 +76,35 @@ object CartStore {
         } else {
             cartItems.removeAt(index)
         }
+        clearPromo()
     }
 
     fun removeItem(cartKey: String) {
         syncOwnerWithCurrentUser()
         cartItems.removeAll { it.cartKey == cartKey }
+        clearPromo()
     }
 
     fun replaceItems(items: List<CartItemUiModel>) {
         syncOwnerWithCurrentUser()
         cartItems.clear()
         cartItems.addAll(items)
+        clearPromo()
     }
 
     fun clear() {
         cartItems.clear()
+        clearPromo()
+    }
+
+    fun setPromo(code: String, discountAmount: Double) {
+        selectedPromoCode = code.trim()
+        promoDiscountAmount = discountAmount.coerceAtLeast(0.0)
+    }
+
+    fun clearPromo() {
+        selectedPromoCode = ""
+        promoDiscountAmount = 0.0
     }
 
     private fun syncOwnerWithCurrentUser() {

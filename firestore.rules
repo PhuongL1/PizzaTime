@@ -76,10 +76,77 @@ service cloud.firestore {
         ]);
     }
 
-    function validOrderCreate() {
+    function validOrderCodeId(orderId) {
+      return orderId.matches('^[a-z]{2}-[0-9]{4}$');
+    }
+
+    function validOrderCreate(orderId) {
       return isCustomer()
+        && validOrderCodeId(orderId)
         && request.resource.data.customerId == request.auth.uid
-        && request.resource.data.status == "PENDING";
+        && request.resource.data.orderId == orderId
+        && request.resource.data.orderCodeKey == orderId
+        && request.resource.data.orderCode == "#" + orderId
+        && request.resource.data.status == "PENDING"
+        && request.resource.data.paymentMethod == "CASH_ON_DELIVERY"
+        && request.resource.data.paymentStatus == "UNPAID"
+        && request.resource.data.cashCollected == false
+        && request.resource.data.items is list
+        && request.resource.data.itemsSubtotal is number
+        && request.resource.data.discountAmount is number
+        && request.resource.data.deliveryFee is number
+        && request.resource.data.finalTotal is number
+        && request.resource.data.total == request.resource.data.finalTotal
+        && request.resource.data.keys().hasOnly([
+          "customerId",
+          "customerEmail",
+          "customerName",
+          "customerPhone",
+          "storeName",
+          "pickupAddress",
+          "pickupLat",
+          "pickupLng",
+          "storePhone",
+          "status",
+          "orderType",
+          "paymentMethod",
+          "paymentStatus",
+          "cashCollected",
+          "deliveryAddress",
+          "deliveryLat",
+          "deliveryLng",
+          "distanceKm",
+          "itemsSubtotal",
+          "subtotal",
+          "deliveryFee",
+          "discountAmount",
+          "discount",
+          "promoCode",
+          "finalTotal",
+          "total",
+          "note",
+          "items",
+          "statusHistory",
+          "createdAt",
+          "updatedAt",
+          "orderId",
+          "orderCodeKey",
+          "orderCode"
+        ]);
+    }
+
+    function canGetOrder(orderId) {
+      return isAdmin()
+        || isStaff()
+        || isKitchen()
+        || isShipper()
+        || (
+          isCustomer()
+          && (
+            (!exists(/databases/$(database)/documents/orders/$(orderId)) && validOrderCodeId(orderId))
+            || resource.data.customerId == request.auth.uid
+          )
+        );
     }
 
     function orderStatusOnlyUpdate() {
@@ -210,8 +277,9 @@ service cloud.firestore {
     }
 
     match /orders/{orderId} {
-      allow create: if validOrderCreate();
-      allow get, list: if isAdmin()
+      allow create: if validOrderCreate(orderId);
+      allow get: if canGetOrder(orderId);
+      allow list: if isAdmin()
         || isStaff()
         || isKitchen()
         || isShipper()

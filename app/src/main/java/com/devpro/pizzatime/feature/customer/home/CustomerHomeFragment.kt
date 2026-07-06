@@ -152,10 +152,10 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun renderFilteredProducts() {
-        val filteredProducts = allAvailableProducts.filter { product ->
-            product.matchesCategory(selectedCategory) && product.matchesSearch(searchQuery)
-        }
-        renderBestSellers(filteredProducts.map { it.toBestSellerUiModel() })
+        renderBestSellers(
+                resolveBestSellerProducts()
+                    .map { it.toBestSellerUiModel() },
+            )
     }
 
     private fun renderFeaturedProduct() {
@@ -176,7 +176,8 @@ class CustomerHomeFragment : Fragment() {
             if (_binding == null) return@loadBestSellingProductIds
             result
                 .onSuccess { productIds ->
-                    bestSellingProductIds = productIds
+                    bestSellingProductIds = productIds.take(BEST_SELLER_LIMIT)
+                    renderFilteredProducts()
                     renderChefSelections(resolveBestSellingProducts())
                 }
                 .onFailure {
@@ -193,6 +194,18 @@ class CustomerHomeFragment : Fragment() {
             .distinctBy { it.id }
             .take(CHEF_SELECTION_LIMIT)
             .mapIndexed { index, product -> product.toChefPizzaUiModel(index + 1) }
+    }
+
+    private fun resolveBestSellerProducts(): List<ProductUiModel> {
+        val productsById = allAvailableProducts.associateBy { it.id }
+        val rankedProducts = bestSellingProductIds.mapNotNull { productsById[it] }
+        val fallbackProducts = allAvailableProducts.sortedWith(
+            compareByDescending<ProductUiModel> { it.rating }
+                .thenBy { it.name.lowercase(Locale.US) },
+        )
+        return (rankedProducts + fallbackProducts)
+            .distinctBy { it.id }
+            .take(BEST_SELLER_LIMIT)
     }
 
     private fun renderChefSelectionFallback() {
@@ -383,7 +396,7 @@ class CustomerHomeFragment : Fragment() {
     private fun ProductUiModel.toBestSellerUiModel() = BestSellerPizzaUiModel(
         id = id,
         name = name,
-        description = description,
+        description = description.shortQuickInfo(),
         price = priceText,
         rating = ratingText,
         imageRes = R.drawable.img_welcome_hero,
@@ -392,6 +405,15 @@ class CustomerHomeFragment : Fragment() {
         crustOptions = crustOptions,
         toppingOptions = toppingOptions,
     )
+
+    private fun String.shortQuickInfo(): String {
+        val compact = trim().replace(Regex("\\s+"), " ")
+        return if (compact.length <= QUICK_INFO_MAX_LENGTH) {
+            compact
+        } else {
+            compact.take(QUICK_INFO_MAX_LENGTH).trimEnd() + "..."
+        }
+    }
 
     private fun ProductUiModel.toChefPizzaUiModel(rank: Int) = ChefPizzaUiModel(
         id = id,
@@ -440,5 +462,7 @@ class CustomerHomeFragment : Fragment() {
 
     private companion object {
         const val CHEF_SELECTION_LIMIT = 5
+        const val BEST_SELLER_LIMIT = 3
+        const val QUICK_INFO_MAX_LENGTH = 58
     }
 }

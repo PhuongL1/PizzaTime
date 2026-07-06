@@ -73,6 +73,8 @@
                     android:layout_height="wrap_content"
                     android:fontFamily="serif"
                     android:includeFontPadding="false"
+                    android:ellipsize="end"
+                    android:maxLines="1"
                     android:textColor="#151312"
                     android:textSize="20sp"
                     tools:text="Diavola Noir" />
@@ -82,7 +84,9 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
+                    android:ellipsize="end"
                     android:lineSpacingExtra="2dp"
+                    android:maxLines="2"
                     android:textColor="#756A64"
                     android:textSize="13sp"
                     tools:text="Spicy salami, honey, activated charcoal dough." />

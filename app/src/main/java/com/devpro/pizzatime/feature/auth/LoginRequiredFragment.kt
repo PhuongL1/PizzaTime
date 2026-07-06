@@ -11,7 +11,10 @@ import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 class LoginRequiredFragment : Fragment() {
 
     private var _binding: FragmentLoginRequiredBinding? = null
-    private val binding get() = _binding!!
+    private val binding: FragmentLoginRequiredBinding
+        get() = checkNotNull(_binding) {
+            "FragmentLoginRequiredBinding is only valid between onCreateView and onDestroyView."
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
