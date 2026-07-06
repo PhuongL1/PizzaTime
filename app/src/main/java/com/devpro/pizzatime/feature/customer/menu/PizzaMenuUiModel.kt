@@ -9,6 +9,8 @@ data class PizzaMenuUiModel(
     val description: String,
     val price: String,
     val rating: String,
+    val averageRating: Double = 0.0,
+    val ratingCount: Int = 0,
     @param:DrawableRes val imageRes: Int,
     val imageUrl: String = "",
     val categoryId: String = "",

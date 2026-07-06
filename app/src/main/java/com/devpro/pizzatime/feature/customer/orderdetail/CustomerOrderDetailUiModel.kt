@@ -8,6 +8,7 @@ data class CustomerOrderDetailUiModel(
     val statusLabel: String,
     val orderTime: String,
     @param:DrawableRes val heroImageRes: Int,
+    val heroImageUrl: String = "",
     val heroMessage: String,
     val items: List<CustomerOrderItemUiModel>,
     val bill: CustomerBillUiModel,
@@ -25,11 +26,13 @@ data class CustomerOrderDetailUiModel(
 )
 
 data class CustomerOrderItemUiModel(
+    val productId: String,
     val quantity: Int,
     val name: String,
     val description: String,
     val price: Double,
     @param:DrawableRes val imageRes: Int?,
+    val imageUrl: String = "",
 )
 
 data class CustomerBillUiModel(

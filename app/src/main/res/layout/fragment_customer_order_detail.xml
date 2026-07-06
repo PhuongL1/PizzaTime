@@ -567,6 +567,23 @@
                 android:textStyle="bold"
                 android:visibility="gone" />
 
+            <TextView
+                android:id="@+id/btnRateOrder"
+                android:layout_width="match_parent"
+                android:layout_height="50dp"
+                android:layout_marginTop="14dp"
+                android:background="@drawable/bg_customer_order_detail_reorder_button"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:gravity="center"
+                android:letterSpacing="0.12"
+                android:text="@string/rate_order"
+                android:textColor="@color/pt_text_dark"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="74dp" />

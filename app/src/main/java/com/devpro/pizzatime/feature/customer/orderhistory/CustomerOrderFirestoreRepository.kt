@@ -94,15 +94,18 @@ object CustomerOrderFirestoreRepository {
         val createdAt = getTimestamp("createdAt")
         val rawItems = get("items") as? List<*>
         val rawStatusHistory = get("statusHistory") as? List<*>
+        val items = rawItems?.mapNotNull { it.toOrderItem() } ?: emptyList()
+        val heroItem = items.maxByOrNull { it.price }
 
         return CustomerOrderDetailUiModel(
             orderId = id,
             displayOrderCode = displayOrderCode(),
             statusLabel = statusStr,
             orderTime = createdAt?.toDisplayTime() ?: "",
-            heroImageRes = R.drawable.img_pizza_time,
+            heroImageRes = heroItem?.imageRes ?: R.drawable.img_pizza_time,
+            heroImageUrl = heroItem?.imageUrl.orEmpty(),
             heroMessage = mapStatusMessage(statusStr),
-            items = rawItems?.mapNotNull { it.toOrderItem() } ?: emptyList(),
+            items = items,
             bill = CustomerBillUiModel(
                 subtotal = subtotal,
                 deliveryFee = deliveryFee,
@@ -136,14 +139,36 @@ object CustomerOrderFirestoreRepository {
         val map = this as? Map<*, *> ?: return null
         val name = map["name"] as? String ?: return null
         val quantity = (map["quantity"] as? Long)?.toInt() ?: 1
-        val unitPrice = map["unitPrice"] as? Double ?: 0.0
+        val unitPrice = map["unitPrice"] as? Double ?: map["price"] as? Double ?: 0.0
+        val productId = (map["productId"] as? String ?: map["id"] as? String).orEmpty().ifBlank {
+            name.lowercase(Locale.US).replace(Regex("\\s+"), "_")
+        }
         return CustomerOrderItemUiModel(
+            productId = productId,
             quantity = quantity,
             name = name,
-            description = "",
+            description = buildItemDescription(map),
             price = unitPrice * quantity,
             imageRes = null,
+            imageUrl = (map["imageUrl"] as? String).orEmpty(),
         )
+    }
+
+    private fun buildItemDescription(map: Map<*, *>): String {
+        val pieces = buildList {
+            (map["selectedSize"] as? String)?.trim().orEmpty().takeIf { it.isNotBlank() }?.let { add(it) }
+            (map["selectedCrust"] as? String)?.trim().orEmpty().takeIf { it.isNotBlank() }?.let { add(it) }
+            val toppings = (map["selectedToppings"] as? List<*>)?.mapNotNull { it as? String }.orEmpty()
+            if (toppings.isNotEmpty()) {
+                add(toppings.joinToString(", "))
+            }
+        }
+
+        return if (pieces.isEmpty()) {
+            (map["description"] as? String).orEmpty()
+        } else {
+            pieces.joinToString(" • ")
+        }
     }
 
     private fun mapHistoryStatus(statusStr: String): CustomerOrderHistoryStatus {
@@ -256,4 +281,3 @@ object CustomerOrderFirestoreRepository {
     private const val STATUS_PENDING = "PENDING"
     private const val STATUS_CANCELLED = "CANCELLED"
 }
-

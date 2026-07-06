@@ -216,6 +216,43 @@ service cloud.firestore {
         || request.resource.data.statusHistory is list;
     }
 
+    function validProductRatingUpdate() {
+      return isCustomer()
+        && request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          "averageRating",
+          "ratingCount",
+          "ratingTotal",
+          "updatedAt"
+        ])
+        && request.resource.data.averageRating is number
+        && request.resource.data.ratingCount is int
+        && request.resource.data.ratingTotal is int
+        && request.resource.data.averageRating >= 0
+        && request.resource.data.averageRating <= 5
+        && request.resource.data.ratingCount >= 0
+        && request.resource.data.ratingTotal >= 0;
+    }
+
+    function validProductReviewWrite(reviewId) {
+      return isCustomer()
+        && request.resource.data.keys().hasOnly([
+          "reviewId",
+          "orderId",
+          "productId",
+          "customerId",
+          "rating",
+          "createdAt",
+          "updatedAt"
+        ])
+        && request.resource.data.reviewId == reviewId
+        && request.resource.data.customerId == request.auth.uid
+        && request.resource.data.rating is int
+        && request.resource.data.rating >= 1
+        && request.resource.data.rating <= 5
+        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.customerId == request.auth.uid
+        && get(/databases/$(database)/documents/orders/$(request.resource.data.orderId)).data.status == "DELIVERED";
+    }
+
     function statusTransition(fromStatus, toStatus) {
       return resource.data.status == fromStatus
         && request.resource.data.status == toStatus;
@@ -272,7 +309,15 @@ service cloud.firestore {
 
     match /products/{productId} {
       allow read: if isActiveUser();
-      allow write: if isAdmin();
+      allow update: if isAdmin() || validProductRatingUpdate();
+      allow create, delete: if isAdmin();
+    }
+
+    match /productReviews/{reviewId} {
+      allow read: if isActiveUser()
+        && (isAdmin() || resource.data.customerId == request.auth.uid);
+      allow create, update: if validProductReviewWrite(reviewId);
+      allow delete: if isAdmin() || (isCustomer() && resource.data.customerId == request.auth.uid);
     }
 
     match /promoCodes/{promoCodeId} {

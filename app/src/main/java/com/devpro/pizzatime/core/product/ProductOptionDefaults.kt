@@ -1,7 +1,7 @@
 package com.devpro.pizzatime.core.product
 
 object ProductOptionDefaults {
-    val sizeOptions = listOf("Small", "Medium", "Large", "Family")
+    val sizeOptions = listOf("Small", "Medium", "Large")
     val crustOptions = listOf("Classic", "Thin", "Cheese Burst")
     val toppingOptions = listOf("Extra Cheese", "Mushroom", "Olives", "Pepperoni")
 

@@ -6,6 +6,7 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
+import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -14,9 +15,11 @@ import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerFavoritesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteCompactBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteFeaturedBinding
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -29,7 +32,15 @@ class CustomerFavoritesFragment : Fragment() {
             "FragmentCustomerFavoritesBinding is only valid between onCreateView and onDestroyView."
         }
 
-    private var favoritesData: CustomerFavoritesUiModel = FakeCustomerFavoritesData.getFavorites()
+    private var favoritesData: CustomerFavoritesUiModel = CustomerFavoritesUiModel(
+        title = "",
+        subtitle = "",
+        favorites = emptyList(),
+        pairing = CustomerFavoritePairingUiModel(
+            title = "",
+            subtitle = "",
+        ),
+    )
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -42,31 +53,54 @@ class CustomerFavoritesFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         bindHeader()
-        renderFavorites()
         bindPairing()
         setupTopBar()
         setupBottomNav()
         loadFirestoreFavorites()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            setupTopBar()
+            loadFirestoreFavorites()
+        }
+    }
+
     private fun loadFirestoreFavorites() {
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            favoritesData = favoritesData.copy(favorites = emptyList())
+            renderFavorites()
+            return
+        }
+
         CustomerFavoritesFirestoreRepository.loadFavoriteProducts(uid) { result ->
             if (_binding == null) return@loadFavoriteProducts
-            result.onSuccess { favorites ->
-                favoritesData = favoritesData.copy(favorites = favorites)
-                renderFavorites()
-            }
+            result
+                .onSuccess { favorites ->
+                    favoritesData = favoritesData.copy(favorites = favorites)
+                    renderFavorites()
+                }
+                .onFailure {
+                    favoritesData = favoritesData.copy(favorites = emptyList())
+                    renderFavorites()
+                }
         }
     }
 
     private fun bindHeader() = with(binding) {
-        tvTitle.text = favoritesData.title
-        tvSubtitle.text = favoritesData.subtitle
+        tvTitle.text = getString(R.string.customer_menu_title_favorites)
+        tvSubtitle.text = getString(R.string.customer_menu_subtitle_favorites)
     }
 
     private fun renderFavorites() = with(binding.favoritesContainer) {
         removeAllViews()
+
+        if (favoritesData.favorites.isEmpty()) {
+            addView(createEmptyStateView(getString(R.string.no_favorites_yet)))
+            return
+        }
 
         favoritesData.favorites.forEach { item ->
             val itemView = when (item.cardType) {
@@ -111,6 +145,17 @@ class CustomerFavoritesFragment : Fragment() {
             removeFavorite(item)
         }
 
+        itemBinding.root.setOnClickListener {
+            openPizzaDetail(
+                productId = item.id,
+                name = item.name,
+                description = item.description,
+                price = formatPrice(item.price),
+                rating = getString(R.string.no_ratings),
+                imageUrl = item.imageUrl,
+            )
+        }
+
         return itemBinding.root
     }
 
@@ -133,6 +178,17 @@ class CustomerFavoritesFragment : Fragment() {
 
         itemBinding.btnHeart.setOnClickListener {
             removeFavorite(item)
+        }
+
+        itemBinding.root.setOnClickListener {
+            openPizzaDetail(
+                productId = item.id,
+                name = item.name,
+                description = item.description,
+                price = formatPrice(item.price),
+                rating = getString(R.string.no_ratings),
+                imageUrl = item.imageUrl,
+            )
         }
 
         return itemBinding.root
@@ -173,21 +229,38 @@ class CustomerFavoritesFragment : Fragment() {
     }
 
     private fun bindPairing() = with(binding) {
-        tvPairingTitle.text = favoritesData.pairing.title
-        tvPairingSubtitle.text = favoritesData.pairing.subtitle
+        tvPairingTitle.text = getString(R.string.customer_menu_title_favorites)
+        tvPairingSubtitle.text = getString(R.string.customer_menu_subtitle_favorites)
     }
 
     private fun setupTopBar() = with(binding) {
         bindCustomerTopBar(
             root = customerTopBar.root,
-            cartItemCount = 2,
+            cartItemCount = CartStore.items.sumOf { it.quantity },
         )
     }
+
     private fun setupBottomNav() = with(binding) {
         bindCustomerBottomNav(
             root = customerBottomNav.root,
             selectedTab = CustomerBottomNavTab.PROFILE,
         )
+    }
+
+    private fun createEmptyStateView(message: String): TextView {
+        return TextView(requireContext()).apply {
+            layoutParams = LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+            ).apply {
+                topMargin = 10.dp()
+            }
+            gravity = android.view.Gravity.CENTER
+            text = message
+            textSize = 15f
+            setTextColor(requireContext().getColor(R.color.pt_text_secondary_dark_bg))
+            setPadding(0, 20.dp(), 0, 20.dp())
+        }
     }
 
     private fun showToast(message: String) {
@@ -202,9 +275,26 @@ class CustomerFavoritesFragment : Fragment() {
         return (this * resources.displayMetrics.density).roundToInt()
     }
 
+    private fun openPizzaDetail(
+        productId: String,
+        name: String,
+        description: String,
+        price: String,
+        rating: String,
+        imageUrl: String,
+    ) {
+        openPizzaDetailScreen(
+            productId = productId,
+            productName = name,
+            productDescription = description,
+            productPrice = price,
+            productRating = rating,
+            productImageUrl = imageUrl,
+        )
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
     }
-
 }

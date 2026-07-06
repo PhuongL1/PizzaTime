@@ -20,6 +20,7 @@ import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.auth.FirebaseAuth
+import java.util.Locale
 
 class PizzaDetailFragment : Fragment() {
 
@@ -33,6 +34,7 @@ class PizzaDetailFragment : Fragment() {
     private var isFavorite = false
     private var selectedSize = ""
     private var selectedCrust = ""
+    private var basePrice = 0.0
     private val selectedToppings = linkedSetOf<String>()
 
     private lateinit var pizzaDetail: PizzaDetailUiModel
@@ -60,12 +62,13 @@ class PizzaDetailFragment : Fragment() {
         val args = arguments ?: return FakePizzaDetailData.truffleNoir
         val name = args.getString(ARG_NAME).orEmpty()
         if (name.isBlank()) return FakePizzaDetailData.truffleNoir
+        basePrice = parsePrice(args.getString(ARG_PRICE, ""))
         return PizzaDetailUiModel(
             id = args.getString(ARG_PRODUCT_ID, ""),
             name = name,
             description = args.getString(ARG_DESCRIPTION, ""),
             price = args.getString(ARG_PRICE, ""),
-            rating = args.getString(ARG_RATING, "0.0"),
+            rating = args.getString(ARG_RATING, getString(R.string.no_ratings)),
             time = "25-30 MIN",
             kcal = "840 KCAL",
             imageRes = R.drawable.img_welcome_hero,
@@ -89,20 +92,21 @@ class PizzaDetailFragment : Fragment() {
         binding.imgPizzaHero.contentDescription = item.name
         binding.tvPizzaName.text = item.name
         binding.tvPizzaDescription.text = item.description
-        binding.tvRating.text = getString(R.string.detail_rating_format, item.rating)
+        binding.tvRating.text = formatRatingText(item.rating)
         binding.tvTime.text = item.time
         binding.tvKcal.text = item.kcal
-        binding.btnAddToCart.text = getString(R.string.detail_add_to_cart_format, item.price)
         binding.tvQuantity.text = quantity.toString()
+        updateAddToCartLabel()
     }
 
     private fun renderSizeOptions(options: List<String>) {
         val sizes = ProductOptionDefaults.sizesOrDefault(options)
+            .filter { it.equals("Small", true) || it.equals("Medium", true) || it.equals("Large", true) }
+            .ifEmpty { ProductOptionDefaults.sizeOptions }
         val sizeViews = listOf(
             binding.btnSizeSmall,
             binding.btnSizeMedium,
             binding.btnSizeLarge,
-            binding.btnSizeFamily,
         )
         if (selectedSize.isBlank()) {
             selectedSize = sizes.firstOrNull().orEmpty()
@@ -112,14 +116,16 @@ class PizzaDetailFragment : Fragment() {
             val size = sizes.getOrNull(index)
             view.isVisible = size != null
             if (size != null) {
-                view.text = size.uppercase()
+                view.text = formatSizeLabel(size)
                 bindSizeState(view, selectedSize == size)
                 view.setOnClickListener {
                     selectedSize = size
                     renderSizeOptions(sizes)
+                    updateAddToCartLabel()
                 }
             }
         }
+        updateAddToCartLabel()
     }
 
     private fun renderCrustOptions(options: List<String>) {
@@ -171,6 +177,7 @@ class PizzaDetailFragment : Fragment() {
                     selectedToppings.remove(item.name)
                 }
                 updateToppingState(itemBinding, isSelected)
+                updateAddToCartLabel()
 
                 Toast.makeText(
                     requireContext(),
@@ -192,6 +199,7 @@ class PizzaDetailFragment : Fragment() {
 
             binding.toppingContainer.addView(itemBinding.root, params)
         }
+        updateAddToCartLabel()
     }
 
     private fun bindSizeState(view: TextView, selected: Boolean) {
@@ -255,11 +263,12 @@ class PizzaDetailFragment : Fragment() {
         }
 
         binding.btnAddToCart.setOnClickListener {
+            val unitPrice = computeCurrentUnitPrice()
             CartStore.addItem(
                 CartItemUiModel(
                     id = pizzaDetail.id,
                     name = pizzaDetail.name,
-                    price = parsePrice(pizzaDetail.price),
+                    price = unitPrice,
                     quantity = quantity,
                     imageRes = pizzaDetail.imageRes,
                     selectedSize = selectedSize,
@@ -351,6 +360,47 @@ class PizzaDetailFragment : Fragment() {
             .toDoubleOrNull() ?: 0.0
     }
 
+    private fun updateAddToCartLabel() {
+        binding.btnAddToCart.text = getString(
+            R.string.detail_add_to_cart_format,
+            formatPrice(computeCurrentUnitPrice()),
+        )
+    }
+
+    private fun computeCurrentUnitPrice(): Double {
+        val toppingPrice = selectedToppings.size * TOPPING_PRICE
+        return basePrice * sizeMultiplier(selectedSize) + toppingPrice
+    }
+
+    private fun sizeMultiplier(size: String): Double {
+        return when (size.trim().lowercase(Locale.US)) {
+            "medium" -> 1.12
+            "large" -> 1.20
+            else -> 1.0
+        }
+    }
+
+    private fun formatSizeLabel(size: String): String {
+        return when (size.trim().lowercase(Locale.US)) {
+            "small" -> getString(R.string.detail_size_small_display, getString(R.string.small), getString(R.string.ten_inches))
+            "medium" -> getString(R.string.detail_size_medium_display, getString(R.string.medium), getString(R.string.twelve_inches))
+            "large" -> getString(R.string.detail_size_large_display, getString(R.string.large), getString(R.string.fourteen_inches))
+            else -> size
+        }
+    }
+
+    private fun formatRatingText(rating: String): String {
+        val value = rating.trim()
+        if (value.isBlank() || value == "0.0" || value == "0" || value.equals(getString(R.string.no_ratings), true)) {
+            return getString(R.string.no_ratings)
+        }
+        return getString(R.string.detail_rating_format, value)
+    }
+
+    private fun formatPrice(value: Double): String {
+        return String.format(Locale.US, "$%.2f", value)
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
@@ -366,6 +416,7 @@ class PizzaDetailFragment : Fragment() {
         private const val ARG_SIZE_OPTIONS = "size_options"
         private const val ARG_CRUST_OPTIONS = "crust_options"
         private const val ARG_TOPPING_OPTIONS = "topping_options"
+        private const val TOPPING_PRICE = 0.49
 
         fun newInstance(
             productId: String,

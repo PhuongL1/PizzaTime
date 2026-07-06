@@ -154,13 +154,16 @@
     <string name="detail_info_time">25-30 MIN</string>
     <string name="detail_info_kcal">840 KCAL</string>
     <string name="detail_select_size">Select Size</string>
-    <string name="detail_size_small">SMALL</string>
-    <string name="detail_size_medium">MEDIUM</string>
-    <string name="detail_size_large">LARGE</string>
+    <string name="detail_size_small">Small</string>
+    <string name="detail_size_medium">Medium</string>
+    <string name="detail_size_large">Large</string>
     <string name="detail_size_family">FAMILY</string>
     <string name="detail_size_small_inch">10&quot;</string>
     <string name="detail_size_medium_inch">12&quot;</string>
     <string name="detail_size_large_inch">14&quot;</string>
+    <string name="detail_size_small_display">%1$s\n%2$s</string>
+    <string name="detail_size_medium_display">%1$s\n%2$s</string>
+    <string name="detail_size_large_display">%1$s\n%2$s</string>
     <string name="detail_crust_style">Crust Style</string>
     <string name="detail_crust_classic">Classic</string>
     <string name="detail_crust_thin_charcoal">Thin Charcoal</string>
@@ -919,7 +922,7 @@
     <string name="customer_favorites_saved_toast">%1$s saved to favorites</string>
     <string name="customer_favorites_removed_toast">%1$s removed from favorites</string>
     <string name="customer_favorites_update_failed">Could not update favorites.</string>
-    <string name="customer_favorites_login_required">Please log in to update favorites.</string>
+    <string name="customer_favorites_login_required">Please log in.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 
     <string name="customer_favorites_nav_menu">Menu</string>
@@ -975,6 +978,21 @@
     <string name="customer_promo_image_description">Promo image</string>
     <string name="customer_promo_cart_toast">Cart coming soon</string>
     <string name="customer_promo_coming_soon">%1$s coming soon</string>
+
+    <string name="no_favorites_yet">No favorites yet.</string>
+    <string name="no_ratings">No ratings</string>
+    <string name="rate_order">Rate order</string>
+    <string name="update_rating">Update rating</string>
+    <string name="rating_saved">Rating saved.</string>
+    <string name="could_not_save_rating">Could not save rating.</string>
+    <string name="select_a_rating">Select a rating.</string>
+    <string name="save_rating">Save</string>
+    <string name="small">Small</string>
+    <string name="medium">Medium</string>
+    <string name="large">Large</string>
+    <string name="ten_inches">10&quot;</string>
+    <string name="twelve_inches">12&quot;</string>
+    <string name="fourteen_inches">14&quot;</string>
 
     <string name="customer_promo_nav_menu">Menu</string>
     <string name="customer_promo_nav_orders">Orders</string>

@@ -6,18 +6,24 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
+import android.widget.RatingBar
+import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderDetailBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderDetailLineBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
+import com.devpro.pizzatime.feature.customer.rating.CustomerProductReviewFirestoreRepository
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
+import kotlin.math.roundToInt
 
 class CustomerOrderDetailFragment : Fragment() {
 
@@ -26,8 +32,13 @@ class CustomerOrderDetailFragment : Fragment() {
         get() = checkNotNull(_binding) {
             "FragmentCustomerOrderDetailBinding is only valid between onCreateView and onDestroyView."
         }
+
     private var currentOrderId: String = ""
+    private var currentOrderDetail: CustomerOrderDetailUiModel? = null
+    private var existingRatings: Map<String, Int> = emptyMap()
     private var isCancellingOrder = false
+    private var isLoadingRatings = false
+    private var isSubmittingRatings = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -62,18 +73,21 @@ class CustomerOrderDetailFragment : Fragment() {
 
     private fun loadOrder(orderId: String) {
         currentOrderId = orderId
+        existingRatings = emptyMap()
         if (isFirestoreOrderId(orderId)) {
             CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
                 if (_binding == null || !isAdded) return@loadOrderDetail
                 val detail = result.getOrElse {
                     FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
                 }
+                currentOrderDetail = detail
                 bindOrderDetail(detail)
+                loadRatingState(detail)
             }
         } else {
-            bindOrderDetail(
-                FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
-            )
+            val detail = FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
+            currentOrderDetail = detail
+            bindOrderDetail(detail)
         }
     }
 
@@ -88,14 +102,27 @@ class CustomerOrderDetailFragment : Fragment() {
             detail.displayOrderCode.removePrefix("#"),
         )
         tvOrderTime.text = detail.orderTime
-        ivHeroImage.setImageResource(detail.heroImageRes)
         tvHeroMessage.text = detail.heroMessage
+        detailImage(detail)
 
         bindItems(detail.items)
         bindBill(detail)
         bindAddress(detail)
         bindStatusHistory(detail.statusHistory)
+
+        val delivered = detail.statusLabel.uppercase(Locale.US) == "DELIVERED"
+        btnRateOrder.isVisible = delivered
+        btnRateOrder.text = if (existingRatings.isNotEmpty()) {
+            getString(R.string.update_rating)
+        } else {
+            getString(R.string.rate_order)
+        }
+
         btnCancelOrder.isVisible = detail.canCancel && isFirestoreOrderId(detail.orderId)
+    }
+
+    private fun detailImage(detail: CustomerOrderDetailUiModel) = with(binding) {
+        ivHeroImage.loadProductImage(detail.heroImageUrl, detail.heroImageRes)
     }
 
     private fun bindItems(items: List<CustomerOrderItemUiModel>) = with(binding.orderItemsContainer) {
@@ -112,7 +139,10 @@ class CustomerOrderDetailFragment : Fragment() {
             itemBinding.tvItemDescription.text = item.description
             itemBinding.tvItemPrice.text = formatPrice(item.price)
 
-            if (item.imageRes != null) {
+            if (item.imageUrl.isNotBlank()) {
+                itemBinding.ivItemImage.loadProductImage(item.imageUrl, item.imageRes ?: R.drawable.img_pizza_time)
+                itemBinding.tvItemPlaceholder.isVisible = false
+            } else if (item.imageRes != null) {
                 itemBinding.ivItemImage.setImageResource(item.imageRes)
                 itemBinding.tvItemPlaceholder.isVisible = false
             } else {
@@ -187,9 +217,171 @@ class CustomerOrderDetailFragment : Fragment() {
             ).show()
         }
 
+        btnRateOrder.setOnClickListener {
+            showRatingDialog()
+        }
+
         btnCancelOrder.setOnClickListener {
             showCancelOrderDialog()
         }
+    }
+
+    private fun loadRatingState(detail: CustomerOrderDetailUiModel) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank() || detail.items.isEmpty()) {
+            existingRatings = emptyMap()
+            binding.btnRateOrder.text = getString(R.string.rate_order)
+            return
+        }
+
+        if (isLoadingRatings) return
+        isLoadingRatings = true
+        CustomerProductReviewFirestoreRepository.loadOrderRatings(
+            orderId = detail.orderId,
+            customerId = uid,
+        ) { result ->
+            isLoadingRatings = false
+            if (_binding == null) return@loadOrderRatings
+            result.onSuccess { ratings ->
+                existingRatings = ratings
+                binding.btnRateOrder.text = if (ratings.isNotEmpty()) {
+                    getString(R.string.update_rating)
+                } else {
+                    getString(R.string.rate_order)
+                }
+            }
+        }
+    }
+
+    private fun showRatingDialog() {
+        val detail = currentOrderDetail ?: return
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        if (detail.statusLabel.uppercase(Locale.US) != "DELIVERED") {
+            return
+        }
+        if (detail.items.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.select_a_rating, Toast.LENGTH_SHORT).show()
+            return
+        }
+
+        val container = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.VERTICAL
+            setPadding(24.dp, 12.dp, 24.dp, 0)
+        }
+
+        val selectedRatings = detail.items.associate { item ->
+            item.productId to (existingRatings[item.productId] ?: 0)
+        }.toMutableMap()
+
+        var updateSaveButtonState: (() -> Unit)? = null
+
+        detail.items.forEachIndexed { index, item ->
+            val title = TextView(requireContext()).apply {
+                text = item.name
+                setTextColor(requireContext().getColor(R.color.pt_text_primary_dark_bg))
+                textSize = 16f
+                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                if (index > 0) {
+                    setPadding(0, 18.dp, 0, 0)
+                }
+            }
+
+            val subtitle = TextView(requireContext()).apply {
+                text = item.description
+                setTextColor(requireContext().getColor(R.color.pt_text_secondary_dark_bg))
+                textSize = 13f
+                setPadding(0, 4.dp, 0, 10.dp)
+                isVisible = item.description.isNotBlank()
+            }
+
+            val ratingBar = RatingBar(
+                requireContext(),
+                null,
+                android.R.attr.ratingBarStyleSmall,
+            ).apply {
+                numStars = 5
+                stepSize = 1f
+                rating = selectedRatings[item.productId]?.toFloat() ?: 0f
+                setOnRatingBarChangeListener { _, rating, _ ->
+                    selectedRatings[item.productId] = rating.roundToInt()
+                    updateSaveButtonState?.invoke()
+                }
+            }
+
+            container.addView(title)
+            if (item.description.isNotBlank()) {
+                container.addView(subtitle)
+            }
+            container.addView(ratingBar)
+        }
+
+        val content = ScrollView(requireContext()).apply {
+            addView(container)
+        }
+
+        val dialog = AlertDialog.Builder(requireContext())
+            .setTitle(R.string.rate_order)
+            .setMessage(R.string.select_a_rating)
+            .setView(content)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.save_rating, null)
+            .create()
+
+        dialog.setOnShowListener {
+            val saveButton = dialog.getButton(AlertDialog.BUTTON_POSITIVE)
+            updateSaveButtonState = {
+                val hasAllRatings = detail.items.isNotEmpty() && detail.items.all {
+                    (selectedRatings[it.productId] ?: 0) in 1..5
+                }
+                saveButton.isEnabled = hasAllRatings
+                saveButton.alpha = if (hasAllRatings) 1f else 0.5f
+            }
+
+            updateSaveButtonState?.invoke()
+            saveButton.setOnClickListener {
+                if (isSubmittingRatings) return@setOnClickListener
+                val payload = detail.items.associate { item ->
+                    item.productId to (selectedRatings[item.productId] ?: 0)
+                }.filterValues { it in 1..5 }
+                if (payload.size != detail.items.size) {
+                    Toast.makeText(requireContext(), R.string.select_a_rating, Toast.LENGTH_SHORT).show()
+                    return@setOnClickListener
+                }
+
+                isSubmittingRatings = true
+                saveButton.isEnabled = false
+                CustomerProductReviewFirestoreRepository.submitOrderRatings(
+                    orderId = detail.orderId,
+                    customerId = uid,
+                    ratings = payload,
+                ) { result ->
+                    isSubmittingRatings = false
+                    if (_binding == null) return@submitOrderRatings
+                    result
+                        .onSuccess {
+                            existingRatings = payload
+                            binding.btnRateOrder.text = getString(R.string.update_rating)
+                            Toast.makeText(requireContext(), R.string.rating_saved, Toast.LENGTH_SHORT).show()
+                            dialog.dismiss()
+                        }
+                        .onFailure {
+                            Toast.makeText(
+                                requireContext(),
+                                R.string.could_not_save_rating,
+                                Toast.LENGTH_SHORT,
+                            ).show()
+                            updateSaveButtonState?.invoke()
+                        }
+                }
+            }
+        }
+
+        dialog.show()
     }
 
     private fun showCancelOrderDialog() {

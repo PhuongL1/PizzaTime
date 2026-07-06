@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/pizzaMenuRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
@@ -26,7 +27,7 @@
             <LinearLayout
                 android:id="@+id/menuTopBar"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
+                android:layout_height="46dp"
                 android:background="@drawable/bg_top_bar_dark"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
@@ -53,37 +54,58 @@
                     android:textColor="@color/pt_gold"
                     android:textSize="25sp" />
 
-                <ImageView
-                    android:id="@+id/btnOpenCart"
-                    android:layout_width="28dp"
-                    android:layout_height="28dp"
-                    android:contentDescription="@string/menu_cart_content_description"
-                    android:src="@drawable/ic_bag" />
+                <FrameLayout
+                    android:id="@+id/cartAction"
+                    android:layout_width="34dp"
+                    android:layout_height="34dp">
+
+                    <ImageView
+                        android:id="@+id/btnOpenCart"
+                        android:layout_width="28dp"
+                        android:layout_height="28dp"
+                        android:layout_gravity="center"
+                        android:contentDescription="@string/menu_cart_content_description"
+                        android:src="@drawable/ic_bag" />
+
+                    <TextView
+                        android:id="@+id/tvCartBadge"
+                        android:layout_width="20dp"
+                        android:layout_height="20dp"
+                        android:layout_gravity="top|end"
+                        android:background="@drawable/bg_badge_red"
+                        android:gravity="center"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        android:visibility="gone"
+                        tools:text="3" />
+
+                </FrameLayout>
 
             </LinearLayout>
 
             <LinearLayout
                 android:id="@+id/searchFilterRow"
                 android:layout_width="match_parent"
-                android:layout_height="54dp"
-                android:layout_marginTop="18dp"
+                android:layout_height="40dp"
+                android:layout_marginTop="16dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
                 <LinearLayout
                     android:id="@+id/searchBar"
                     android:layout_width="0dp"
-                    android:layout_height="54dp"
+                    android:layout_height="40dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_input_round_dark"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
-                    android:paddingStart="15dp"
-                    android:paddingEnd="15dp">
+                    android:paddingStart="12dp"
+                    android:paddingEnd="12dp">
 
                     <ImageView
-                        android:layout_width="22dp"
-                        android:layout_height="22dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:contentDescription="@string/menu_search_hint"
                         android:src="@drawable/ic_search" />
 
@@ -100,14 +122,14 @@
                         android:singleLine="true"
                         android:textColor="@color/pt_text_primary"
                         android:textColorHint="@color/pt_text_muted"
-                        android:textSize="14sp" />
+                        android:textSize="13sp" />
 
                 </LinearLayout>
 
                 <FrameLayout
                     android:id="@+id/btnFilter"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:layout_marginStart="8dp"
                     android:background="@drawable/bg_filter_square"
                     android:clickable="true"
@@ -115,8 +137,8 @@
                     android:focusable="true">
 
                     <ImageView
-                        android:layout_width="26dp"
-                        android:layout_height="26dp"
+                        android:layout_width="18dp"
+                        android:layout_height="18dp"
                         android:layout_gravity="center"
                         android:contentDescription="@string/menu_filter_content_description"
                         android:src="@drawable/ic_filter" />
@@ -129,7 +151,7 @@
                 android:id="@+id/categoryScroll"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="18dp"
+                android:layout_marginTop="14dp"
                 android:overScrollMode="never"
                 android:scrollbars="none">
 
@@ -141,11 +163,12 @@
 
                     <TextView
                         android:id="@+id/chipSignature"
-                        android:layout_width="112dp"
-                        android:layout_height="38dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
                         android:background="@drawable/bg_chip_selected_gold"
                         android:gravity="center"
-                        android:letterSpacing="0.10"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:text="@string/menu_category_signature"
                         android:textColor="@color/pt_text_dark"
                         android:textSize="12sp"
@@ -153,12 +176,13 @@
 
                     <TextView
                         android:id="@+id/chipClassic"
-                        android:layout_width="102dp"
-                        android:layout_height="38dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
-                        android:letterSpacing="0.10"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:text="@string/menu_category_classic"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="12sp"
@@ -166,12 +190,13 @@
 
                     <TextView
                         android:id="@+id/chipVeggie"
-                        android:layout_width="102dp"
-                        android:layout_height="38dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
-                        android:letterSpacing="0.10"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:text="@string/menu_category_veggie"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="12sp"
@@ -179,12 +204,13 @@
 
                     <TextView
                         android:id="@+id/chipBuildYourOwn"
-                        android:layout_width="138dp"
-                        android:layout_height="38dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="33dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
-                        android:letterSpacing="0.10"
+                        android:paddingStart="14dp"
+                        android:paddingEnd="14dp"
                         android:text="@string/menu_category_build_your_own"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="12sp"

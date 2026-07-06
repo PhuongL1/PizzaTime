@@ -7,6 +7,8 @@ data class ProductUiModel(
     val basePrice: Double,
     val imageUrl: String,
     val rating: Double,
+    val averageRating: Double = 0.0,
+    val ratingCount: Int = 0,
     val available: Boolean,
     val categoryId: String = "",
     val categoryName: String = "",

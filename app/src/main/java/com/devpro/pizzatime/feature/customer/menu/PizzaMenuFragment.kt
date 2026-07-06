@@ -17,6 +17,7 @@ import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentPizzaMenuBinding
 import com.devpro.pizzatime.databinding.ItemPizzaMenuBinding
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
@@ -53,6 +54,15 @@ class PizzaMenuFragment : Fragment() {
         setupSearch()
         setupActions()
         loadAndRenderProducts()
+        updateCartBadge()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            loadAndRenderProducts()
+            updateCartBadge()
+        }
     }
 
     private fun loadAndRenderProducts() {
@@ -175,10 +185,9 @@ class PizzaMenuFragment : Fragment() {
         return TextView(requireContext()).apply {
             layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.WRAP_CONTENT,
-                38.dp(),
+                33.dp(),
             )
-            minWidth = 102.dp()
-            setPadding(18.dp(), 0, 18.dp(), 0)
+            setPadding(14.dp(), 0, 14.dp(), 0)
             gravity = android.view.Gravity.CENTER
             text = category.label
             textSize = 12f
@@ -223,19 +232,25 @@ class PizzaMenuFragment : Fragment() {
             itemBinding.imgPizza.loadProductImage(item.imageUrl, item.imageRes)
             itemBinding.imgPizza.contentDescription = item.name
             itemBinding.tvPizzaName.text = item.name
-            itemBinding.tvPizzaDescription.text = item.description
+            itemBinding.tvPizzaDescription.text = shortQuickInfo(item.description)
             itemBinding.tvPizzaPrice.text = item.price
-            itemBinding.tvPizzaRating.text = getString(R.string.home_rating_49).replace("4.9", item.rating)
+            itemBinding.tvPizzaRating.text = formatRating(item)
+            itemBinding.tvPizzaRating.setTextColor(
+                ContextCompat.getColor(
+                    requireContext(),
+                    if (item.ratingCount > 0) R.color.pt_text_dark else R.color.pt_text_primary,
+                ),
+            )
 
             itemBinding.root.setOnClickListener { openPizzaDetail(item) }
             itemBinding.btnAddToCart.setOnClickListener { openPizzaDetail(item) }
 
             itemBinding.root.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                340.dp(),
+                LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply {
                 if (index > 0) {
-                    topMargin = 18.dp()
+                    topMargin = 16.dp()
                 }
             }
 
@@ -275,13 +290,19 @@ class PizzaMenuFragment : Fragment() {
         }
     }
 
+    private fun updateCartBadge() = with(binding) {
+        val count = CartStore.items.sumOf { it.quantity }
+        tvCartBadge.isVisible = count > 0
+        tvCartBadge.text = count.toString()
+    }
+
     private fun openPizzaDetail(item: PizzaMenuUiModel) {
         openPizzaDetailScreen(
             productId = item.id,
             productName = item.name,
             productDescription = item.description,
             productPrice = item.price,
-            productRating = item.rating,
+            productRating = if (item.ratingCount > 0) String.format(Locale.US, "%.1f", item.averageRating) else getString(R.string.no_ratings),
             productImageUrl = item.imageUrl,
             productSizeOptions = item.sizeOptions,
             productCrustOptions = item.crustOptions,
@@ -294,7 +315,9 @@ class PizzaMenuFragment : Fragment() {
         name = name,
         description = description,
         price = "$${String.format(Locale.US, "%.2f", basePrice)}",
-        rating = String.format(Locale.US, "%.1f", rating),
+        rating = if (ratingCount > 0) String.format(Locale.US, "%.1f", averageRating) else getString(R.string.no_ratings),
+        averageRating = averageRating,
+        ratingCount = ratingCount,
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
         categoryId = categoryId,
@@ -320,6 +343,23 @@ class PizzaMenuFragment : Fragment() {
         }
     }
 
+    private fun formatRating(item: PizzaMenuUiModel): String {
+        return if (item.ratingCount > 0) {
+            String.format(Locale.US, "%.1f ★", item.averageRating)
+        } else {
+            getString(R.string.no_ratings)
+        }
+    }
+
+    private fun shortQuickInfo(text: String): String {
+        return text
+            .trim()
+            .replace(Regex("\\s+"), " ")
+            .let { value ->
+                if (value.length <= QUICK_INFO_MAX_LENGTH) value else value.take(QUICK_INFO_MAX_LENGTH - 1).trimEnd() + "…"
+            }
+    }
+
     private fun Int.dp(): Int = (this * resources.displayMetrics.density).toInt()
 
     override fun onDestroyView() {
@@ -334,5 +374,9 @@ class PizzaMenuFragment : Fragment() {
         companion object {
             const val ALL_ID = "__all__"
         }
+    }
+
+    private companion object {
+        const val QUICK_INFO_MAX_LENGTH = 78
     }
 }
