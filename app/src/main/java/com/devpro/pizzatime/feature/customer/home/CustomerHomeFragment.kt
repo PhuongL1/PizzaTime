@@ -20,6 +20,7 @@ import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
 import com.devpro.pizzatime.feature.customer.menu.FirebaseProductRepository
 import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
@@ -37,6 +38,7 @@ class CustomerHomeFragment : Fragment() {
 
     private var allAvailableProducts: List<ProductUiModel> = emptyList()
     private var bestSellingProductIds: List<String> = emptyList()
+    private var favoriteProductIds: Set<String> = emptySet()
     private var selectedCategory: HomeCategory = HomeCategory.ALL
     private var searchQuery: String = ""
     private var featuredProduct: ProductUiModel? = null
@@ -55,17 +57,22 @@ class CustomerHomeFragment : Fragment() {
         setupCategories()
         setupActions()
         loadHomeLocation()
+        loadFavoriteProductIds()
         loadHomeData()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            loadFavoriteProductIds()
+        }
     }
 
     private fun loadHomeData() {
         FirebaseProductRepository.loadProducts { products ->
             if (_binding == null) return@loadProducts
             allAvailableProducts = products
-            featuredProduct = products.firstOrNull()
-            renderFeaturedProduct()
             renderFilteredProducts()
-            renderChefSelectionFallback()
             loadBestSellingProducts()
         }
     }
@@ -171,11 +178,29 @@ class CustomerHomeFragment : Fragment() {
         }
     }
 
+    private fun loadFavoriteProductIds() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            favoriteProductIds = emptySet()
+            renderFilteredProducts()
+            return
+        }
+
+        CustomerFavoritesFirestoreRepository.loadFavoriteProductIds(uid) { result ->
+            if (_binding == null) return@loadFavoriteProductIds
+            favoriteProductIds = result.getOrDefault(emptyList()).toSet()
+            renderFilteredProducts()
+        }
+    }
+
     private fun renderFilteredProducts() {
+        featuredProduct = resolveFilteredProducts().firstOrNull() ?: allAvailableProducts.firstOrNull()
+        renderFeaturedProduct()
         renderBestSellers(
                 resolveBestSellerProducts()
                     .map { it.toBestSellerUiModel() },
             )
+        renderChefSelections(resolveBestSellingProducts())
     }
 
     private fun renderFeaturedProduct() {
@@ -198,18 +223,21 @@ class CustomerHomeFragment : Fragment() {
                 .onSuccess { productIds ->
                     bestSellingProductIds = productIds.take(BEST_SELLER_LIMIT)
                     renderFilteredProducts()
-                    renderChefSelections(resolveBestSellingProducts())
                 }
                 .onFailure {
-                    renderChefSelectionFallback()
+                    renderFilteredProducts()
                 }
         }
     }
 
     private fun resolveBestSellingProducts(): List<ChefPizzaUiModel> {
-        val productsById = allAvailableProducts.associateBy { it.id }
+        val filteredProducts = resolveFilteredProducts()
+        val productsById = filteredProducts.associateBy { it.id }
+        val fallbackProducts = filteredProducts.sortedWith(
+            compareByDescending<ProductUiModel> { it.rating }
+                .thenBy { it.name.lowercase(Locale.US) },
+        )
         val rankedProducts = bestSellingProductIds.mapNotNull { productsById[it] }
-        val fallbackProducts = fallbackChefProducts()
         return (rankedProducts + fallbackProducts)
             .distinctBy { it.id }
             .take(CHEF_SELECTION_LIMIT)
@@ -217,30 +245,22 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun resolveBestSellerProducts(): List<ProductUiModel> {
-        val productsById = allAvailableProducts.associateBy { it.id }
-        val rankedProducts = bestSellingProductIds.mapNotNull { productsById[it] }
-        val fallbackProducts = allAvailableProducts.sortedWith(
+        val filteredProducts = resolveFilteredProducts()
+        val productsById = filteredProducts.associateBy { it.id }
+        val fallbackProducts = filteredProducts.sortedWith(
             compareByDescending<ProductUiModel> { it.rating }
                 .thenBy { it.name.lowercase(Locale.US) },
         )
+        val rankedProducts = bestSellingProductIds.mapNotNull { productsById[it] }
         return (rankedProducts + fallbackProducts)
             .distinctBy { it.id }
             .take(BEST_SELLER_LIMIT)
     }
 
-    private fun renderChefSelectionFallback() {
-        renderChefSelections(
-            fallbackChefProducts()
-                .take(CHEF_SELECTION_LIMIT)
-                .mapIndexed { index, product -> product.toChefPizzaUiModel(index + 1) },
-        )
-    }
-
-    private fun fallbackChefProducts(): List<ProductUiModel> {
-        return allAvailableProducts.sortedWith(
-            compareByDescending<ProductUiModel> { it.rating }
-                .thenBy { it.name.lowercase(Locale.US) },
-        )
+    private fun resolveFilteredProducts(): List<ProductUiModel> {
+        return allAvailableProducts.filter { product ->
+            product.matchesCategory(selectedCategory) && product.matchesSearch(searchQuery)
+        }
     }
 
     private fun openFeaturedProductOrToast() {
@@ -271,29 +291,19 @@ class CustomerHomeFragment : Fragment() {
             itemBinding.tvPizzaName.text = item.name
             itemBinding.tvPizzaDescription.text = item.description
             itemBinding.tvPizzaPrice.text = item.price
-
-            var isFavorite = item.isFavorite
-
-            itemBinding.imgFavoriteIcon.setImageResource(
-                if (isFavorite) R.drawable.ic_heart else R.drawable.ic_empty_heart,
-            )
+            bindBestSellerFavoriteIcon(itemBinding, item.isFavorite)
 
             itemBinding.root.setOnClickListener {
                 openProductDetail(item)
             }
 
             itemBinding.btnFavorite.setOnClickListener {
-                isFavorite = !isFavorite
-
-                itemBinding.imgFavoriteIcon.setImageResource(
-                    if (isFavorite) R.drawable.ic_heart else R.drawable.ic_empty_heart,
-                )
-
-                Toast.makeText(
-                    requireContext(),
-                    if (isFavorite) "Favorited ${item.name}" else "Removed ${item.name}",
-                    Toast.LENGTH_SHORT,
-                ).show()
+                itemBinding.btnFavorite.isEnabled = false
+                toggleBestSellerFavorite(item) { isFavorite ->
+                    if (_binding == null) return@toggleBestSellerFavorite
+                    bindBestSellerFavoriteIcon(itemBinding, isFavorite)
+                    itemBinding.btnFavorite.isEnabled = true
+                }
             }
 
             itemBinding.btnAddToCart.setOnClickListener {
@@ -421,6 +431,7 @@ class CustomerHomeFragment : Fragment() {
         rating = ratingText,
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
+        isFavorite = id in favoriteProductIds,
         sizeOptions = sizeOptions,
         crustOptions = crustOptions,
         toppingOptions = toppingOptions,
@@ -480,6 +491,66 @@ class CustomerHomeFragment : Fragment() {
 
     private val Int.dp: Int
         get() = (this * resources.displayMetrics.density).toInt()
+
+    private fun bindBestSellerFavoriteIcon(
+        itemBinding: ItemBestSellerPizzaBinding,
+        isFavorite: Boolean,
+    ) {
+        itemBinding.imgFavoriteIcon.setImageResource(
+            if (isFavorite) R.drawable.ic_heart else R.drawable.ic_empty_heart,
+        )
+    }
+
+    private fun toggleBestSellerFavorite(
+        item: BestSellerPizzaUiModel,
+        onComplete: (Boolean) -> Unit,
+    ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
+            onComplete(item.id in favoriteProductIds)
+            return
+        }
+        if (item.id.isBlank()) {
+            Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+            onComplete(item.id in favoriteProductIds)
+            return
+        }
+
+        val isFavorite = item.id in favoriteProductIds
+        val callback: (Result<Unit>) -> Unit = callback@{ result ->
+            if (_binding == null) return@callback
+            result
+                .onSuccess {
+                    favoriteProductIds = if (isFavorite) {
+                        favoriteProductIds - item.id
+                    } else {
+                        favoriteProductIds + item.id
+                    }
+                    onComplete(!isFavorite)
+                    renderFilteredProducts()
+                    Toast.makeText(
+                        requireContext(),
+                        if (isFavorite) {
+                            getString(R.string.customer_favorites_removed_toast, item.name)
+                        } else {
+                            getString(R.string.customer_favorites_saved_toast, item.name)
+                        },
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+                .onFailure {
+                    Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+                    onComplete(isFavorite)
+                }
+        }
+
+        if (isFavorite) {
+            CustomerFavoritesFirestoreRepository.removeFavorite(uid, item.id, callback)
+        } else {
+            CustomerFavoritesFirestoreRepository.addFavorite(uid, item.id, callback)
+        }
+    }
 
     override fun onDestroyView() {
         _binding = null

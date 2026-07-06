@@ -19,6 +19,7 @@ import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
@@ -68,6 +69,13 @@ class CustomerAccountFragment : Fragment() {
         loadCustomerProfile()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            setupTopBar()
+        }
+    }
+
     private fun bindAccount() = with(binding) {
         ivAvatar.setImageResource(accountData.avatarRes)
         tvCustomerName.text = accountData.fullName
@@ -89,7 +97,7 @@ class CustomerAccountFragment : Fragment() {
         if (currentRole == UserRole.CUSTOMER) {
             bindCustomerTopBar(
                 root = customerTopBar.root,
-                cartItemCount = 0,
+                cartItemCount = CartStore.items.sumOf { it.quantity },
             )
         }
     }
