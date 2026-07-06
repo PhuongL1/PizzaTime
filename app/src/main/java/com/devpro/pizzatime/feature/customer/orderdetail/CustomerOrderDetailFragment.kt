@@ -1,12 +1,12 @@
 package com.devpro.pizzatime.feature.customer.orderdetail
 
 import android.app.AlertDialog
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.RatingBar
 import android.widget.ScrollView
 import android.widget.TextView
 import android.widget.Toast
@@ -23,7 +23,6 @@ import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestore
 import com.devpro.pizzatime.feature.customer.rating.CustomerProductReviewFirestoreRepository
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
-import kotlin.math.roundToInt
 
 class CustomerOrderDetailFragment : Fragment() {
 
@@ -277,15 +276,14 @@ class CustomerOrderDetailFragment : Fragment() {
         val selectedRatings = detail.items.associate { item ->
             item.productId to (existingRatings[item.productId] ?: 0)
         }.toMutableMap()
-
         var updateSaveButtonState: (() -> Unit)? = null
 
         detail.items.forEachIndexed { index, item ->
             val title = TextView(requireContext()).apply {
                 text = item.name
-                setTextColor(requireContext().getColor(R.color.pt_text_primary_dark_bg))
+                setTextColor(requireContext().getColor(R.color.pt_cream))
                 textSize = 16f
-                setTypeface(typeface, android.graphics.Typeface.BOLD)
+                setTypeface(typeface, Typeface.BOLD)
                 if (index > 0) {
                     setPadding(0, 18.dp, 0, 0)
                 }
@@ -293,31 +291,24 @@ class CustomerOrderDetailFragment : Fragment() {
 
             val subtitle = TextView(requireContext()).apply {
                 text = item.description
-                setTextColor(requireContext().getColor(R.color.pt_text_secondary_dark_bg))
+                setTextColor(requireContext().getColor(R.color.pt_text_primary_dark_bg))
                 textSize = 13f
-                setPadding(0, 4.dp, 0, 10.dp)
+                setPadding(0, 4.dp, 0, 8.dp)
                 isVisible = item.description.isNotBlank()
-            }
-
-            val ratingBar = RatingBar(
-                requireContext(),
-                null,
-                android.R.attr.ratingBarStyleSmall,
-            ).apply {
-                numStars = 5
-                stepSize = 1f
-                rating = selectedRatings[item.productId]?.toFloat() ?: 0f
-                setOnRatingBarChangeListener { _, rating, _ ->
-                    selectedRatings[item.productId] = rating.roundToInt()
-                    updateSaveButtonState?.invoke()
-                }
             }
 
             container.addView(title)
             if (item.description.isNotBlank()) {
                 container.addView(subtitle)
             }
-            container.addView(ratingBar)
+            container.addView(
+                createStarRow(
+                    selectedRating = selectedRatings[item.productId] ?: 0,
+                ) { rating ->
+                    selectedRatings[item.productId] = rating
+                    updateSaveButtonState?.invoke()
+                },
+            )
         }
 
         val content = ScrollView(requireContext()).apply {
@@ -326,7 +317,6 @@ class CustomerOrderDetailFragment : Fragment() {
 
         val dialog = AlertDialog.Builder(requireContext())
             .setTitle(R.string.rate_order)
-            .setMessage(R.string.select_a_rating)
             .setView(content)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.save_rating, null)
@@ -382,6 +372,57 @@ class CustomerOrderDetailFragment : Fragment() {
         }
 
         dialog.show()
+    }
+
+    private fun createStarRow(
+        selectedRating: Int,
+        onRatingSelected: (Int) -> Unit,
+    ): View {
+        val row = LinearLayout(requireContext()).apply {
+            orientation = LinearLayout.HORIZONTAL
+            setPadding(0, 2.dp, 0, 2.dp)
+        }
+
+        repeat(5) { index ->
+            val starNumber = index + 1
+            row.addView(
+                TextView(requireContext()).apply {
+                    layoutParams = LinearLayout.LayoutParams(44.dp, 44.dp).apply {
+                        if (index > 0) {
+                            marginStart = 6.dp
+                        }
+                    }
+                    gravity = android.view.Gravity.CENTER
+                    text = STAR_CHAR
+                    textSize = 22f
+                    setTypeface(typeface, Typeface.BOLD)
+                    setTextColor(
+                        requireContext().getColor(
+                            if (starNumber <= selectedRating) R.color.pt_copper else R.color.pt_cream,
+                        ),
+                    )
+                    setOnClickListener {
+                        onRatingSelected(starNumber)
+                        updateStarRow(row, starNumber)
+                    }
+                },
+            )
+        }
+
+        updateStarRow(row, selectedRating)
+        return row
+    }
+
+    private fun updateStarRow(row: LinearLayout, selectedRating: Int) {
+        for (index in 0 until row.childCount) {
+            val star = row.getChildAt(index) as? TextView ?: continue
+            val starNumber = index + 1
+            star.setTextColor(
+                requireContext().getColor(
+                    if (starNumber <= selectedRating) R.color.pt_copper else R.color.pt_cream,
+                ),
+            )
+        }
     }
 
     private fun showCancelOrderDialog() {
@@ -555,6 +596,7 @@ class CustomerOrderDetailFragment : Fragment() {
         private const val ARG_ORDER_ID = "arg_order_id"
         private const val DEFAULT_ORDER_ID = "PT-9821"
         private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")
+        private const val STAR_CHAR = "★"
 
         fun newInstance(orderId: String): CustomerOrderDetailFragment {
             return CustomerOrderDetailFragment().apply {
