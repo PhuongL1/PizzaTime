@@ -7,6 +7,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentKitchenOrderDetailBinding
+import com.devpro.pizzatime.feature.kitchen.board.KitchenOrderFirestoreRepository
 import com.devpro.pizzatime.shared.dialog.CancelOrderConfirmationDialogFragment
 import com.devpro.pizzatime.shared.dialog.StatusUpdateConfirmationDialogFragment
 
@@ -26,12 +27,29 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
         _binding = FragmentKitchenOrderDetailBinding.bind(view)
 
         val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
-        currentOrder = FakeKitchenOrderDetailData.getOrderDetail(orderId)
-
-        bindOrder(currentOrder)
         setupActions()
         setupStatusUpdateResult()
         setupCancelOrderResult()
+        bindActionState(KitchenOrderDetailStatus.READY)
+        loadOrder(orderId)
+    }
+
+    private fun loadOrder(orderId: String) {
+        KitchenOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
+            if (_binding == null) return@loadOrderDetail
+            result
+                .onSuccess { order ->
+                    currentOrder = order
+                    bindOrder(order)
+                }
+                .onFailure {
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.kitchen_order_detail_load_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+        }
     }
 
     private fun bindOrder(order: KitchenOrderDetailUiModel) = with(binding) {
@@ -72,13 +90,9 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     }
 
     private fun bindAllergy(order: KitchenOrderDetailUiModel) = with(binding) {
-        val hasAllergy = order.allergyTitle != null || order.allergyMessage != null
-        allergyCard.isVisible = hasAllergy
-
-        if (!hasAllergy) return@with
-
-        tvAllergyTitle.text = order.allergyTitle.orEmpty()
-        tvAllergyMessage.text = order.allergyMessage.orEmpty()
+        allergyCard.isVisible = true
+        tvAllergyTitle.text = order.allergyTitle ?: getString(R.string.kitchen_order_detail_no_value)
+        tvAllergyMessage.text = order.allergyMessage ?: getString(R.string.kitchen_order_detail_no_value)
     }
 
     private fun bindCustomerRequest(order: KitchenOrderDetailUiModel) = with(binding) {
@@ -165,8 +179,6 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                 .getString(CancelOrderConfirmationDialogFragment.KEY_ORDER_ID)
                 .orEmpty()
 
-            updateStatus(KitchenOrderDetailStatus.CANCELLED)
-
             Toast.makeText(
                 requireContext(),
                 getString(R.string.kitchen_order_detail_cancelled_toast, orderId),
@@ -200,17 +212,38 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     }
 
     private fun updateStatus(status: KitchenOrderDetailStatus) {
-        FakeKitchenOrderDetailData.updateStatus(currentOrder.orderId, status)
-        currentOrder = currentOrder.copy(status = status)
+        val firestoreStatus = when (status) {
+            KitchenOrderDetailStatus.PREPARING -> "PREPARING"
+            KitchenOrderDetailStatus.BAKING -> "BAKING"
+            KitchenOrderDetailStatus.READY -> "READY_FOR_DELIVERY"
+            else -> null
+        }
+        if (firestoreStatus == null) return
 
-        binding.tvStatus.text = mapStatusText(status)
-        bindActionState(status)
-
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.kitchen_order_detail_status_updated_toast, mapStatusText(status)),
-            Toast.LENGTH_SHORT,
-        ).show()
+        KitchenOrderFirestoreRepository.updateOrderStatus(
+            orderId = currentOrder.orderId,
+            newStatus = firestoreStatus,
+        ) { result ->
+            if (_binding == null) return@updateOrderStatus
+            result
+                .onSuccess {
+                    currentOrder = currentOrder.copy(status = status)
+                    binding.tvStatus.text = mapStatusText(status)
+                    bindActionState(status)
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.kitchen_order_detail_status_updated_toast, mapStatusText(status)),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+                .onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: getString(R.string.kitchen_order_detail_update_failed),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+        }
     }
 
     private fun toKitchenStatus(status: String): KitchenOrderDetailStatus {

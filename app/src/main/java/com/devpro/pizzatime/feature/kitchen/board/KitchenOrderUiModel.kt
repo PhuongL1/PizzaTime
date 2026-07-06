@@ -16,6 +16,7 @@ data class KitchenOrderUiModel(
     val items: List<KitchenOrderItemUiModel>,
     val note: String? = null,
     val progressLabel: String? = null,
+    val progressPercent: Int = 20,
 )
 
 data class KitchenOrderItemUiModel(

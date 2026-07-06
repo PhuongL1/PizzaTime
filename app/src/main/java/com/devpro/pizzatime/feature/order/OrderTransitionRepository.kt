@@ -12,7 +12,8 @@ object OrderTransitionRepository {
     private const val STATUS_CONFIRMED = "CONFIRMED"
     private const val STATUS_PREPARING = "PREPARING"
     private const val STATUS_BAKING = "BAKING"
-    private const val STATUS_READY = "READY"
+    private const val STATUS_READY = "READY_FOR_DELIVERY"
+    private const val STATUS_LEGACY_READY = "READY"
     private const val STATUS_ASSIGNED_TO_SHIPPER = "ASSIGNED_TO_SHIPPER"
     private const val STATUS_DELIVERING = "DELIVERING"
     private const val STATUS_DELIVERED = "DELIVERED"
@@ -74,25 +75,46 @@ object OrderTransitionRepository {
         kitchenId: String,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        val expectedStatus = when (newStatus) {
-            STATUS_PREPARING -> STATUS_CONFIRMED
-            STATUS_BAKING -> STATUS_PREPARING
-            STATUS_READY -> STATUS_BAKING
+        val normalizedStatus = when (newStatus) {
+            STATUS_LEGACY_READY -> STATUS_READY
+            else -> newStatus
+        }
+        val transition = when (normalizedStatus) {
+            STATUS_PREPARING -> KitchenTransition(
+                allowedCurrentStatuses = setOf(STATUS_CONFIRMED),
+                kitchenStage = STATUS_PREPARING,
+                progressPercent = 40,
+            )
+            STATUS_BAKING -> KitchenTransition(
+                allowedCurrentStatuses = setOf(STATUS_PREPARING),
+                kitchenStage = STATUS_BAKING,
+                progressPercent = 75,
+            )
+            STATUS_READY -> KitchenTransition(
+                allowedCurrentStatuses = setOf(STATUS_BAKING),
+                kitchenStage = "READY",
+                progressPercent = 100,
+            )
             else -> null
         }
 
-        if (expectedStatus == null) {
+        if (transition == null) {
             onResult(Result.failure(staleOrderException()))
             return
         }
 
         updateStatus(
             orderId = orderId,
-            newStatus = newStatus,
-            allowedCurrentStatuses = setOf(expectedStatus),
+            newStatus = normalizedStatus,
+            allowedCurrentStatuses = transition.allowedCurrentStatuses,
             actorRole = "KITCHEN",
             actorId = kitchenId,
-            note = "Kitchen updated order to $newStatus",
+            note = "Kitchen updated order to $normalizedStatus",
+            extraFields = mapOf(
+                "kitchenStage" to transition.kitchenStage,
+                "kitchenProgressPercent" to transition.progressPercent,
+                "kitchenUpdatedAt" to FieldValue.serverTimestamp(),
+            ),
             onResult = onResult,
         )
     }
@@ -118,6 +140,7 @@ object OrderTransitionRepository {
         actorRole: String,
         actorId: String,
         note: String,
+        extraFields: Map<String, Any> = emptyMap(),
         onResult: (Result<Unit>) -> Unit,
     ) {
         val orderRef = firestore.collection("orders").document(orderId)
@@ -132,9 +155,7 @@ object OrderTransitionRepository {
                 throw staleOrderException()
             }
 
-            transaction.update(
-                orderRef,
-                mapOf(
+            val updates = mutableMapOf<String, Any>(
                     "status" to newStatus,
                     "updatedAt" to FieldValue.serverTimestamp(),
                     "statusHistory" to FieldValue.arrayUnion(
@@ -145,8 +166,9 @@ object OrderTransitionRepository {
                             note = note,
                         ),
                     ),
-                ),
-            )
+                )
+            updates.putAll(extraFields)
+            transaction.update(orderRef, updates)
         }
             .addOnSuccessListener { onResult(Result.success(Unit)) }
             .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
@@ -166,7 +188,7 @@ object OrderTransitionRepository {
 
             val currentStatus = order.getString("status").orEmpty()
             val currentShipperId = order.getString("shipperId").orEmpty()
-            if (currentStatus != STATUS_READY || currentShipperId.isNotBlank()) {
+            if (currentStatus !in setOf(STATUS_READY, STATUS_LEGACY_READY) || currentShipperId.isNotBlank()) {
                 throw staleOrderException()
             }
 
@@ -205,7 +227,8 @@ object OrderTransitionRepository {
 
             val currentStatus = order.getString("status").orEmpty()
             val currentShipperId = order.getString("shipperId").orEmpty()
-            val canStartFromReady = currentStatus == STATUS_READY && currentShipperId.isBlank()
+            val canStartFromReady = currentStatus in setOf(STATUS_READY, STATUS_LEGACY_READY) &&
+                currentShipperId.isBlank()
             val canStartFromAssigned = currentStatus == STATUS_ASSIGNED_TO_SHIPPER &&
                 (currentShipperId.isBlank() || currentShipperId == shipperId)
             if (!canStartFromReady && !canStartFromAssigned) {
@@ -305,6 +328,12 @@ object OrderTransitionRepository {
             "createdAt" to Timestamp.now(),
         )
     }
+
+    private data class KitchenTransition(
+        val allowedCurrentStatuses: Set<String>,
+        val kitchenStage: String,
+        val progressPercent: Int,
+    )
 }
 
 class OrderTransitionException(message: String) : Exception(message)

@@ -16,6 +16,8 @@ import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
+import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
 class KitchenBoardFragment : Fragment() {
@@ -49,13 +51,13 @@ class KitchenBoardFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupOrders()
         setupBottomNav()
+        loadChefFirstName()
         listenFirestoreOrders()
     }
 
     private fun setupOrders() = with(binding.rvKitchenOrders) {
         layoutManager = LinearLayoutManager(requireContext())
         adapter = this@KitchenBoardFragment.adapter
-        this@KitchenBoardFragment.adapter.submitList(FakeKitchenBoardData.getOrders())
     }
 
     private fun listenFirestoreOrders() {
@@ -122,8 +124,38 @@ class KitchenBoardFragment : Fragment() {
         return when (status) {
             KitchenOrderStatus.WAITING -> "PREPARING"
             KitchenOrderStatus.PREPARING -> "BAKING"
-            KitchenOrderStatus.READY -> "READY"
+            KitchenOrderStatus.READY -> "READY_FOR_DELIVERY"
             KitchenOrderStatus.NEW -> null
+        }
+    }
+
+    private fun loadChefFirstName() {
+        val user = FirebaseAuth.getInstance().currentUser ?: return
+        FirebaseFirestore.getInstance()
+            .collection("users")
+            .document(user.uid)
+            .get()
+            .addOnSuccessListener { document ->
+                if (_binding == null) return@addOnSuccessListener
+                val profileName = document.getString("name").orEmpty()
+                binding.tvKitchenTitle.text = profileName.toChefFirstName(
+                    fallback = user.email.orEmpty().substringBefore("@"),
+                )
+            }
+            .addOnFailureListener {
+                if (_binding == null) return@addOnFailureListener
+                binding.tvKitchenTitle.text = user.email.orEmpty()
+                    .substringBefore("@")
+                    .ifBlank { getString(R.string.kitchen_default_chef_name) }
+            }
+    }
+
+    private fun String.toChefFirstName(fallback: String): String {
+        val parts = trim().split(Regex("\\s+")).filter { it.isNotBlank() }
+        return when {
+            parts.isNotEmpty() -> parts.last()
+            fallback.isNotBlank() -> fallback
+            else -> getString(R.string.kitchen_default_chef_name)
         }
     }
 

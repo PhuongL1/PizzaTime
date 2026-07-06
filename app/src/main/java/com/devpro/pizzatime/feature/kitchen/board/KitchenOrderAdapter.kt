@@ -3,7 +3,7 @@ package com.devpro.pizzatime.feature.kitchen.board
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import androidx.core.graphics.toColorInt
+import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
 import androidx.recyclerview.widget.RecyclerView
@@ -123,23 +123,23 @@ class KitchenOrderAdapter(
             when (order.status) {
                 KitchenOrderStatus.WAITING -> {
                     kitchenOrderRoot.setBackgroundResource(R.drawable.bg_kitchen_card_dark)
-                    viewTopAccent.setBackgroundColor(COLOR_WAITING)
-                    tvOrderType.setTextColor(COLOR_WAITING_TEXT)
-                    tvOrderTime.setTextColor(COLOR_WAITING_TEXT)
+                    viewTopAccent.setBackgroundColor(context.color(R.color.pt_status_pending))
+                    tvOrderType.setTextColor(context.color(R.color.pt_gold_light))
+                    tvOrderTime.setTextColor(context.color(R.color.pt_gold_light))
 
                     tvOrderStatusLabel.visibility = View.VISIBLE
                     tvOrderStatusLabel.text = context.getString(R.string.kitchen_status_priority)
 
                     btnPrimaryAction.setBackgroundResource(R.drawable.bg_button_primary_gold)
-                    btnPrimaryAction.setTextColor(COLOR_PRIMARY_ACTION_TEXT)
+                    btnPrimaryAction.setTextColor(context.color(R.color.pt_text_dark))
                     btnPrimaryAction.text = context.getString(R.string.kitchen_action_start_baking)
                 }
 
                 KitchenOrderStatus.PREPARING -> {
                     kitchenOrderRoot.setBackgroundResource(R.drawable.bg_kitchen_card_dark)
-                    viewTopAccent.setBackgroundColor(COLOR_PREPARING)
-                    tvOrderType.setTextColor(COLOR_PREPARING)
-                    tvOrderTime.setTextColor(COLOR_PREPARING)
+                    viewTopAccent.setBackgroundColor(context.color(R.color.pt_status_preparing))
+                    tvOrderType.setTextColor(context.color(R.color.pt_status_preparing))
+                    tvOrderTime.setTextColor(context.color(R.color.pt_status_preparing))
 
                     tvOrderStatusLabel.visibility = View.VISIBLE
                     tvOrderStatusLabel.text = context.getString(R.string.kitchen_status_in_oven)
@@ -148,7 +148,7 @@ class KitchenOrderAdapter(
                         ?: context.getString(R.string.kitchen_default_progress)
 
                     btnPrimaryAction.setBackgroundResource(R.drawable.bg_kitchen_action_pink)
-                    btnPrimaryAction.setTextColor(COLOR_PROGRESS_ACTION_TEXT)
+                    btnPrimaryAction.setTextColor(context.color(R.color.pt_danger_button_text))
                     btnPrimaryAction.text = context.getString(
                         R.string.kitchen_action_progress,
                         progress,
@@ -157,44 +157,36 @@ class KitchenOrderAdapter(
 
                 KitchenOrderStatus.READY -> {
                     kitchenOrderRoot.setBackgroundResource(R.drawable.bg_kitchen_card_ready)
-                    viewTopAccent.setBackgroundColor(COLOR_READY)
-                    tvOrderType.setTextColor(COLOR_READY)
+                    viewTopAccent.setBackgroundColor(context.color(R.color.pt_status_ready))
+                    tvOrderType.setTextColor(context.color(R.color.pt_status_ready))
 
                     tvOrderTime.text = context.getString(R.string.kitchen_ready_check)
-                    tvOrderTime.setTextColor(COLOR_READY)
+                    tvOrderTime.setTextColor(context.color(R.color.pt_status_ready))
 
                     tvOrderStatusLabel.visibility = View.GONE
 
                     btnPrimaryAction.setBackgroundResource(R.drawable.bg_kitchen_action_green_outline)
-                    btnPrimaryAction.setTextColor(COLOR_READY)
+                    btnPrimaryAction.setTextColor(context.color(R.color.pt_status_ready))
                     btnPrimaryAction.text = context.getString(R.string.kitchen_action_handed_over)
                 }
 
                 KitchenOrderStatus.NEW -> {
                     kitchenOrderRoot.setBackgroundResource(R.drawable.bg_kitchen_card_new)
-                    viewTopAccent.setBackgroundColor(COLOR_NEW)
-                    tvOrderType.setTextColor(COLOR_MUTED)
-                    tvOrderTime.setTextColor(COLOR_MUTED)
+                    viewTopAccent.setBackgroundColor(context.color(R.color.pt_text_muted))
+                    tvOrderType.setTextColor(context.color(R.color.pt_text_secondary))
+                    tvOrderTime.setTextColor(context.color(R.color.pt_text_secondary))
 
                     tvOrderStatusLabel.visibility = View.GONE
 
                     btnPrimaryAction.setBackgroundResource(R.drawable.bg_kitchen_action_disabled)
-                    btnPrimaryAction.setTextColor(COLOR_DISABLED_ACTION_TEXT)
+                    btnPrimaryAction.setTextColor(context.color(R.color.pt_text_primary))
                     btnPrimaryAction.text = context.getString(R.string.kitchen_action_accept_order)
                 }
             }
         }
 
-        companion object {
-            private val COLOR_WAITING = "#D58A3A".toColorInt()
-            private val COLOR_WAITING_TEXT = "#FFB47A".toColorInt()
-            private val COLOR_PREPARING = "#F6A4A7".toColorInt()
-            private val COLOR_READY = "#31E978".toColorInt()
-            private val COLOR_NEW = "#9C8D82".toColorInt()
-            private val COLOR_MUTED = "#D8C8BC".toColorInt()
-            private val COLOR_PRIMARY_ACTION_TEXT = "#1F0E05".toColorInt()
-            private val COLOR_PROGRESS_ACTION_TEXT = "#5B0008".toColorInt()
-            private val COLOR_DISABLED_ACTION_TEXT = "#F2E8E0".toColorInt()
+        private fun android.content.Context.color(colorRes: Int): Int {
+            return ContextCompat.getColor(this, colorRes)
         }
     }
 }

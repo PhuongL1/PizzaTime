@@ -156,6 +156,22 @@ service cloud.firestore {
         "statusHistory"
       ]);
     }
+    function kitchenStatusUpdate() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        "status",
+        "updatedAt",
+        "statusHistory",
+        "kitchenStage",
+        "kitchenProgressPercent",
+        "kitchenUpdatedAt"
+      ]);
+    }
+
+    function kitchenProgressFieldsValid() {
+      return request.resource.data.kitchenStage in ["PREPARING", "BAKING", "READY"]
+        && request.resource.data.kitchenProgressPercent in [40, 75, 100]
+        && request.resource.data.kitchenUpdatedAt == request.time;
+    }
     function shipperStatusUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         "status",
@@ -223,19 +239,22 @@ service cloud.firestore {
     function kitchenStatusTransition() {
       return statusTransition("CONFIRMED", "PREPARING")
         || statusTransition("PREPARING", "BAKING")
-        || statusTransition("BAKING", "READY");
+        || statusTransition("BAKING", "READY")
+        || statusTransition("BAKING", "READY_FOR_DELIVERY");
     }
 
     function shipperStatusTransition() {
       return statusTransition("READY", "ASSIGNED_TO_SHIPPER")
+        || statusTransition("READY_FOR_DELIVERY", "ASSIGNED_TO_SHIPPER")
         || statusTransition("READY", "DELIVERING")
+        || statusTransition("READY_FOR_DELIVERY", "DELIVERING")
         || statusTransition("ASSIGNED_TO_SHIPPER", "DELIVERING")
         || statusTransition("DELIVERING", "DELIVERED");
     }
 
     function shipperOwnsOrClaimsOrder() {
       return (
-        resource.data.status in ["READY", "ASSIGNED_TO_SHIPPER"]
+        resource.data.status in ["READY", "READY_FOR_DELIVERY", "ASSIGNED_TO_SHIPPER"]
         && resource.data.get("shipperId", "") == ""
         && request.resource.data.shipperId == request.auth.uid
       )
@@ -292,7 +311,13 @@ service cloud.firestore {
           && validStatusHistoryField()
           && (staffStatusTransition() || staffCancelTransition())
         )
-        || (isKitchen() && orderStatusOnlyUpdate() && validStatusHistoryField() && kitchenStatusTransition())
+        || (
+          isKitchen()
+          && kitchenStatusUpdate()
+          && validStatusHistoryField()
+          && kitchenProgressFieldsValid()
+          && kitchenStatusTransition()
+        )
         || (
           isShipper()
           && shipperStatusUpdate()

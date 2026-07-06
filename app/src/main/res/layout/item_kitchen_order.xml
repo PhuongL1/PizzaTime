@@ -12,7 +12,7 @@
         android:id="@+id/viewTopAccent"
         android:layout_width="match_parent"
         android:layout_height="3dp"
-        android:background="#D58A3A" />
+        android:background="@color/pt_status_pending" />
 
     <LinearLayout
         android:id="@+id/cardContent"
@@ -40,7 +40,7 @@
                     android:id="@+id/tvOrderType"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:textColor="#FFB47A"
+                    android:textColor="@color/pt_gold_light"
                     android:textSize="16sp"
                     tools:text="DINE-IN · TABLE 14" />
 
@@ -50,7 +50,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="serif"
-                    android:textColor="#F4EEE8"
+                    android:textColor="@color/pt_text_primary"
                     android:textSize="21sp"
                     android:textStyle="bold"
                     tools:text="ORD-7721" />
@@ -68,7 +68,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:gravity="end"
-                    android:textColor="#FFB47A"
+                    android:textColor="@color/pt_gold_light"
                     android:textSize="21sp"
                     android:textStyle="bold"
                     tools:text="12m" />
@@ -79,7 +79,7 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:gravity="end"
-                    android:textColor="#D8C8BC"
+                    android:textColor="@color/pt_text_secondary"
                     android:textSize="16sp"
                     tools:text="Priority" />
 
@@ -92,7 +92,7 @@
             android:layout_width="match_parent"
             android:layout_height="1dp"
             android:layout_marginTop="24dp"
-            android:background="#39312D" />
+            android:background="@color/pt_stroke_dark" />
 
         <LinearLayout
             android:id="@+id/llOrderItems"
@@ -117,7 +117,7 @@
                 android:background="@drawable/bg_kitchen_ready_icon_circle"
                 android:gravity="center"
                 android:text="▢"
-                android:textColor="#31E978"
+                android:textColor="@color/pt_status_ready"
                 android:textSize="24sp" />
 
             <TextView
@@ -127,7 +127,7 @@
                 android:layout_marginStart="18dp"
                 android:layout_weight="1"
                 android:lineSpacingExtra="6dp"
-                android:textColor="#EDE2DA"
+                android:textColor="@color/pt_text_primary"
                 android:textSize="17sp"
                 tools:text="3 Items Ready&#10;Station 4 - Heat Racô" />
 
@@ -146,7 +146,7 @@
                 android:layout_height="48dp"
                 android:gravity="center"
                 android:text="▣"
-                android:textColor="#9D9692"
+                android:textColor="@color/pt_text_muted"
                 android:textSize="36sp" />
 
             <TextView
@@ -156,7 +156,7 @@
                 android:layout_marginTop="12dp"
                 android:gravity="center"
                 android:text="@string/kitchen_pending_review"
-                android:textColor="#9D9692"
+                android:textColor="@color/pt_text_muted"
                 android:textSize="16sp" />
 
         </LinearLayout>
@@ -168,7 +168,7 @@
             android:layout_marginTop="22dp"
             android:background="@drawable/bg_button_primary_gold"
             android:gravity="center"
-            android:textColor="#1F0E05"
+            android:textColor="@color/pt_text_dark"
             android:textSize="20sp"
             android:textStyle="bold"
             tools:text="🔥  START BAKING" />

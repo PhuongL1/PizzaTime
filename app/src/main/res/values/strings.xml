@@ -422,7 +422,7 @@
     <string name="kitchen_chip_waiting">⏳  Waiting (12)</string>
     <string name="kitchen_chip_preparing">♨  Preparing (4)</string>
     <string name="kitchen_action_start_baking">🔥  START BAKING</string>
-    <string name="kitchen_action_complete">⏱  80%% COMPLETE</string>
+    <string name="kitchen_action_complete">⏱  100%% COMPLETE</string>
     <string name="kitchen_action_handover">▣  MARK HANDED OVER</string>
     <string name="kitchen_action_accept_order">ACCEPT ORDER</string>
     <string name="kitchen_pending_review">Pending Review...</string>
@@ -433,11 +433,12 @@
     <string name="kitchen_action_progress">⏱  %1$s</string>
     <string name="kitchen_action_handed_over">▣  MARK HANDED OVER</string>
     <string name="kitchen_ready_check">✓</string>
-    <string name="kitchen_default_progress">80%% COMPLETE</string>
+    <string name="kitchen_default_progress">20%% COMPLETE</string>
 
     <string name="coming_soon_format">%1$s coming soon</string>
     <string name="kitchen_message_baking_started">Baking started</string>
     <string name="kitchen_message_progress_updated">Order progress updated</string>
+    <string name="kitchen_default_chef_name">Chef</string>
     <string name="kitchen_message_order_handed_over">Order handed over</string>
     <string name="kitchen_message_order_accepted">Order accepted</string>
 
@@ -473,6 +474,9 @@
 
     <string name="kitchen_order_detail_status_updated_toast">Kitchen order updated: %1$s</string>
     <string name="kitchen_order_detail_cancelled_toast">%1$s cancelled.</string>
+    <string name="kitchen_order_detail_load_failed">Could not load order detail.</string>
+    <string name="kitchen_order_detail_update_failed">Could not update order status.</string>
+    <string name="kitchen_order_detail_no_value">Không có</string>
 
     <!-- Shipper Delivery Dashboard -->
     <string name="shipper_active_delivery">Active Delivery</string>
