@@ -56,6 +56,15 @@ class PizzaDetailFragment : Fragment() {
         renderToppings(pizzaDetail.toppings)
         setupActions()
         loadFavoriteState()
+        updateCartBadge()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            updateCartBadge()
+            updateAddToCartLabel()
+        }
     }
 
     private fun buildPizzaDetail(): PizzaDetailUiModel {
@@ -254,12 +263,14 @@ class PizzaDetailFragment : Fragment() {
             if (quantity > 1) {
                 quantity--
                 binding.tvQuantity.text = quantity.toString()
+                updateAddToCartLabel()
             }
         }
 
         binding.btnPlus.setOnClickListener {
             quantity++
             binding.tvQuantity.text = quantity.toString()
+            updateAddToCartLabel()
         }
 
         binding.btnAddToCart.setOnClickListener {
@@ -277,6 +288,7 @@ class PizzaDetailFragment : Fragment() {
                     imageUrl = pizzaDetail.imageUrl,
                 ),
             )
+            updateCartBadge()
             Toast.makeText(
                 requireContext(),
                 "Added $quantity ${pizzaDetail.name}",
@@ -361,15 +373,22 @@ class PizzaDetailFragment : Fragment() {
     }
 
     private fun updateAddToCartLabel() {
+        val totalPrice = computeCurrentUnitPrice() * quantity
         binding.btnAddToCart.text = getString(
             R.string.detail_add_to_cart_format,
-            formatPrice(computeCurrentUnitPrice()),
+            formatPrice(totalPrice),
         )
     }
 
     private fun computeCurrentUnitPrice(): Double {
         val toppingPrice = selectedToppings.size * TOPPING_PRICE
         return basePrice * sizeMultiplier(selectedSize) + toppingPrice
+    }
+
+    private fun updateCartBadge() = with(binding) {
+        val count = CartStore.items.sumOf { it.quantity }
+        tvCartBadge.isVisible = count > 0
+        tvCartBadge.text = count.toString()
     }
 
     private fun sizeMultiplier(size: String): Double {

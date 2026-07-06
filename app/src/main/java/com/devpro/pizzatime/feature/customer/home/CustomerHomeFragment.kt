@@ -17,12 +17,14 @@ import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
+import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.menu.FirebaseProductRepository
 import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaMenuScreen
+import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 
 class CustomerHomeFragment : Fragment() {
@@ -52,6 +54,7 @@ class CustomerHomeFragment : Fragment() {
         setupSearch()
         setupCategories()
         setupActions()
+        loadHomeLocation()
         loadHomeData()
     }
 
@@ -148,6 +151,23 @@ class CustomerHomeFragment : Fragment() {
 
         binding.tvSeeAll.setOnClickListener {
             openPizzaMenuScreen()
+        }
+    }
+
+    private fun loadHomeLocation() {
+        binding.tvHomeLocation.text = formatShortAddress(
+            binding.tvHomeLocation.text?.toString().orEmpty(),
+        )
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
+            if (_binding == null) return@loadProfile
+            result.onSuccess { profile ->
+                val address = profile.deliveryAddress.trim()
+                if (address.isNotBlank()) {
+                    binding.tvHomeLocation.text = formatShortAddress(address)
+                }
+            }
         }
     }
 
@@ -412,6 +432,22 @@ class CustomerHomeFragment : Fragment() {
             compact
         } else {
             compact.take(QUICK_INFO_MAX_LENGTH).trimEnd() + "..."
+        }
+    }
+
+    private fun formatShortAddress(address: String): String {
+        val trimmed = address.trim()
+        if (trimmed.isBlank()) return getString(R.string.home_location)
+
+        val components = trimmed
+            .split(",")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
+
+        return if (components.size >= 2) {
+            components.takeLast(2).joinToString(", ")
+        } else {
+            trimmed
         }
     }
 

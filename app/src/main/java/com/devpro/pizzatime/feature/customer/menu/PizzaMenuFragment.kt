@@ -18,12 +18,10 @@ import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentPizzaMenuBinding
 import com.devpro.pizzatime.databinding.ItemPizzaMenuBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
-import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import java.util.Locale
 
@@ -75,8 +73,10 @@ class PizzaMenuFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.bottomNav.navMenu.text = getString(R.string.menu_nav_menu)
-        binding.bottomNav.navLoyalty.text = getString(R.string.menu_nav_loyalty)
+        bindCustomerBottomNav(
+            root = binding.bottomNav.root,
+            selectedTab = CustomerBottomNavTab.MENU,
+        )
     }
 
     private fun setupSearch() = with(binding) {
@@ -116,27 +116,6 @@ class PizzaMenuFragment : Fragment() {
                 R.string.menu_filters_updated,
                 Toast.LENGTH_SHORT,
             ).show()
-        }
-
-        bottomNav.navMenu.setOnClickListener {
-            openCustomerHome()
-        }
-
-        bottomNav.navOrders.setOnClickListener {
-            if (FakeSessionStore.isLoggedIn) openCustomerOrderHistory()
-            else openLoginRequiredScreen()
-        }
-
-        bottomNav.navLoyalty.setOnClickListener {
-            openCustomerPromoCodes()
-        }
-
-        bottomNav.navProfile.setOnClickListener {
-            if (FakeSessionStore.isLoggedIn) {
-                openCustomerAccount()
-            } else {
-                openLoginRequiredScreen()
-            }
         }
     }
 

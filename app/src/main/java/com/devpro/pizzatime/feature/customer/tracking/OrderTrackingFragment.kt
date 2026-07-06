@@ -14,7 +14,11 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentOrderTrackingBinding
 import com.devpro.pizzatime.databinding.ItemOrderTrackingStepBinding
+import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
@@ -47,8 +51,17 @@ class OrderTrackingFragment : Fragment() {
         }
         setupBottomNav()
         setupActions()
+        updateCartBadge()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            updateCartBadge()
+        }
+    }
+
+    @SuppressLint("SetTextI18n")
     private fun loadOrderFromFirestore(orderId: String) {
         listenerRegistration = FirebaseFirestore.getInstance()
             .collection("orders")
@@ -210,35 +223,19 @@ class OrderTrackingFragment : Fragment() {
     }
 
     private fun setupBottomNav() {
-        binding.bottomNav.navMenu.text = getString(R.string.tracking_nav_menu)
-        binding.bottomNav.navOrders.text = getString(R.string.tracking_nav_orders)
-        binding.bottomNav.navLoyalty.text = getString(R.string.tracking_nav_loyalty)
-        binding.bottomNav.navProfile.text = getString(R.string.tracking_nav_profile)
-
-        val primaryColor = ContextCompat.getColor(requireContext(), R.color.pt_text_primary)
-        val darkColor = ContextCompat.getColor(requireContext(), R.color.pt_text_dark)
-
-        listOf(
-            binding.bottomNav.navMenu,
-            binding.bottomNav.navOrders,
-            binding.bottomNav.navLoyalty,
-            binding.bottomNav.navProfile,
-        ).forEach { item ->
-            item.setBackgroundResource(0)
-            item.setTextColor(primaryColor)
-        }
-
-        binding.bottomNav.navOrders.setBackgroundResource(R.drawable.bg_bottom_nav_item_selected)
-        binding.bottomNav.navOrders.setTextColor(darkColor)
+        bindCustomerBottomNav(
+            root = binding.bottomNav.root,
+            selectedTab = CustomerBottomNavTab.ORDERS,
+        )
     }
 
     private fun setupActions() {
-        binding.btnMenu.setOnClickListener {
+        binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
 
         binding.btnCart.setOnClickListener {
-            Toast.makeText(requireContext(), "Cart coming soon", Toast.LENGTH_SHORT).show()
+            openCartScreen()
         }
 
         binding.btnProductDetail.setOnClickListener {
@@ -248,18 +245,12 @@ class OrderTrackingFragment : Fragment() {
         binding.btnSupport.setOnClickListener {
             Toast.makeText(requireContext(), "Support coming soon", Toast.LENGTH_SHORT).show()
         }
+    }
 
-        binding.bottomNav.navMenu.setOnClickListener {
-            Toast.makeText(requireContext(), "Menu coming soon", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.bottomNav.navLoyalty.setOnClickListener {
-            Toast.makeText(requireContext(), "Loyalty coming soon", Toast.LENGTH_SHORT).show()
-        }
-
-        binding.bottomNav.navProfile.setOnClickListener {
-            Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
-        }
+    private fun updateCartBadge() = with(binding) {
+        val count = CartStore.items.sumOf { it.quantity }
+        tvCartBadge.isVisible = count > 0
+        tvCartBadge.text = count.toString()
     }
 
     private val Int.dp: Int
