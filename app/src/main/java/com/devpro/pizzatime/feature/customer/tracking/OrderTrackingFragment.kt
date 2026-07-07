@@ -1,7 +1,6 @@
 package com.devpro.pizzatime.feature.customer.tracking
 
 import android.annotation.SuppressLint
-import android.graphics.Color
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -17,6 +16,8 @@ import com.devpro.pizzatime.databinding.ItemOrderTrackingStepBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.updatePizzaFlowCartBadge
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.firestore.FirebaseFirestore
@@ -42,6 +43,7 @@ class OrderTrackingFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTopBar()
         val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
         if (orderId.isNotBlank()) {
             loadOrderFromFirestore(orderId)
@@ -57,8 +59,18 @@ class OrderTrackingFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
+            setupTopBar()
             updateCartBadge()
         }
+    }
+
+    private fun setupTopBar() {
+        bindPizzaFlowTopBar(
+            root = binding.pizzaTopBar.root,
+            cartItemCount = CartStore.items.sumOf { it.quantity },
+            onBackClick = { parentFragmentManager.popBackStack() },
+            onCartClick = { openCartScreen() },
+        )
     }
 
     @SuppressLint("SetTextI18n")
@@ -182,8 +194,8 @@ class OrderTrackingFragment : Fragment() {
                 itemBinding.tvStepSubtitle.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.pt_text_secondary)
                 )
-                itemBinding.topLine.setBackgroundColor(Color.parseColor("#D1843D"))
-                itemBinding.bottomLine.setBackgroundColor(Color.parseColor("#D1843D"))
+                itemBinding.topLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_copper))
+                itemBinding.bottomLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_copper))
             }
 
             TrackingStepState.CURRENT -> {
@@ -195,8 +207,8 @@ class OrderTrackingFragment : Fragment() {
                 itemBinding.tvStepSubtitle.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.pt_text_primary)
                 )
-                itemBinding.topLine.setBackgroundColor(Color.parseColor("#D1843D"))
-                itemBinding.bottomLine.setBackgroundColor(Color.parseColor("#5A4332"))
+                itemBinding.topLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_copper))
+                itemBinding.bottomLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_border_warm))
             }
 
             TrackingStepState.PENDING -> {
@@ -208,8 +220,8 @@ class OrderTrackingFragment : Fragment() {
                 itemBinding.tvStepSubtitle.setTextColor(
                     ContextCompat.getColor(requireContext(), R.color.pt_text_muted)
                 )
-                itemBinding.topLine.setBackgroundColor(Color.parseColor("#5A4332"))
-                itemBinding.bottomLine.setBackgroundColor(Color.parseColor("#5A4332"))
+                itemBinding.topLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_border_warm))
+                itemBinding.bottomLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_border_warm))
             }
         }
     }
@@ -230,14 +242,6 @@ class OrderTrackingFragment : Fragment() {
     }
 
     private fun setupActions() {
-        binding.btnBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
-
-        binding.btnCart.setOnClickListener {
-            openCartScreen()
-        }
-
         binding.btnProductDetail.setOnClickListener {
             Toast.makeText(requireContext(), "Open order item detail", Toast.LENGTH_SHORT).show()
         }
@@ -249,8 +253,10 @@ class OrderTrackingFragment : Fragment() {
 
     private fun updateCartBadge() = with(binding) {
         val count = CartStore.items.sumOf { it.quantity }
-        tvCartBadge.isVisible = count > 0
-        tvCartBadge.text = count.toString()
+        updatePizzaFlowCartBadge(
+            root = pizzaTopBar.root,
+            cartItemCount = count,
+        )
     }
 
     private val Int.dp: Int

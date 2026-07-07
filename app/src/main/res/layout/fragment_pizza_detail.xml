@@ -1,18 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
-<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/pizzaDetailRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_app_dark">
 
+    <include
+        android:id="@+id/pizzaTopBar"
+        layout="@layout/layout_pizza_flow_top_bar"
+        android:layout_width="0dp"
+        android:layout_height="72dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
+
     <ScrollView
         android:id="@+id/detailScroll"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
+        android:layout_width="0dp"
+        android:layout_height="0dp"
         android:clipToPadding="false"
         android:overScrollMode="never"
-        android:paddingBottom="170dp"
-        android:scrollbars="none">
+        android:paddingBottom="24dp"
+        android:scrollbars="none"
+        app:layout_constraintBottom_toTopOf="@id/detailBottomBar"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent">
 
         <LinearLayout
             android:id="@+id/detailContent"
@@ -38,65 +52,6 @@
                     android:layout_height="180dp"
                     android:layout_gravity="bottom"
                     android:background="@drawable/bg_image_scrim_bottom" />
-
-                <LinearLayout
-                    android:id="@+id/detailTopBar"
-                    android:layout_width="match_parent"
-                    android:layout_height="64dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="28dp"
-                    android:paddingEnd="28dp">
-
-                    <ImageView
-                        android:id="@+id/btnBack"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:contentDescription="@string/detail_back_content_description"
-                        android:src="@drawable/ic_back" />
-
-                    <TextView
-                        android:id="@+id/tvDetailBrand"
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_weight="1"
-                        android:fontFamily="serif"
-                        android:gravity="center"
-                        android:includeFontPadding="false"
-                        android:letterSpacing="0.12"
-                        android:text="@string/detail_brand"
-                        android:textColor="@color/pt_gold"
-                        android:textSize="30sp" />
-
-                    <FrameLayout
-                        android:id="@+id/btnCart"
-                        android:layout_width="34dp"
-                        android:layout_height="34dp"
-                        android:clickable="true"
-                        android:focusable="true">
-
-                        <ImageView
-                            android:layout_width="30dp"
-                            android:layout_height="30dp"
-                            android:layout_gravity="center"
-                            android:contentDescription="@string/detail_cart_content_description"
-                            android:src="@drawable/ic_bag" />
-
-                        <TextView
-                            android:id="@+id/tvCartBadge"
-                            android:layout_width="20dp"
-                            android:layout_height="20dp"
-                            android:layout_gravity="top|end"
-                            android:background="@drawable/bg_badge_red"
-                            android:gravity="center"
-                            android:textColor="@color/pt_text_primary"
-                            android:textSize="11sp"
-                            android:textStyle="bold"
-                            android:visibility="gone" />
-
-                    </FrameLayout>
-
-                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/infoCard"
@@ -384,7 +339,7 @@
                             android:clickable="true"
                             android:focusable="true"
                             android:gravity="center"
-                            android:text="−"
+                            android:text="âˆ’"
                             android:textColor="@color/pt_text_primary"
                             android:textSize="28sp" />
 
@@ -415,10 +370,10 @@
                 </LinearLayout>
 
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="90dp" />
-
 
         </LinearLayout>
 
@@ -426,14 +381,16 @@
 
     <LinearLayout
         android:id="@+id/detailBottomBar"
-        android:layout_width="match_parent"
+        android:layout_width="0dp"
         android:layout_height="108dp"
-        android:layout_gravity="bottom"
         android:background="@drawable/bg_detail_bottom_bar"
         android:gravity="center_vertical"
         android:orientation="horizontal"
         android:paddingStart="28dp"
-        android:paddingEnd="28dp">
+        android:paddingEnd="28dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent">
 
         <FrameLayout
             android:id="@+id/btnFavorite"
@@ -462,11 +419,11 @@
             android:layout_weight="1"
             android:background="@drawable/bg_button_primary_light"
             android:gravity="center"
+            android:text="@string/detail_add_to_cart"
             android:textColor="@color/pt_text_dark"
             android:textSize="17sp"
-            android:textStyle="bold"
-            android:text="@string/detail_add_to_cart" />
+            android:textStyle="bold" />
 
     </LinearLayout>
 
-</FrameLayout>
+</androidx.constraintlayout.widget.ConstraintLayout>

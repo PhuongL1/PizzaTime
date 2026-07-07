@@ -17,6 +17,8 @@ import com.devpro.pizzatime.databinding.FragmentPizzaDetailBinding
 import com.devpro.pizzatime.databinding.ItemExtraToppingBinding
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.updatePizzaFlowCartBadge
 import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.auth.FirebaseAuth
@@ -50,6 +52,7 @@ class PizzaDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         pizzaDetail = buildPizzaDetail()
+        setupTopBar()
         bindPizzaDetail(pizzaDetail)
         renderSizeOptions(pizzaDetail.sizeOptions)
         renderCrustOptions(pizzaDetail.crustOptions)
@@ -62,9 +65,19 @@ class PizzaDetailFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
+            setupTopBar()
             updateCartBadge()
             updateAddToCartLabel()
         }
+    }
+
+    private fun setupTopBar() {
+        bindPizzaFlowTopBar(
+            root = binding.pizzaTopBar.root,
+            cartItemCount = CartStore.items.sumOf { it.quantity },
+            onBackClick = { parentFragmentManager.popBackStack() },
+            onCartClick = { openCartScreen() },
+        )
     }
 
     private fun buildPizzaDetail(): PizzaDetailUiModel {
@@ -247,14 +260,6 @@ class PizzaDetailFragment : Fragment() {
     }
 
     private fun setupActions() {
-        binding.btnBack.setOnClickListener {
-            parentFragmentManager.popBackStack()
-        }
-
-        binding.btnCart.setOnClickListener {
-            openCartScreen()
-        }
-
         binding.btnFavorite.setOnClickListener {
             toggleFavorite()
         }
@@ -387,8 +392,10 @@ class PizzaDetailFragment : Fragment() {
 
     private fun updateCartBadge() = with(binding) {
         val count = CartStore.items.sumOf { it.quantity }
-        tvCartBadge.isVisible = count > 0
-        tvCartBadge.text = count.toString()
+        updatePizzaFlowCartBadge(
+            root = pizzaTopBar.root,
+            cartItemCount = count,
+        )
     }
 
     private fun sizeMultiplier(size: String): Double {

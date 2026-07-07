@@ -14,14 +14,15 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
-import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentPizzaMenuBinding
 import com.devpro.pizzatime.databinding.ItemPizzaMenuBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.updatePizzaFlowCartBadge
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import java.util.Locale
 
@@ -48,6 +49,7 @@ class PizzaMenuFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTopBar()
         setupBottomNav()
         setupSearch()
         setupActions()
@@ -58,9 +60,19 @@ class PizzaMenuFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
+            setupTopBar()
             loadAndRenderProducts()
             updateCartBadge()
         }
+    }
+
+    private fun setupTopBar() {
+        bindPizzaFlowTopBar(
+            root = binding.pizzaTopBar.root,
+            cartItemCount = CartStore.items.sumOf { it.quantity },
+            onBackClick = { openCustomerHome() },
+            onCartClick = { openCartScreen() },
+        )
     }
 
     private fun loadAndRenderProducts() {
@@ -101,14 +113,6 @@ class PizzaMenuFragment : Fragment() {
     }
 
     private fun setupActions() = with(binding) {
-        btnOpenDrawer.setOnClickListener {
-            Toast.makeText(requireContext(), "Drawer coming soon", Toast.LENGTH_SHORT).show()
-        }
-
-        btnOpenCart.setOnClickListener {
-            openCartScreen()
-        }
-
         btnFilter.setOnClickListener {
             categoryScroll.isVisible = !categoryScroll.isVisible
             Toast.makeText(
@@ -271,8 +275,10 @@ class PizzaMenuFragment : Fragment() {
 
     private fun updateCartBadge() = with(binding) {
         val count = CartStore.items.sumOf { it.quantity }
-        tvCartBadge.isVisible = count > 0
-        tvCartBadge.text = count.toString()
+        updatePizzaFlowCartBadge(
+            root = pizzaTopBar.root,
+            cartItemCount = count,
+        )
     }
 
     private fun openPizzaDetail(item: PizzaMenuUiModel) {

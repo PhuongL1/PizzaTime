@@ -73,6 +73,7 @@
     <color name="pt_danger_button_bg">#F3A7A0</color>
     <color name="pt_danger_button_text">#6E0E13</color>
     <color name="pt_overlay_dark_55">#8C000000</color>
+    <color name="pt_overlay_light_47">#77FFFFFF</color>
     <color name="pt_switch_track_off">#3A3430</color>
     <color name="pt_switch_thumb">#FFF4E6</color>
 </resources>
