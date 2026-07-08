@@ -59,12 +59,15 @@
                 android:layout_height="70dp"
                 android:layout_marginTop="42dp"
                 android:background="@drawable/bg_manage_menu_search"
+                android:clickable="true"
+                android:focusable="true"
+                android:focusableInTouchMode="true"
                 android:hint="@string/manage_menu_search_hint"
                 android:inputType="text"
                 android:paddingHorizontal="22dp"
                 android:singleLine="true"
                 android:textColor="@color/pt_white"
-                android:textColorHint="#8F8580"
+                android:textColorHint="@color/pt_text_hint_dark_bg"
                 android:textSize="18sp" />
 
             <HorizontalScrollView
@@ -89,7 +92,7 @@
                         android:background="@drawable/bg_chip_selected_gold"
                         android:gravity="center"
                         android:text="@string/manage_menu_category_signature"
-                        android:textColor="#3A210D"
+                        android:textColor="@color/staff_nav_selected"
                         android:textSize="17sp" />
 
                     <TextView
@@ -100,7 +103,7 @@
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:text="@string/manage_menu_category_classic"
-                        android:textColor="#D8C8BC"
+                        android:textColor="@color/staff_nav_unselected"
                         android:textSize="17sp" />
 
                     <TextView
@@ -111,7 +114,7 @@
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:text="@string/manage_menu_category_veggie"
-                        android:textColor="#D8C8BC"
+                        android:textColor="@color/staff_nav_unselected"
                         android:textSize="17sp" />
 
                 </LinearLayout>

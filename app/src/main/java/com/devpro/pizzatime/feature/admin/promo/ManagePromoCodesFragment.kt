@@ -34,7 +34,7 @@ class ManagePromoCodesFragment : Fragment() {
             "FragmentManagePromoCodesBinding is only valid between onCreateView and onDestroyView."
         }
 
-    private var allPromos: List<AdminPromoUiModel> = FakeAdminPromoData.promos
+    private var allPromos: List<AdminPromoUiModel> = emptyList()
 
     private val promoAdapter by lazy {
         AdminPromoAdapter(
@@ -55,7 +55,7 @@ class ManagePromoCodesFragment : Fragment() {
         )
     }
 
-    private var selectedFilter = PromoFilter.ACTIVE
+    private var selectedFilter = PromoFilter.ALL
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -79,7 +79,14 @@ class ManagePromoCodesFragment : Fragment() {
     private fun loadFirestorePromos() {
         AdminPromoFirestoreRepository.loadPromos { result ->
             if (!isAdded) return@loadPromos
-            allPromos = result.getOrElse { FakeAdminPromoData.promos }
+            result
+                .onSuccess { promos ->
+                    allPromos = promos
+                }
+                .onFailure {
+                    allPromos = emptyList()
+                    showToast(R.string.promo_load_failed)
+                }
             renderPromos()
         }
     }
@@ -368,12 +375,12 @@ class ManagePromoCodesFragment : Fragment() {
         }
 
         tvChipInactive.setOnClickListener {
-            selectedFilter = PromoFilter.INACTIVE
+            selectedFilter = PromoFilter.PAST
             renderPromos()
         }
 
         tvChipScheduled.setOnClickListener {
-            selectedFilter = PromoFilter.SCHEDULED
+            selectedFilter = PromoFilter.ALL
             renderPromos()
         }
     }
@@ -402,25 +409,59 @@ class ManagePromoCodesFragment : Fragment() {
                 it.status == AdminPromoStatus.ACTIVE
             }
 
-            PromoFilter.INACTIVE -> allPromos.filter {
+            PromoFilter.PAST -> allPromos.filter {
                 it.status == AdminPromoStatus.INACTIVE || it.status == AdminPromoStatus.EXPIRED
             }
 
-            PromoFilter.SCHEDULED -> allPromos.filter {
-                it.status == AdminPromoStatus.SCHEDULED
-            }
+            PromoFilter.ALL -> allPromos
         }
 
         promoAdapter.submitList(promos)
         binding.rvPromos.isVisible = promos.isNotEmpty()
         binding.tvEmptyPromos.isVisible = promos.isEmpty()
         renderFilterState()
+        renderStats()
     }
 
     private fun renderFilterState() = with(binding) {
+        tvChipActive.text = getString(
+            R.string.promo_filter_active_count,
+            allPromos.count { promo -> promo.status == AdminPromoStatus.ACTIVE },
+        )
+        tvChipInactive.text = getString(
+            R.string.promo_filter_past_count,
+            allPromos.count { promo ->
+                promo.status == AdminPromoStatus.INACTIVE || promo.status == AdminPromoStatus.EXPIRED
+            },
+        )
+        tvChipScheduled.text = getString(R.string.promo_filter_all_count, allPromos.size)
         tvChipActive.bindChip(selectedFilter == PromoFilter.ACTIVE)
-        tvChipInactive.bindChip(selectedFilter == PromoFilter.INACTIVE)
-        tvChipScheduled.bindChip(selectedFilter == PromoFilter.SCHEDULED)
+        tvChipInactive.bindChip(selectedFilter == PromoFilter.PAST)
+        tvChipScheduled.bindChip(selectedFilter == PromoFilter.ALL)
+    }
+
+    private fun renderStats() = with(binding) {
+        val totalUsage = allPromos.sumOf { promo -> promo.usageCount }
+        val totalMaxUses = allPromos.sumOf { promo -> promo.maxUses ?: 0 }
+        redemptionRate.text = if (totalMaxUses > 0) {
+            String.format(Locale.US, "%.0f%%", totalUsage * 100.0 / totalMaxUses)
+        } else {
+            getString(R.string.promo_stat_not_available)
+        }
+
+        // Older promo docs may not store reach. maxUses is the real cap fallback, then usage count.
+        val reach = allPromos.sumOf { promo ->
+            promo.totalReach ?: promo.maxUses ?: promo.usageCount
+        }
+        totalReach.text = formatReach(reach)
+    }
+
+    private fun formatReach(value: Int): String {
+        if (value < 1000) return value.toString()
+        val thousands = value / 1000.0
+        val formatted = String.format(Locale.US, "%.1f", thousands)
+            .removeSuffix(".0")
+        return "${formatted}k"
     }
 
     private fun TextView.bindChip(isSelected: Boolean) {
@@ -463,7 +504,7 @@ class ManagePromoCodesFragment : Fragment() {
 
     private enum class PromoFilter {
         ACTIVE,
-        INACTIVE,
-        SCHEDULED,
+        PAST,
+        ALL,
     }
 }

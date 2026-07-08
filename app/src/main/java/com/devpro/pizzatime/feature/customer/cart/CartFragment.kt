@@ -53,7 +53,8 @@ class CartFragment : Fragment() {
         binding.orderSummaryCard.isVisible = hasItems
         binding.cartBottomBar.isVisible = hasItems
         binding.emptyCartView.isVisible = !hasItems
-        binding.tvCartBadge.text = selectedItemCount.toString()
+        binding.tvCartBadge.isVisible = selectedItemCount > 0
+        binding.tvCartBadge.text = if (selectedItemCount > 0) selectedItemCount.toString() else ""
         binding.tvCartSubtitle.text = if (hasItems) {
             getString(R.string.cart_items_selected_format, selectedItemCount)
         } else {
@@ -168,6 +169,10 @@ class CartFragment : Fragment() {
     private fun setupActions() {
         binding.btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+
+        binding.btnCartIcon.setOnClickListener {
+            renderCart()
         }
 
         binding.btnApplyPromo.setOnClickListener {

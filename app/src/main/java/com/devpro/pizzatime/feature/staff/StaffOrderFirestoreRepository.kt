@@ -185,7 +185,7 @@ object StaffOrderFirestoreRepository {
             "PENDING" -> StaffOrderStatus.PENDING
             "CONFIRMED" -> StaffOrderStatus.CONFIRMED
             "PREPARING" -> StaffOrderStatus.PREPARING
-            "READY", "DELIVERING", "DELIVERED" -> StaffOrderStatus.READY
+            "READY", "READY_FOR_DELIVERY", "DELIVERING", "DELIVERED" -> StaffOrderStatus.READY
             STATUS_CANCELLED -> StaffOrderStatus.CANCELLED
             else -> StaffOrderStatus.PENDING
         }

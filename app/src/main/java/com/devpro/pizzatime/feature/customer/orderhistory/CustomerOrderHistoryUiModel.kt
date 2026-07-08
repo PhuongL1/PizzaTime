@@ -15,6 +15,8 @@ data class CustomerOrderHistoryItemUiModel(
     val itemSummary: List<String>,
     val total: Double,
     val imageRes: Int?,
+    val imageUrl: String = "",
+    val heroProductId: String = "",
 )
 
 data class CustomerOrderRewardUiModel(

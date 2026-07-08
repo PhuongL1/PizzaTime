@@ -20,9 +20,11 @@ import com.devpro.pizzatime.databinding.FragmentCustomerOrderDetailBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderDetailLineBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
-import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
+import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopBar
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
 import com.devpro.pizzatime.feature.customer.rating.CustomerProductReviewFirestoreRepository
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 
@@ -59,10 +61,19 @@ class CustomerOrderDetailFragment : Fragment() {
         loadOrder(orderId)
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            setupTopBar()
+        }
+    }
+
     private fun setupTopBar() = with(binding) {
-        bindCustomerTopBar(
+        bindPizzaFlowTopBar(
             root = customerTopBar.root,
-            cartItemCount = 0,
+            cartItemCount = CartStore.items.sumOf { item -> item.quantity },
+            onBackClick = { parentFragmentManager.popBackStack() },
+            onCartClick = { openCartScreen() },
         )
     }
 
@@ -80,13 +91,21 @@ class CustomerOrderDetailFragment : Fragment() {
         if (isFirestoreOrderId(orderId)) {
             CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
                 if (_binding == null || !isAdded) return@loadOrderDetail
-                val detail = result.getOrElse {
-                    FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
-                }
-                isRealOrderLoaded = result.isSuccess
-                currentOrderDetail = detail
-                bindOrderDetail(detail)
-                loadRatingState(detail)
+                result
+                    .onSuccess { detail ->
+                        isRealOrderLoaded = true
+                        currentOrderDetail = detail
+                        bindOrderDetail(detail)
+                        loadRatingState(detail)
+                    }
+                    .onFailure {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.customer_order_detail_load_failed,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        parentFragmentManager.popBackStack()
+                    }
             }
         } else {
             val detail = FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })

@@ -77,4 +77,9 @@
     <color name="pt_overlay_light_47">#77FFFFFF</color>
     <color name="pt_switch_track_off">#3A3430</color>
     <color name="pt_switch_thumb">#FFF4E6</color>
+    <color name="pt_admin_metric_label">#D6BFB0</color>
+    <color name="pt_admin_metric_value_dark">#111111</color>
+    <color name="pt_admin_positive">#148E46</color>
+    <color name="pt_admin_completed_text">#F4EEE8</color>
+    <color name="pt_admin_see_all">#F2A96B</color>
 </resources>

@@ -13,6 +13,7 @@ import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.NotificationPermissionHelper
+import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
@@ -85,6 +86,7 @@ class LoginFragment : Fragment() {
                     requestNotificationPermissionThenNavigate(user.role)
                 }
                 .onFailure { error ->
+                    OrderNotificationMonitor.stop()
                     FakeSessionStore.logout()
                     CartStore.clearForLogout()
                     Toast.makeText(

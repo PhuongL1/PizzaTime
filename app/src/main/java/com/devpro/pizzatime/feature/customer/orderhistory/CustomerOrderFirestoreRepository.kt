@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.customer.orderhistory
 
+import android.util.Log
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerBillUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailUiModel
@@ -30,7 +31,9 @@ object CustomerOrderFirestoreRepository {
                 val orders = snapshot.documents
                     .sortedByDescending { it.getTimestamp("createdAt")?.seconds ?: 0L }
                     .mapNotNull { it.toHistoryItem() }
-                onResult(Result.success(orders))
+                enrichHistoryImages(orders) { enrichedOrders ->
+                    onResult(Result.success(enrichedOrders))
+                }
             }
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
@@ -46,7 +49,9 @@ object CustomerOrderFirestoreRepository {
                     onResult(Result.failure(Exception("Order $orderId not found")))
                     return@addOnSuccessListener
                 }
-                onResult(Result.success(doc.toOrderDetail()))
+                enrichOrderDetailImages(doc.toOrderDetail()) { detail ->
+                    onResult(Result.success(detail))
+                }
             }
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
@@ -70,9 +75,11 @@ object CustomerOrderFirestoreRepository {
 
     private fun DocumentSnapshot.toHistoryItem(): CustomerOrderHistoryItemUiModel {
         val statusStr = getString("status") ?: "PENDING"
-        val total = getDouble("total") ?: 0.0
+        val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val rawItems = get("items") as? List<*>
+        val items = rawItems?.mapNotNull { it.toOrderItem() }.orEmpty()
+        val heroItem = items.maxByOrNull { it.price }
 
         return CustomerOrderHistoryItemUiModel(
             orderId = id,
@@ -81,7 +88,9 @@ object CustomerOrderFirestoreRepository {
             status = mapHistoryStatus(statusStr),
             itemSummary = buildItemSummary(rawItems),
             total = total,
-            imageRes = if (!rawItems.isNullOrEmpty()) R.drawable.img_pizza_time else null,
+            imageRes = if (heroItem != null) R.drawable.img_pizza_time else null,
+            imageUrl = heroItem?.imageUrl.orEmpty(),
+            heroProductId = heroItem?.productId.orEmpty(),
         )
     }
 
@@ -138,8 +147,12 @@ object CustomerOrderFirestoreRepository {
     private fun Any?.toOrderItem(): CustomerOrderItemUiModel? {
         val map = this as? Map<*, *> ?: return null
         val name = map["name"] as? String ?: return null
-        val quantity = (map["quantity"] as? Long)?.toInt() ?: 1
-        val unitPrice = map["unitPrice"] as? Double ?: map["price"] as? Double ?: 0.0
+        val quantity = map["quantity"].asIntOrNull()?.coerceAtLeast(1) ?: 1
+        val linePrice = map["totalPrice"].asDoubleOrNull()
+            ?: map["lineTotal"].asDoubleOrNull()
+            ?: map["unitPrice"].asDoubleOrNull()?.times(quantity)
+            ?: map["price"].asDoubleOrNull()
+            ?: 0.0
         val productId = (map["productId"] as? String ?: map["id"] as? String).orEmpty().ifBlank {
             name.lowercase(Locale.US).replace(Regex("\\s+"), "_")
         }
@@ -148,10 +161,104 @@ object CustomerOrderFirestoreRepository {
             quantity = quantity,
             name = name,
             description = buildItemDescription(map),
-            price = unitPrice * quantity,
+            price = linePrice,
             imageRes = null,
-            imageUrl = (map["imageUrl"] as? String).orEmpty(),
+            imageUrl = map.firstString("imageUrl", "productImageUrl", "photoUrl"),
         )
+    }
+
+    private fun enrichOrderDetailImages(
+        detail: CustomerOrderDetailUiModel,
+        onResult: (CustomerOrderDetailUiModel) -> Unit,
+    ) {
+        val missingProductIds = detail.items
+            .filter { item -> item.imageUrl.isBlank() }
+            .map { item -> item.productId }
+            .filter { productId -> productId.isNotBlank() }
+            .toSet()
+
+        loadProductImageUrls(missingProductIds) { imageUrls ->
+            val enrichedItems = detail.items.map { item ->
+                val resolvedImageUrl = item.imageUrl.ifBlank { imageUrls[item.productId].orEmpty() }
+                if (resolvedImageUrl.isBlank()) {
+                    Log.d(TAG, "Order item image fallback for productId=${item.productId}")
+                }
+                item.copy(imageUrl = resolvedImageUrl)
+            }
+            val heroItem = enrichedItems.maxByOrNull { item -> item.price }
+            onResult(
+                detail.copy(
+                    items = enrichedItems,
+                    heroImageUrl = heroItem?.imageUrl.orEmpty(),
+                    heroImageRes = heroItem?.imageRes ?: R.drawable.img_pizza_time,
+                ),
+            )
+        }
+    }
+
+    private fun enrichHistoryImages(
+        orders: List<CustomerOrderHistoryItemUiModel>,
+        onResult: (List<CustomerOrderHistoryItemUiModel>) -> Unit,
+    ) {
+        val missingProductIds = orders
+            .filter { order -> order.imageUrl.isBlank() }
+            .map { order -> order.heroProductId }
+            .filter { productId -> productId.isNotBlank() }
+            .toSet()
+
+        loadProductImageUrls(missingProductIds) { imageUrls ->
+            val enrichedOrders = orders.map { order ->
+                val resolvedImageUrl = order.imageUrl.ifBlank { imageUrls[order.heroProductId].orEmpty() }
+                if (order.heroProductId.isNotBlank() && resolvedImageUrl.isBlank()) {
+                    Log.d(TAG, "Order history hero image fallback for productId=${order.heroProductId}")
+                }
+                order.copy(imageUrl = resolvedImageUrl)
+            }
+            onResult(enrichedOrders)
+        }
+    }
+
+    private fun loadProductImageUrls(
+        productIds: Set<String>,
+        onResult: (Map<String, String>) -> Unit,
+    ) {
+        val ids = productIds
+            .map { productId -> productId.trim() }
+            .filter { productId -> productId.isNotBlank() }
+            .distinct()
+
+        if (ids.isEmpty()) {
+            onResult(emptyMap())
+            return
+        }
+
+        val images = mutableMapOf<String, String>()
+        var remaining = ids.size
+
+        fun completeOne() {
+            remaining -= 1
+            if (remaining == 0) {
+                onResult(images)
+            }
+        }
+
+        ids.forEach { productId ->
+            firestore.collection("products").document(productId)
+                .get()
+                .addOnSuccessListener { doc ->
+                    val imageUrl = doc.getString("imageUrl").orEmpty().trim()
+                    if (imageUrl.isNotBlank()) {
+                        images[productId] = imageUrl
+                    } else {
+                        Log.d(TAG, "Product image missing for productId=$productId")
+                    }
+                    completeOne()
+                }
+                .addOnFailureListener { error ->
+                    Log.d(TAG, "Product image lookup failed for productId=$productId", error)
+                    completeOne()
+                }
+        }
     }
 
     private fun buildItemDescription(map: Map<*, *>): String {
@@ -197,7 +304,7 @@ object CustomerOrderFirestoreRepository {
         return rawItems.mapNotNull { item ->
             val map = item as? Map<*, *> ?: return@mapNotNull null
             val name = map["name"] as? String ?: return@mapNotNull null
-            val quantity = (map["quantity"] as? Long)?.toInt() ?: 1
+            val quantity = map["quantity"].asIntOrNull()?.coerceAtLeast(1) ?: 1
             "${quantity}x $name"
         }
     }
@@ -278,6 +385,33 @@ object CustomerOrderFirestoreRepository {
         val createdAt: Timestamp?,
     )
 
+    private fun Any?.asDoubleOrNull(): Double? {
+        return when (this) {
+            is Number -> toDouble()
+            is String -> toDoubleOrNull()
+            else -> null
+        }
+    }
+
+    private fun Any?.asIntOrNull(): Int? {
+        return when (this) {
+            is Number -> toInt()
+            is String -> toIntOrNull()
+            else -> null
+        }
+    }
+
+    private fun Map<*, *>.firstString(vararg keys: String): String {
+        keys.forEach { key ->
+            val value = this[key] as? String
+            if (!value.isNullOrBlank()) {
+                return value.trim()
+            }
+        }
+        return ""
+    }
+
     private const val STATUS_PENDING = "PENDING"
     private const val STATUS_CANCELLED = "CANCELLED"
+    private const val TAG = "CustomerOrderRepo"
 }

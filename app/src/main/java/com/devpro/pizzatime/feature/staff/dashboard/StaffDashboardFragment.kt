@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -63,28 +62,30 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     }
 
     private fun confirmOrder(order: StaffOrderUiModel) {
-        if (firestoreOrders != null) {
-            StaffOrderFirestoreRepository.updateOrderStatus(
-                orderId = order.orderId,
-                newStatus = "CONFIRMED",
-            ) { result ->
-                if (!isAdded) return@updateOrderStatus
-                result
-                    .onSuccess {
-                        showConfirmedToast(order.displayOrderCode)
+        StaffOrderFirestoreRepository.updateOrderStatus(
+            orderId = order.orderId,
+            newStatus = "CONFIRMED",
+        ) { result ->
+            if (!isAdded) return@updateOrderStatus
+            result
+                .onSuccess {
+                    firestoreOrders = firestoreOrders?.map { current ->
+                        if (current.orderId == order.orderId) {
+                            current.copy(status = StaffOrderStatus.CONFIRMED)
+                        } else {
+                            current
+                        }
                     }
-                    .onFailure { error ->
-                        Toast.makeText(
-                            requireContext(),
-                            error.message ?: "Failed to confirm order.",
-                            Toast.LENGTH_SHORT,
-                        ).show()
-                    }
-            }
-        } else {
-            FakeStaffDashboardData.confirmOrder(order.orderId)
-            showConfirmedToast(order.displayOrderCode)
-            renderOrders()
+                    showConfirmedToast(order.displayOrderCode)
+                    renderOrders()
+                }
+                .onFailure { error ->
+                    Toast.makeText(
+                        requireContext(),
+                        error.message ?: "Failed to confirm order.",
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
         }
     }
 
@@ -145,7 +146,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     private fun renderOrders() {
         val orders = firestoreOrders
             ?.filter { it.status == selectedStatus }
-            ?: FakeStaffDashboardData.getOrdersByStatus(selectedStatus)
+            .orEmpty()
 
         staffOrderAdapter.submitList(orders)
         binding.rvStaffOrders.isVisible = orders.isNotEmpty()
@@ -178,7 +179,9 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         )
 
         chip.setTextColor(
-            if (isSelected) COLOR_CHIP_SELECTED else COLOR_CHIP_UNSELECTED,
+            chip.context.getColor(
+                if (isSelected) R.color.staff_nav_selected else R.color.staff_nav_unselected,
+            ),
         )
     }
 
@@ -197,8 +200,4 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         super.onDestroyView()
     }
 
-    companion object {
-        private val COLOR_CHIP_SELECTED = "#3A210D".toColorInt()
-        private val COLOR_CHIP_UNSELECTED = "#E6D4C8".toColorInt()
-    }
 }

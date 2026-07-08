@@ -6,6 +6,7 @@ import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import androidx.fragment.app.FragmentTransaction
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
 import com.devpro.pizzatime.feature.admin.menu.ManageMenuFragment
@@ -91,6 +92,7 @@ fun Fragment.clearAppBackStack() {
 
 fun Fragment.signOutAndOpenLogin() {
     FirebaseAuth.getInstance().signOut()
+    OrderNotificationMonitor.stop()
     FakeSessionStore.logout()
     com.devpro.pizzatime.feature.customer.cart.CartStore.clearForLogout()
     clearAppBackStack()

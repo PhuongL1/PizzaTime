@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.cart
 
 import android.content.Context
+import com.devpro.pizzatime.R
 import com.google.firebase.auth.FirebaseAuth
 import org.json.JSONArray
 import org.json.JSONObject
@@ -240,7 +241,9 @@ object CartStore {
             description = optString("description"),
             price = optDouble("price", 0.0),
             quantity = optInt("quantity", 1).coerceAtLeast(1),
-            imageRes = optInt("imageRes", 0),
+            imageRes = optInt("imageRes", R.drawable.img_welcome_hero)
+                .takeIf { imageRes -> imageRes != 0 }
+                ?: R.drawable.img_welcome_hero,
             selectedSize = optString("selectedSize"),
             selectedCrust = optString("selectedCrust"),
             selectedToppings = toppings,

@@ -8,6 +8,7 @@ import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentSplashBinding
 import com.devpro.pizzatime.feature.auth.FirebaseAuthRepository
@@ -51,6 +52,7 @@ class SplashFragment : Fragment() {
     private fun routeFromSplash() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
+            OrderNotificationMonitor.stop()
             FakeSessionStore.logout()
             CartStore.clearForLogout()
             openWelcome()
@@ -74,6 +76,7 @@ class SplashFragment : Fragment() {
 
     private fun signOutAndOpenWelcome() {
         FirebaseAuth.getInstance().signOut()
+        OrderNotificationMonitor.stop()
         FakeSessionStore.logout()
         CartStore.clearForLogout()
         openWelcome()

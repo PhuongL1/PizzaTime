@@ -100,6 +100,10 @@ object AdminPromoFirestoreRepository {
         val discountType = getString("discountType") ?: "PERCENT"
         val discountValue = getDouble("discountValue") ?: 0.0
         val minOrderAmount = getDouble("minOrderAmount") ?: 0.0
+        val usageCount = firstInt("usageCount", "usedCount", "redemptionCount", "redemptions") ?: 0
+        val maxUses = firstInt("maxUses", "maxUsage", "usageLimit")
+        val totalReach = firstInt("totalReach", "reach", "eligibleUsers", "audience")
+        val status = resolveStatus(active)
         return AdminPromoUiModel(
             id = id,
             code = getString("code") ?: id,
@@ -108,11 +112,48 @@ object AdminPromoFirestoreRepository {
             discountType = discountType,
             discountValue = discountValue,
             minOrderAmount = minOrderAmount,
-            status = if (active) AdminPromoStatus.ACTIVE else AdminPromoStatus.INACTIVE,
+            status = status,
             discountText = formatDiscount(discountType, discountValue),
             minSpendText = if (minOrderAmount > 0) String.format(Locale.US, "$%.2f", minOrderAmount) else null,
-            isHighlighted = active,
+            usedText = formatUsedText(usageCount, maxUses),
+            usageCount = usageCount,
+            maxUses = maxUses,
+            totalReach = totalReach,
+            isHighlighted = status == AdminPromoStatus.ACTIVE,
         )
+    }
+
+    private fun DocumentSnapshot.resolveStatus(active: Boolean): AdminPromoStatus {
+        return when (getString("status")?.uppercase(Locale.US)) {
+            "ACTIVE" -> AdminPromoStatus.ACTIVE
+            "INACTIVE" -> AdminPromoStatus.INACTIVE
+            "SCHEDULED" -> AdminPromoStatus.SCHEDULED
+            "EXPIRED" -> AdminPromoStatus.EXPIRED
+            else -> if (active) AdminPromoStatus.ACTIVE else AdminPromoStatus.INACTIVE
+        }
+    }
+
+    private fun DocumentSnapshot.firstInt(vararg fieldNames: String): Int? {
+        fieldNames.forEach { fieldName ->
+            val value = get(fieldName)
+            val intValue = when (value) {
+                is Number -> value.toInt()
+                is String -> value.toIntOrNull()
+                else -> null
+            }
+            if (intValue != null) {
+                return intValue.coerceAtLeast(0)
+            }
+        }
+        return null
+    }
+
+    private fun formatUsedText(usageCount: Int, maxUses: Int?): String {
+        return if (maxUses != null && maxUses > 0) {
+            "$usageCount/$maxUses used"
+        } else {
+            "$usageCount used"
+        }
     }
 
     private fun formatDiscount(type: String, value: Double): String {

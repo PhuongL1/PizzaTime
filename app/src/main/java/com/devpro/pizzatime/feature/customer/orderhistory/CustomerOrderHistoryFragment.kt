@@ -10,11 +10,14 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderHistoryBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderHistoryCardBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
+import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderDetail
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
@@ -28,9 +31,8 @@ class CustomerOrderHistoryFragment : Fragment() {
             "FragmentCustomerOrderHistoryBinding is only valid between onCreateView and onDestroyView."
         }
 
-    private val historyData: CustomerOrderHistoryUiModel = FakeCustomerOrderHistoryData.getOrderHistory()
     private var selectedFilter: CustomerOrderHistoryFilter = CustomerOrderHistoryFilter.ALL
-    private var firestoreOrders: List<CustomerOrderHistoryItemUiModel>? = null
+    private var firestoreOrders: List<CustomerOrderHistoryItemUiModel> = emptyList()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -52,9 +54,16 @@ class CustomerOrderHistoryFragment : Fragment() {
         loadFirestoreOrders()
     }
 
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            setupTopBar()
+        }
+    }
+
     private fun bindStaticContent() = with(binding) {
-        tvTitle.text = historyData.title
-        tvSubtitle.text = historyData.subtitle
+        tvTitle.setText(R.string.customer_order_history_title)
+        tvSubtitle.setText(R.string.customer_order_history_subtitle)
     }
 
     private fun setupFilterActions() = with(binding) {
@@ -80,7 +89,8 @@ class CustomerOrderHistoryFragment : Fragment() {
     private fun setupTopBar() = with(binding) {
         bindCustomerTopBar(
             root = customerTopBar.root,
-            cartItemCount = 2,
+            cartItemCount = CartStore.items.sumOf { item -> item.quantity },
+            onCartClick = { openCartScreen() },
         )
     }
 
@@ -127,13 +137,12 @@ class CustomerOrderHistoryFragment : Fragment() {
     }
 
     private fun getFilteredOrders(): List<CustomerOrderHistoryItemUiModel> {
-        val orders = firestoreOrders ?: historyData.orders
         return when (selectedFilter) {
-            CustomerOrderHistoryFilter.ALL -> orders
-            CustomerOrderHistoryFilter.DELIVERED -> orders.filter {
+            CustomerOrderHistoryFilter.ALL -> firestoreOrders
+            CustomerOrderHistoryFilter.DELIVERED -> firestoreOrders.filter {
                 it.status == CustomerOrderHistoryStatus.DELIVERED
             }
-            CustomerOrderHistoryFilter.CANCELED -> orders.filter {
+            CustomerOrderHistoryFilter.CANCELED -> firestoreOrders.filter {
                 it.status == CustomerOrderHistoryStatus.CANCELED
             }
         }
@@ -152,7 +161,10 @@ class CustomerOrderHistoryFragment : Fragment() {
         tvTotal.text = formatPrice(order.total)
         tvItemSummary.text = order.itemSummary.joinToString(separator = "\n")
 
-        if (order.imageRes != null) {
+        if (order.imageUrl.isNotBlank()) {
+            ivOrderImage.loadProductImage(order.imageUrl, order.imageRes ?: R.drawable.img_pizza_time)
+            tvOrderImagePlaceholder.isVisible = false
+        } else if (order.imageRes != null) {
             ivOrderImage.setImageResource(order.imageRes)
             tvOrderImagePlaceholder.isVisible = false
         } else {
@@ -222,19 +234,20 @@ class CustomerOrderHistoryFragment : Fragment() {
     }
 
     private fun renderRewardCard() = with(binding) {
-        tvRewardTitle.text = historyData.reward.title
-        tvRewardDescription.text = historyData.reward.description
+        val currentOrders = firestoreOrders.size.coerceAtMost(REWARD_TARGET_ORDERS)
+        tvRewardTitle.setText(R.string.customer_order_history_reward_title)
+        tvRewardDescription.setText(R.string.customer_order_history_reward_description)
         tvRewardCurrentOrders.text = getString(
             R.string.customer_order_history_orders_count,
-            historyData.reward.currentOrders,
+            currentOrders,
         )
         tvRewardTargetOrders.text = getString(
             R.string.customer_order_history_orders_count,
-            historyData.reward.targetOrders,
+            REWARD_TARGET_ORDERS,
         )
 
-        rewardProgress.progress = historyData.reward.currentOrders
-        rewardProgress.max = historyData.reward.targetOrders
+        rewardProgress.progress = currentOrders
+        rewardProgress.max = REWARD_TARGET_ORDERS
     }
 
     private fun loadFirestoreOrders() {
@@ -244,6 +257,7 @@ class CustomerOrderHistoryFragment : Fragment() {
             result.onSuccess { orders ->
                 firestoreOrders = orders
                 renderOrders()
+                renderRewardCard()
             }
         }
     }
@@ -263,5 +277,9 @@ class CustomerOrderHistoryFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    companion object {
+        private const val REWARD_TARGET_ORDERS = 5
     }
 }

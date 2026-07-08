@@ -718,7 +718,12 @@
     <string name="redemption_rate_value">14.2%%</string>
     <string name="total_reach">TOTAL REACH</string>
     <string name="total_reach_value">4.8k</string>
+    <string name="promo_filter_active_count">Active (%1$d)</string>
+    <string name="promo_filter_past_count">Past (%1$d)</string>
+    <string name="promo_filter_all_count">All (%1$d)</string>
+    <string name="promo_stat_not_available">N/A</string>
     <string name="no_promos_found">No promo codes found</string>
+    <string name="promo_load_failed">Could not load promo codes.</string>
 
     <string name="menu">Menu</string>
     <string name="profile">Profile</string>
@@ -886,6 +891,10 @@
     <string name="customer_order_history_menu_icon">≡</string>
     <string name="customer_order_history_cart_icon">▢</string>
     <string name="customer_order_history_brand">PIZZATIME</string>
+    <string name="customer_order_history_title">Order History</string>
+    <string name="customer_order_history_subtitle">Your recent PizzaTime orders.</string>
+    <string name="customer_order_history_reward_title">Order rewards</string>
+    <string name="customer_order_history_reward_description">Order progress is based on your loaded Firestore orders.</string>
 
     <string name="customer_order_history_filter_all">ALL ORDERS</string>
     <string name="customer_order_history_filter_delivered">DELIVERED</string>
@@ -991,6 +1000,7 @@
     <string name="rating_saved">Rating saved.</string>
     <string name="could_not_save_rating">Could not save rating.</string>
     <string name="select_a_rating">Select a rating.</string>
+    <string name="customer_order_detail_load_failed">Could not load order.</string>
     <string name="save_rating">Save</string>
     <string name="small">Small</string>
     <string name="medium">Medium</string>

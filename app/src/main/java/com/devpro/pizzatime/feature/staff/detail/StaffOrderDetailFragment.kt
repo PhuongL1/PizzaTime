@@ -264,6 +264,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
                     }
 
                     Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    parentFragmentManager.popBackStack()
                 }
                 .onFailure { error ->
                     isCancellingOrder = false

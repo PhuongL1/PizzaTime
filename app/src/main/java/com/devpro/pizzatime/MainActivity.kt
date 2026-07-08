@@ -1,8 +1,9 @@
 package com.devpro.pizzatime
 
-import android.graphics.Color
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
+import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.databinding.ActivityMainBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.splash.SplashFragment
@@ -14,9 +15,11 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        window.statusBarColor = Color.parseColor("#151312")
-        window.navigationBarColor = Color.parseColor("#151312")
+        val systemBarColor = ContextCompat.getColor(this, R.color.pt_background)
+        window.statusBarColor = systemBarColor
+        window.navigationBarColor = systemBarColor
         CartStore.init(applicationContext)
+        OrderNotificationMonitor.init(applicationContext)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
@@ -26,5 +29,15 @@ class MainActivity : AppCompatActivity() {
                 .replace(R.id.fragmentContainer, SplashFragment())
                 .commit()
         }
+    }
+
+    override fun onResume() {
+        super.onResume()
+        OrderNotificationMonitor.setForegroundActivity(this)
+    }
+
+    override fun onPause() {
+        OrderNotificationMonitor.setForegroundActivity(null)
+        super.onPause()
     }
 }

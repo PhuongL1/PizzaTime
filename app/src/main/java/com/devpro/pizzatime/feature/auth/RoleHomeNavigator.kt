@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.auth
 
 import androidx.fragment.app.Fragment
+import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.feature.customer.cart.CartStore
@@ -22,6 +23,7 @@ fun Fragment.openRoleHome(role: UserRole): Boolean {
         return false
     }
 
+    OrderNotificationMonitor.start(role)
     clearAppBackStack()
     when (role) {
         UserRole.CUSTOMER -> openCustomerHome(addToBackStack = false)

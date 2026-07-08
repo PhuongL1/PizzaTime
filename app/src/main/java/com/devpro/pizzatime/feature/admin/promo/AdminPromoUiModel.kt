@@ -21,5 +21,8 @@ data class AdminPromoUiModel(
     val minSpendText: String? = null,
     val endsInText: String? = null,
     val usedText: String? = null,
+    val usageCount: Int = 0,
+    val maxUses: Int? = null,
+    val totalReach: Int? = null,
     val isHighlighted: Boolean = false,
 )

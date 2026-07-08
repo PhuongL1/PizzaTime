@@ -14,6 +14,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openAddEditProduct
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
+import com.devpro.pizzatime.feature.staff.navigation.openManageOrders
 import com.devpro.pizzatime.feature.staff.navigation.openManagePromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openManageStaff
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -43,7 +44,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
         _binding = FragmentAdminDashboardBinding.bind(view)
 
-        bindDashboard(FakeAdminDashboardData.getDashboard())
+        bindDashboard(emptyDashboard())
         setupTopBar()
         setupQuickActions()
         setupRecentOrders()
@@ -66,7 +67,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         tvCompletedCount.text = data.completedCount
         tvSatisfactionLabel.text = data.satisfactionLabel
 
-        recentOrderAdapter.submitList(data.recentOrders)
+        recentOrderAdapter.submitList(data.recentOrders.take(RECENT_ORDER_LIMIT))
     }
 
     private fun setupQuickActions() = with(binding) {
@@ -95,7 +96,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         }
 
         tvSeeAllOrders.setOnClickListener {
-            showComingSoon(R.string.admin_see_all)
+            openManageOrders()
         }
     }
 
@@ -128,8 +129,24 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         ).show()
     }
 
+    private fun emptyDashboard(): AdminDashboardUiModel {
+        return AdminDashboardUiModel(
+            totalRevenue = "$0.00",
+            revenueGrowth = "",
+            todayTotal = "0",
+            pendingCount = "0",
+            completedCount = "0 Delivered",
+            satisfactionLabel = "",
+            recentOrders = emptyList(),
+        )
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    companion object {
+        private const val RECENT_ORDER_LIMIT = 3
     }
 }

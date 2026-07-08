@@ -1,10 +1,10 @@
 package com.devpro.pizzatime.feature.admin.menu
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
 import android.widget.Toast
-import androidx.core.graphics.toColorInt
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -18,6 +18,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
+import java.util.Locale
 
 class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
 
@@ -65,8 +66,14 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         AdminMenuFirestoreRepository.loadProducts { result ->
             if (_binding == null) return@loadProducts
 
-            allProducts = result.getOrElse { FakeAdminMenuData.getItems() }
-                .distinctBy { it.id }
+            result
+                .onSuccess { products ->
+                    allProducts = products.distinctBy { item -> item.id }
+                }
+                .onFailure {
+                    allProducts = emptyList()
+                    showToast(R.string.manage_menu_edit_product_failed)
+                }
             renderMenuItems()
         }
     }
@@ -96,6 +103,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     private fun setupSearch() {
         binding.edtSearchMenu.addTextChangedListener { editable ->
             searchQuery = editable?.toString().orEmpty()
+            Log.d(TAG, "Manage menu search query=${searchQuery.trim()}")
             renderMenuItems()
         }
     }
@@ -135,7 +143,7 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     }
 
     private fun renderMenuItems() {
-        val normalizedQuery = searchQuery.trim().lowercase()
+        val normalizedQuery = searchQuery.trim().lowercase(Locale.US)
 
         val filteredItems = allProducts
             .filter { item ->
@@ -143,12 +151,21 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             }
             .filter { item ->
                 normalizedQuery.isBlank() ||
-                        item.name.lowercase().contains(normalizedQuery) ||
-                        item.description.lowercase().contains(normalizedQuery)
+                    item.searchableText().contains(normalizedQuery)
             }
 
         menuAdapter.submitList(filteredItems)
         updateCategoryChipState()
+    }
+
+    private fun AdminMenuUiModel.searchableText(): String {
+        return listOf(
+            name,
+            description,
+            categoryId,
+            getString(category.labelRes),
+        ).joinToString(separator = " ")
+            .lowercase(Locale.US)
     }
 
     private fun updateCategoryChipState() = with(binding) {
@@ -163,7 +180,9 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         )
 
         chip.setTextColor(
-            if (isSelected) COLOR_CHIP_SELECTED else COLOR_CHIP_UNSELECTED,
+            chip.context.getColor(
+                if (isSelected) R.color.staff_nav_selected else R.color.staff_nav_unselected,
+            ),
         )
     }
 
@@ -182,6 +201,12 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         bindAdminTopBar(
             root = binding.staffTopBar.root,
             title = getString(R.string.manage_menu_title),
+            onMenuClick = {
+                val popped = parentFragmentManager.popBackStackImmediate()
+                if (!popped) {
+                    openAdminDashboard(addToBackStack = false)
+                }
+            },
         )
     }
 
@@ -195,7 +220,6 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
     }
 
     companion object {
-        private val COLOR_CHIP_SELECTED = "#3A210D".toColorInt()
-        private val COLOR_CHIP_UNSELECTED = "#D8C8BC".toColorInt()
+        private const val TAG = "ManageMenuFragment"
     }
 }

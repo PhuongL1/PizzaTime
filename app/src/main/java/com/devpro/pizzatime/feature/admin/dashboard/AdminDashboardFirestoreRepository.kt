@@ -11,7 +11,7 @@ object AdminDashboardFirestoreRepository {
 
     private val DELIVERED_STATUS = "DELIVERED"
     private val FINAL_STATUSES = setOf("DELIVERED", "CANCELLED", "CANCELED")
-    private const val RECENT_ORDER_LIMIT = 5
+    private const val RECENT_ORDER_LIMIT = 3
 
     fun loadDashboard(onResult: (Result<AdminDashboardUiModel>) -> Unit) {
         firestore.collection("orders")

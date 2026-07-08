@@ -81,7 +81,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
                         android:text="@string/admin_total_revenue"
-                        android:textColor="#D6BFB0"
+                        android:textColor="@color/pt_admin_metric_label"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -98,7 +98,7 @@
                             android:layout_height="wrap_content"
                             android:fontFamily="serif"
                             android:includeFontPadding="false"
-                            android:textColor="#111111"
+                            android:textColor="@color/pt_admin_metric_value_dark"
                             android:textSize="30sp"
                             android:textStyle="bold"
                             tools:text="$4,250.00" />
@@ -108,7 +108,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginStart="8dp"
-                            android:textColor="#148E46"
+                            android:textColor="@color/pt_admin_positive"
                             android:textSize="11sp"
                             tools:text="↗12%" />
 
@@ -149,7 +149,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
                         android:text="@string/admin_today_total"
-                        android:textColor="#D6BFB0"
+                        android:textColor="@color/pt_admin_metric_label"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -160,7 +160,7 @@
                         android:layout_marginTop="18dp"
                         android:fontFamily="serif"
                         android:includeFontPadding="false"
-                        android:textColor="#111111"
+                        android:textColor="@color/pt_admin_metric_value_dark"
                         android:textSize="28sp"
                         android:textStyle="bold"
                         tools:text="142" />
@@ -170,7 +170,7 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="2dp"
                         android:text="@string/admin_live_dispatch"
-                        android:textColor="#D6BFB0"
+                        android:textColor="@color/pt_admin_metric_label"
                         android:textSize="12sp" />
 
                 </LinearLayout>
@@ -191,7 +191,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
                         android:text="@string/admin_pending"
-                        android:textColor="#3A210D"
+                        android:textColor="@color/staff_nav_selected"
                         android:textSize="12sp"
                         android:textStyle="bold" />
 
@@ -202,7 +202,7 @@
                         android:layout_marginTop="22dp"
                         android:fontFamily="serif"
                         android:includeFontPadding="false"
-                        android:textColor="#3A210D"
+                        android:textColor="@color/staff_nav_selected"
                         android:textSize="28sp"
                         android:textStyle="bold"
                         tools:text="8" />
@@ -227,7 +227,7 @@
                     android:background="@drawable/bg_admin_completed_icon"
                     android:gravity="center"
                     android:text="@string/admin_check_icon"
-                    android:textColor="#D8C8BC"
+                    android:textColor="@color/staff_nav_unselected"
                     android:textSize="21sp" />
 
                 <LinearLayout
@@ -242,7 +242,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.08"
-                        android:textColor="#F4EEE8"
+                        android:textColor="@color/pt_admin_completed_text"
                         android:textSize="14sp"
                         android:textStyle="bold"
                         tools:text="124 Completed" />
@@ -252,7 +252,7 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="3dp"
-                        android:textColor="#D8C8BC"
+                        android:textColor="@color/staff_nav_unselected"
                         android:textSize="12sp"
                         tools:text="98% Satisfaction tonight" />
 
@@ -503,7 +503,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:text="@string/admin_see_all"
-                    android:textColor="#F2A96B"
+                    android:textColor="@color/pt_admin_see_all"
                     android:textSize="12sp"
                     android:textStyle="bold" />
 
