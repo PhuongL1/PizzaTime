@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.customer.account
 
 import android.app.AlertDialog
 import android.graphics.Typeface
+import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
 import android.view.Gravity
@@ -12,11 +13,15 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
+import com.devpro.pizzatime.feature.admin.menu.CloudinaryProductImageRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
@@ -43,6 +48,14 @@ class CustomerAccountFragment : Fragment() {
     private var accountData: CustomerAccountUiModel = FakeCustomerAccountData.getCustomerAccount()
     private var currentRole: UserRole = UserRole.GUEST
     private var changePasswordRow: LinearLayout? = null
+    private var isUploadingAvatar = false
+
+    private val pickAvatarImage =
+        registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
+            if (imageUri != null) {
+                uploadAvatar(imageUri)
+            }
+        }
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -77,7 +90,7 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private fun bindAccount() = with(binding) {
-        ivAvatar.setImageResource(accountData.avatarRes)
+        ivAvatar.loadProductImage(accountData.avatarUrl, accountData.avatarRes)
         tvCustomerName.text = accountData.fullName
         tvTierName.text = if (currentRole == UserRole.CUSTOMER) {
             accountData.tierName
@@ -110,9 +123,10 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private fun setupActions() = with(binding) {
-        editAvatarButton.setOnClickListener {
-            showEditProfileDialog()
-        }
+        val openAvatarPicker = { startAvatarPicker() }
+        avatarArea.setOnClickListener { openAvatarPicker() }
+        editAvatarButton.setOnClickListener { openAvatarPicker() }
+        tvChangePhoto.setOnClickListener { openAvatarPicker() }
 
         rowOrderHistory.setOnClickListener {
             if (currentRole == UserRole.CUSTOMER) {
@@ -154,6 +168,15 @@ class CustomerAccountFragment : Fragment() {
         configureMenuForRole()
     }
 
+    private fun startAvatarPicker() {
+        if (isUploadingAvatar) return
+        if (FirebaseAuth.getInstance().currentUser == null) {
+            showToast(getString(R.string.customer_favorites_login_required))
+            return
+        }
+        pickAvatarImage.launch("image/*")
+    }
+
     private fun loadCustomerProfile() {
         val user = FirebaseAuth.getInstance().currentUser
         val uid = user?.uid
@@ -183,6 +206,52 @@ class CustomerAccountFragment : Fragment() {
                     showToast(getString(R.string.customer_account_profile_load_failed))
                 }
         }
+    }
+
+    private fun uploadAvatar(imageUri: Uri) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            showToast(getString(R.string.customer_favorites_login_required))
+            return
+        }
+
+        setAvatarUploading(true)
+        CloudinaryProductImageRepository.uploadAvatarImage(
+            context = requireContext(),
+            imageUri = imageUri,
+        ) { uploadResult ->
+            if (_binding == null) return@uploadAvatarImage
+            uploadResult
+                .onSuccess { avatarUrl ->
+                    CustomerProfileFirestoreRepository.updateAvatarUrl(uid, avatarUrl) { saveResult ->
+                        if (_binding == null) return@updateAvatarUrl
+                        setAvatarUploading(false)
+                        saveResult
+                            .onSuccess {
+                                accountData = accountData.copy(avatarUrl = avatarUrl)
+                                bindAccount()
+                                showToast(getString(R.string.customer_account_photo_updated))
+                            }
+                            .onFailure {
+                                showToast(getString(R.string.customer_account_photo_update_failed))
+                            }
+                    }
+                }
+                .onFailure {
+                    setAvatarUploading(false)
+                    showToast(getString(R.string.customer_account_photo_update_failed))
+                }
+        }
+    }
+
+    private fun setAvatarUploading(uploading: Boolean) = with(binding) {
+        isUploadingAvatar = uploading
+        avatarUploadProgress.isVisible = uploading
+        avatarArea.isEnabled = !uploading
+        editAvatarButton.isEnabled = !uploading
+        tvChangePhoto.isEnabled = !uploading
+        editAvatarButton.alpha = if (uploading) DISABLED_ALPHA else ENABLED_ALPHA
+        tvChangePhoto.alpha = if (uploading) DISABLED_ALPHA else ENABLED_ALPHA
     }
 
     private fun showEditProfileDialog() {
@@ -592,6 +661,8 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private companion object {
+        const val ENABLED_ALPHA = 1f
+        const val DISABLED_ALPHA = 0.45f
         const val MIN_PASSWORD_LENGTH = 6
         const val MENU_ROW_HEIGHT_DP = 64
         const val MENU_ROW_SPACING_DP = 8

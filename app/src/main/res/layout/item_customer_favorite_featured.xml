@@ -5,11 +5,11 @@
     android:layout_height="wrap_content"
     android:background="@drawable/bg_customer_favorites_card"
     android:orientation="vertical"
-    android:paddingBottom="22dp">
+    android:paddingBottom="12dp">
 
     <FrameLayout
         android:layout_width="match_parent"
-        android:layout_height="330dp">
+        android:layout_height="188dp">
 
         <ImageView
             android:id="@+id/ivFavoriteImage"
@@ -27,17 +27,17 @@
             android:gravity="center"
             android:text="@string/customer_favorites_image_placeholder"
             android:textColor="@color/pt_text_secondary_dark_bg"
-            android:textSize="28sp"
+            android:textSize="24sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
         <TextView
             android:id="@+id/btnHeart"
-            android:layout_width="52dp"
-            android:layout_height="52dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:layout_gravity="top|end"
-            android:layout_marginTop="20dp"
-            android:layout_marginEnd="20dp"
+            android:layout_marginTop="12dp"
+            android:layout_marginEnd="12dp"
             android:background="@drawable/bg_customer_favorites_heart_circle"
             android:clickable="true"
             android:focusable="true"
@@ -45,22 +45,22 @@
             android:gravity="center"
             android:text="@string/customer_favorites_heart"
             android:textColor="@color/pt_copper"
-            android:textSize="25sp" />
+            android:textSize="20sp" />
 
         <TextView
             android:id="@+id/tvBadge"
             android:layout_width="wrap_content"
-            android:layout_height="34dp"
+            android:layout_height="26dp"
             android:layout_gravity="bottom|start"
-            android:layout_marginStart="20dp"
-            android:layout_marginBottom="20dp"
+            android:layout_marginStart="14dp"
+            android:layout_marginBottom="14dp"
             android:background="@drawable/bg_customer_favorites_badge"
             android:gravity="center"
             android:letterSpacing="0.05"
-            android:paddingStart="18dp"
-            android:paddingEnd="18dp"
+            android:paddingStart="12dp"
+            android:paddingEnd="12dp"
             android:textColor="@color/pt_text_dark"
-            android:textSize="13sp"
+            android:textSize="11sp"
             android:textStyle="bold"
             tools:text="CHEF'S PICK" />
     </FrameLayout>
@@ -71,28 +71,31 @@
         android:baselineAligned="false"
         android:gravity="top"
         android:orientation="horizontal"
-        android:paddingStart="22dp"
-        android:paddingTop="22dp"
-        android:paddingEnd="22dp">
+        android:paddingStart="16dp"
+        android:paddingTop="14dp"
+        android:paddingEnd="16dp">
 
         <TextView
             android:id="@+id/tvFavoriteName"
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
+            android:ellipsize="end"
             android:fontFamily="serif"
+            android:includeFontPadding="false"
+            android:maxLines="1"
             android:textColor="@color/pt_text_primary_dark_bg"
-            android:textSize="31sp"
+            android:textSize="22sp"
             tools:text="The Midnight Truffle" />
 
         <TextView
             android:id="@+id/tvFavoritePrice"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:layout_marginStart="16dp"
+            android:layout_marginStart="10dp"
             android:letterSpacing="0.08"
             android:textColor="@color/pt_copper"
-            android:textSize="15sp"
+            android:textSize="13sp"
             android:textStyle="bold"
             tools:text="$24.00" />
     </LinearLayout>
@@ -101,30 +104,32 @@
         android:id="@+id/tvFavoriteDescription"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="8dp"
-        android:lineSpacingExtra="4dp"
-        android:paddingStart="22dp"
-        android:paddingEnd="22dp"
+        android:layout_marginTop="6dp"
+        android:ellipsize="end"
+        android:lineSpacingExtra="2dp"
+        android:maxLines="2"
+        android:paddingStart="16dp"
+        android:paddingEnd="16dp"
         android:textColor="@color/pt_text_secondary_dark_bg"
-        android:textSize="17sp"
+        android:textSize="14sp"
         tools:text="Black truffle cream, wild mushrooms, thyme, and fontina cheese." />
 
     <TextView
         android:id="@+id/btnAddToCart"
         android:layout_width="match_parent"
-        android:layout_height="64dp"
-        android:layout_marginStart="22dp"
-        android:layout_marginTop="22dp"
-        android:layout_marginEnd="22dp"
+        android:layout_height="46dp"
+        android:layout_marginStart="16dp"
+        android:layout_marginTop="14dp"
+        android:layout_marginEnd="16dp"
         android:background="@drawable/bg_customer_favorites_add_button"
         android:clickable="true"
         android:focusable="true"
         android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
-        android:letterSpacing="0.08"
+        android:letterSpacing="0.10"
         android:text="@string/customer_favorites_add_to_cart"
         android:textColor="@color/pt_text_dark"
-        android:textSize="14sp"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
 </LinearLayout>

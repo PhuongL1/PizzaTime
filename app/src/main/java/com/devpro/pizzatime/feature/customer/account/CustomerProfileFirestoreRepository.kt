@@ -68,6 +68,22 @@ object CustomerProfileFirestoreRepository {
             .addOnFailureListener { error -> onResult(Result.failure(error)) }
     }
 
+    fun updateAvatarUrl(
+        uid: String,
+        avatarUrl: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        firestore.collection("users").document(uid)
+            .update(
+                mapOf(
+                    "avatarUrl" to avatarUrl,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error)) }
+    }
+
     private fun DocumentSnapshot.toCustomerAccountUiModel(): CustomerAccountUiModel {
         val fallback = FakeCustomerAccountData.getCustomerAccount()
         return CustomerAccountUiModel(

@@ -4,6 +4,7 @@ import com.devpro.pizzatime.R
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.util.Locale
 
 object CustomerFavoritesFirestoreRepository {
 
@@ -130,9 +131,23 @@ object CustomerFavoritesFirestoreRepository {
             description = getString("description") ?: "",
             price = getDouble("basePrice") ?: 0.0,
             badge = null,
+            categoryId = getString("categoryId").orEmpty(),
+            categoryName = getString("categoryName").orEmpty(),
             imageRes = R.drawable.img_pizza_time,
             imageUrl = getString("imageUrl").orEmpty(),
-            cardType = CustomerFavoriteCardType.COMPACT,
+            cardType = CustomerFavoriteCardType.FEATURED,
+            sizeOptions = getStringList("sizeOptions"),
+            crustOptions = getStringList("crustOptions"),
+            toppingOptions = getStringList("toppingOptions"),
         )
+    }
+
+    private fun DocumentSnapshot.getStringList(field: String): List<String> {
+        return (get(field) as? List<*>)
+            ?.mapNotNull { it as? String }
+            ?.map { it.trim() }
+            ?.filter { it.isNotBlank() }
+            ?.distinctBy { it.lowercase(Locale.US) }
+            ?: emptyList()
     }
 }

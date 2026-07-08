@@ -6,22 +6,13 @@
     android:layout_height="match_parent"
     android:background="@drawable/bg_app_dark">
 
-    <include
-        android:id="@+id/pizzaTopBar"
-        layout="@layout/layout_pizza_flow_top_bar"
-        android:layout_width="0dp"
-        android:layout_height="72dp"
-        app:layout_constraintEnd_toEndOf="parent"
-        app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toTopOf="parent" />
-
     <ScrollView
         android:id="@+id/detailScroll"
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:overScrollMode="never"
-        android:paddingBottom="24dp"
+        android:paddingBottom="18dp"
         android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/detailBottomBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -37,19 +28,19 @@
             <FrameLayout
                 android:id="@+id/heroSection"
                 android:layout_width="match_parent"
-                android:layout_height="560dp">
+                android:layout_height="500dp">
 
                 <ImageView
                     android:id="@+id/imgPizzaHero"
                     android:layout_width="match_parent"
-                    android:layout_height="430dp"
+                    android:layout_height="392dp"
                     android:contentDescription="@string/menu_open_pizza"
                     android:scaleType="centerCrop"
                     android:src="@drawable/img_welcome_hero" />
 
                 <View
                     android:layout_width="match_parent"
-                    android:layout_height="180dp"
+                    android:layout_height="168dp"
                     android:layout_gravity="bottom"
                     android:background="@drawable/bg_image_scrim_bottom" />
 
@@ -58,11 +49,14 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_gravity="bottom"
-                    android:layout_marginStart="28dp"
-                    android:layout_marginEnd="28dp"
+                    android:layout_marginStart="20dp"
+                    android:layout_marginEnd="20dp"
                     android:background="@drawable/bg_detail_info_card"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:paddingStart="20dp"
+                    android:paddingTop="18dp"
+                    android:paddingEnd="20dp"
+                    android:paddingBottom="18dp">
 
                     <LinearLayout
                         android:layout_width="match_parent"
@@ -75,19 +69,22 @@
                             android:layout_width="0dp"
                             android:layout_height="wrap_content"
                             android:layout_weight="1"
+                            android:ellipsize="end"
                             android:fontFamily="serif"
                             android:includeFontPadding="false"
+                            android:maxLines="1"
                             android:textColor="@color/pt_text_primary"
-                            android:textSize="36sp" />
+                            android:textSize="23sp" />
 
                         <TextView
                             android:id="@+id/tvRating"
-                            android:layout_width="76dp"
-                            android:layout_height="34dp"
+                            android:layout_width="68dp"
+                            android:layout_height="32dp"
+                            android:layout_marginStart="12dp"
                             android:background="@drawable/bg_rating_pill"
                             android:gravity="center"
                             android:textColor="@color/pt_text_dark"
-                            android:textSize="14sp"
+                            android:textSize="13sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -96,21 +93,23 @@
                         android:id="@+id/tvPizzaDescription"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="18dp"
-                        android:lineSpacingExtra="8dp"
+                        android:layout_marginTop="14dp"
+                        android:ellipsize="end"
+                        android:lineSpacingExtra="4dp"
+                        android:maxLines="4"
                         android:textColor="@color/pt_text_secondary"
-                        android:textSize="20sp" />
+                        android:textSize="17sp" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="22dp"
+                        android:layout_marginTop="18dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
                         <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
                             android:contentDescription="@string/detail_info_time"
                             android:src="@drawable/ic_clock" />
 
@@ -120,13 +119,13 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
                             android:textColor="@color/pt_text_secondary"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                         <ImageView
-                            android:layout_width="22dp"
-                            android:layout_height="22dp"
-                            android:layout_marginStart="28dp"
+                            android:layout_width="20dp"
+                            android:layout_height="20dp"
+                            android:layout_marginStart="22dp"
                             android:contentDescription="@string/detail_info_kcal"
                             android:src="@drawable/ic_fire" />
 
@@ -136,7 +135,7 @@
                             android:layout_height="wrap_content"
                             android:layout_marginStart="6dp"
                             android:textColor="@color/pt_text_secondary"
-                            android:textSize="15sp"
+                            android:textSize="14sp"
                             android:textStyle="bold" />
 
                     </LinearLayout>
@@ -150,165 +149,205 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:orientation="vertical"
-                android:paddingStart="28dp"
-                android:paddingEnd="28dp"
-                android:paddingBottom="40dp">
-
-                <TextView
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:fontFamily="sans-serif-black"
-                    android:text="@string/detail_select_size"
-                    android:textColor="@color/pt_text_primary"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp"
+                android:paddingBottom="26dp">
 
                 <LinearLayout
-                    android:id="@+id/sizeRow"
-                    android:layout_width="match_parent"
-                    android:layout_height="96dp"
-                    android:layout_marginTop="18dp"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:id="@+id/btnSizeSmall"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_size_option_unselected"
-                        android:gravity="center"
-                        android:text="@string/detail_size_small_display"
-                        android:textColor="@color/pt_text_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/btnSizeMedium"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="18dp"
-                        android:layout_marginEnd="18dp"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_size_option_selected"
-                        android:gravity="center"
-                        android:text="@string/detail_size_medium_display"
-                        android:textColor="@color/pt_text_dark"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/btnSizeLarge"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_size_option_unselected"
-                        android:gravity="center"
-                        android:text="@string/detail_size_large_display"
-                        android:textColor="@color/pt_text_primary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <TextView
+                    android:id="@+id/sizeSection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="42dp"
-                    android:fontFamily="sans-serif-black"
-                    android:text="@string/detail_crust_style"
-                    android:textColor="@color/pt_text_primary"
-                    android:textSize="24sp"
-                    android:textStyle="bold" />
-
-                <LinearLayout
-                    android:id="@+id/crustRow"
-                    android:layout_width="match_parent"
-                    android:layout_height="58dp"
-                    android:layout_marginTop="22dp"
-                    android:orientation="horizontal">
+                    android:orientation="vertical">
 
                     <TextView
-                        android:id="@+id/btnCrustClassic"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_crust_unselected"
-                        android:gravity="center"
-                        android:text="@string/detail_crust_classic"
-                        android:textColor="@color/pt_text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/btnCrustThin"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="12dp"
-                        android:layout_marginEnd="12dp"
-                        android:layout_weight="1.35"
-                        android:background="@drawable/bg_crust_selected"
-                        android:gravity="center"
-                        android:text="@string/detail_crust_thin_charcoal"
-                        android:textColor="@color/pt_text_dark"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/btnCrustThick"
-                        android:layout_width="0dp"
-                        android:layout_height="match_parent"
-                        android:layout_weight="1"
-                        android:background="@drawable/bg_crust_unselected"
-                        android:gravity="center"
-                        android:text="@string/detail_crust_thick_pan"
-                        android:textColor="@color/pt_text_primary"
-                        android:textSize="16sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/toppingHeader"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_marginTop="48dp"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal">
-
-                    <TextView
-                        android:layout_width="0dp"
+                        android:id="@+id/tvSizeTitle"
+                        android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:fontFamily="sans-serif-black"
-                        android:text="@string/detail_extra_toppings"
+                        android:text="@string/detail_select_size"
                         android:textColor="@color/pt_text_primary"
-                        android:textSize="24sp"
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
-                    <TextView
-                        android:id="@+id/btnCustomizeToppings"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:letterSpacing="0.10"
-                        android:text="@string/detail_customize"
-                        android:textColor="@color/pt_gold"
-                        android:textSize="14sp"
-                        android:textStyle="bold" />
+                    <LinearLayout
+                        android:id="@+id/sizeRow"
+                        android:layout_width="match_parent"
+                        android:layout_height="76dp"
+                        android:layout_marginTop="14dp"
+                        android:baselineAligned="false"
+                        android:orientation="horizontal">
 
+                        <TextView
+                            android:id="@+id/btnSizeSmall"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_size_option_unselected"
+                            android:gravity="center"
+                            android:text="@string/detail_size_small_display"
+                            android:textColor="@color/pt_text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnSizeMedium"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_marginStart="14dp"
+                            android:layout_marginEnd="14dp"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_size_option_selected"
+                            android:gravity="center"
+                            android:text="@string/detail_size_medium_display"
+                            android:textColor="@color/pt_text_dark"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnSizeLarge"
+                            android:layout_width="0dp"
+                            android:layout_height="match_parent"
+                            android:layout_weight="1"
+                            android:background="@drawable/bg_size_option_unselected"
+                            android:gravity="center"
+                            android:text="@string/detail_size_large_display"
+                            android:textColor="@color/pt_text_primary"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
                 </LinearLayout>
 
-                <GridLayout
-                    android:id="@+id/toppingContainer"
+                <LinearLayout
+                    android:id="@+id/crustSection"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="22dp"
-                    android:columnCount="2" />
+                    android:layout_marginTop="34dp"
+                    android:orientation="vertical">
+
+                    <TextView
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:fontFamily="sans-serif-black"
+                        android:text="@string/detail_crust_style"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="22sp"
+                        android:textStyle="bold" />
+
+                    <HorizontalScrollView
+                        android:layout_width="match_parent"
+                        android:layout_height="50dp"
+                        android:layout_marginTop="14dp"
+                        android:overScrollMode="never"
+                        android:scrollbars="none">
+
+                        <LinearLayout
+                            android:id="@+id/crustRow"
+                            android:layout_width="wrap_content"
+                            android:layout_height="match_parent"
+                            android:orientation="horizontal">
+
+                            <TextView
+                                android:id="@+id/btnCrustClassic"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_crust_unselected"
+                                android:gravity="center"
+                                android:minWidth="92dp"
+                                android:paddingStart="22dp"
+                                android:paddingEnd="22dp"
+                                android:singleLine="true"
+                                android:text="@string/detail_crust_classic"
+                                android:textColor="@color/pt_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/btnCrustThin"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:layout_marginStart="10dp"
+                                android:layout_marginEnd="10dp"
+                                android:background="@drawable/bg_crust_selected"
+                                android:gravity="center"
+                                android:minWidth="126dp"
+                                android:paddingStart="22dp"
+                                android:paddingEnd="22dp"
+                                android:singleLine="true"
+                                android:text="@string/detail_crust_thin_charcoal"
+                                android:textColor="@color/pt_text_dark"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                            <TextView
+                                android:id="@+id/btnCrustThick"
+                                android:layout_width="wrap_content"
+                                android:layout_height="match_parent"
+                                android:background="@drawable/bg_crust_unselected"
+                                android:gravity="center"
+                                android:minWidth="104dp"
+                                android:paddingStart="22dp"
+                                android:paddingEnd="22dp"
+                                android:singleLine="true"
+                                android:text="@string/detail_crust_thick_pan"
+                                android:textColor="@color/pt_text_primary"
+                                android:textSize="15sp"
+                                android:textStyle="bold" />
+
+                        </LinearLayout>
+
+                    </HorizontalScrollView>
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/toppingsSection"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="38dp"
+                    android:orientation="vertical">
+
+                    <LinearLayout
+                        android:id="@+id/toppingHeader"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:gravity="center_vertical"
+                        android:orientation="horizontal">
+
+                        <TextView
+                            android:layout_width="0dp"
+                            android:layout_height="wrap_content"
+                            android:layout_weight="1"
+                            android:fontFamily="sans-serif-black"
+                            android:text="@string/detail_extra_toppings"
+                            android:textColor="@color/pt_text_primary"
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/btnCustomizeToppings"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:letterSpacing="0.10"
+                            android:text="@string/detail_customize"
+                            android:textColor="@color/pt_gold"
+                            android:textSize="13sp"
+                            android:textStyle="bold" />
+
+                    </LinearLayout>
+
+                    <GridLayout
+                        android:id="@+id/toppingContainer"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="16dp"
+                        android:columnCount="2" />
+                </LinearLayout>
 
                 <LinearLayout
                     android:id="@+id/quantityRow"
                     android:layout_width="match_parent"
-                    android:layout_height="76dp"
-                    android:layout_marginTop="54dp"
+                    android:layout_height="64dp"
+                    android:layout_marginTop="40dp"
                     android:gravity="center_vertical"
                     android:orientation="horizontal">
 
@@ -320,28 +359,28 @@
                         android:fontFamily="sans-serif-black"
                         android:text="@string/detail_quantity"
                         android:textColor="@color/pt_text_primary"
-                        android:textSize="26sp"
+                        android:textSize="24sp"
                         android:textStyle="bold" />
 
                     <LinearLayout
                         android:id="@+id/quantityControl"
-                        android:layout_width="236dp"
-                        android:layout_height="64dp"
+                        android:layout_width="182dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_quantity_pill"
                         android:gravity="center"
                         android:orientation="horizontal">
 
-                        <TextView
+                        <ImageView
                             android:id="@+id/btnMinus"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:clickable="true"
+                            android:contentDescription="@string/cart_decrease_quantity"
                             android:focusable="true"
-                            android:gravity="center"
-                            android:text="âˆ’"
-                            android:textColor="@color/pt_text_primary"
-                            android:textSize="28sp" />
+                            android:padding="18dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_minus_quantity" />
 
                         <TextView
                             android:id="@+id/tvQuantity"
@@ -349,21 +388,23 @@
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:gravity="center"
+                            android:includeFontPadding="false"
                             android:text="1"
                             android:textColor="@color/pt_text_primary"
-                            android:textSize="28sp" />
+                            android:textSize="22sp"
+                            android:textStyle="bold" />
 
-                        <TextView
+                        <ImageView
                             android:id="@+id/btnPlus"
                             android:layout_width="0dp"
                             android:layout_height="match_parent"
                             android:layout_weight="1"
                             android:clickable="true"
+                            android:contentDescription="@string/cart_increase_quantity"
                             android:focusable="true"
-                            android:gravity="center"
-                            android:text="+"
-                            android:textColor="@color/pt_text_primary"
-                            android:textSize="28sp" />
+                            android:padding="18dp"
+                            android:scaleType="centerInside"
+                            android:src="@drawable/ic_add_quantity" />
 
                     </LinearLayout>
 
@@ -373,7 +414,7 @@
 
             <View
                 android:layout_width="match_parent"
-                android:layout_height="90dp" />
+                android:layout_height="72dp" />
 
         </LinearLayout>
 
@@ -382,20 +423,22 @@
     <LinearLayout
         android:id="@+id/detailBottomBar"
         android:layout_width="0dp"
-        android:layout_height="108dp"
+        android:layout_height="96dp"
         android:background="@drawable/bg_detail_bottom_bar"
+        android:elevation="12dp"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
+        android:paddingStart="20dp"
+        android:paddingEnd="20dp"
+        android:translationZ="12dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
 
         <FrameLayout
             android:id="@+id/btnFavorite"
-            android:layout_width="78dp"
-            android:layout_height="64dp"
+            android:layout_width="58dp"
+            android:layout_height="56dp"
             android:background="@drawable/bg_button_outline_gold"
             android:clickable="true"
             android:contentDescription="@string/detail_favorite_content_description"
@@ -403,8 +446,8 @@
 
             <ImageView
                 android:id="@+id/imgFavorite"
-                android:layout_width="28dp"
-                android:layout_height="28dp"
+                android:layout_width="24dp"
+                android:layout_height="24dp"
                 android:layout_gravity="center"
                 android:contentDescription="@string/detail_favorite_content_description"
                 android:src="@drawable/ic_empty_heart" />
@@ -414,8 +457,8 @@
         <TextView
             android:id="@+id/btnAddToCart"
             android:layout_width="0dp"
-            android:layout_height="64dp"
-            android:layout_marginStart="22dp"
+            android:layout_height="56dp"
+            android:layout_marginStart="16dp"
             android:layout_weight="1"
             android:background="@drawable/bg_button_primary_light"
             android:gravity="center"
@@ -425,5 +468,16 @@
             android:textStyle="bold" />
 
     </LinearLayout>
+
+    <include
+        android:id="@+id/pizzaTopBar"
+        layout="@layout/layout_pizza_flow_top_bar"
+        android:layout_width="0dp"
+        android:layout_height="64dp"
+        android:elevation="16dp"
+        android:translationZ="16dp"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
 </androidx.constraintlayout.widget.ConstraintLayout>

@@ -56,7 +56,7 @@ class CustomerHomeFragment : Fragment() {
         setupSearch()
         setupCategories()
         setupActions()
-        loadHomeLocation()
+        loadHomeProfile()
         loadFavoriteProductIds()
         loadHomeData()
     }
@@ -64,6 +64,7 @@ class CustomerHomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
+            loadHomeProfile()
             loadFavoriteProductIds()
         }
     }
@@ -161,12 +162,17 @@ class CustomerHomeFragment : Fragment() {
         }
     }
 
-    private fun loadHomeLocation() {
+    private fun loadHomeProfile() {
         binding.tvHomeLocation.text = formatShortAddress(
             binding.tvHomeLocation.text?.toString().orEmpty(),
         )
 
-        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            binding.btnHomeAvatar.setImageResource(R.drawable.bg_avatar)
+            return
+        }
+
         CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
             if (_binding == null) return@loadProfile
             result.onSuccess { profile ->
@@ -174,6 +180,10 @@ class CustomerHomeFragment : Fragment() {
                 if (address.isNotBlank()) {
                     binding.tvHomeLocation.text = formatShortAddress(address)
                 }
+                binding.btnHomeAvatar.loadProductImage(
+                    profile.avatarUrl,
+                    R.drawable.bg_avatar,
+                )
             }
         }
     }
@@ -366,6 +376,8 @@ class CustomerHomeFragment : Fragment() {
             productPrice = product.priceText,
             productRating = product.ratingText,
             productImageUrl = product.imageUrl,
+            productCategoryId = product.categoryId,
+            productCategoryName = product.categoryName,
             productSizeOptions = product.sizeOptions,
             productCrustOptions = product.crustOptions,
             productToppingOptions = product.toppingOptions,
@@ -380,6 +392,8 @@ class CustomerHomeFragment : Fragment() {
             productPrice = item.price,
             productRating = item.rating,
             productImageUrl = item.imageUrl,
+            productCategoryId = item.categoryId,
+            productCategoryName = item.categoryName,
             productSizeOptions = item.sizeOptions,
             productCrustOptions = item.crustOptions,
             productToppingOptions = item.toppingOptions,
@@ -394,6 +408,8 @@ class CustomerHomeFragment : Fragment() {
             productPrice = item.price,
             productRating = item.rawRating,
             productImageUrl = item.imageUrl,
+            productCategoryId = item.categoryId,
+            productCategoryName = item.categoryName,
             productSizeOptions = item.sizeOptions,
             productCrustOptions = item.crustOptions,
             productToppingOptions = item.toppingOptions,
@@ -432,6 +448,8 @@ class CustomerHomeFragment : Fragment() {
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
         isFavorite = id in favoriteProductIds,
+        categoryId = categoryId,
+        categoryName = categoryName,
         sizeOptions = sizeOptions,
         crustOptions = crustOptions,
         toppingOptions = toppingOptions,
@@ -472,6 +490,8 @@ class CustomerHomeFragment : Fragment() {
         rawRating = ratingText,
         imageRes = R.drawable.img_welcome_hero,
         imageUrl = imageUrl,
+        categoryId = categoryId,
+        categoryName = categoryName,
         sizeOptions = sizeOptions,
         crustOptions = crustOptions,
         toppingOptions = toppingOptions,

@@ -34,9 +34,11 @@
             tools:ignore="UseCompatTextViewDrawableXml" />
 
         <ImageView
+            android:id="@+id/ivAvatar"
             android:layout_width="46dp"
             android:layout_height="46dp"
             android:contentDescription="@string/support_avatar_description"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_customer_account_avatar_placeholder" />
     </LinearLayout>
 

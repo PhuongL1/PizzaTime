@@ -40,7 +40,10 @@
             <FrameLayout
                 android:id="@+id/avatarArea"
                 android:layout_width="104dp"
-                android:layout_height="104dp">
+                android:layout_height="104dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackgroundBorderless">
 
                 <FrameLayout
                     android:layout_width="92dp"
@@ -69,7 +72,31 @@
                     android:scaleType="centerInside"
                     android:src="@drawable/ic_edit"
                     app:tint="@color/pt_text_dark" />
+
+                <ProgressBar
+                    android:id="@+id/avatarUploadProgress"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:layout_gravity="center"
+                    android:visibility="gone" />
             </FrameLayout>
+
+            <TextView
+                android:id="@+id/tvChangePhoto"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:foreground="?attr/selectableItemBackground"
+                android:paddingStart="8dp"
+                android:paddingTop="4dp"
+                android:paddingEnd="8dp"
+                android:paddingBottom="4dp"
+                android:text="@string/customer_account_change_photo"
+                android:textColor="@color/pt_copper"
+                android:textSize="12sp"
+                android:textStyle="bold" />
 
             <TextView
                 android:id="@+id/tvCustomerName"

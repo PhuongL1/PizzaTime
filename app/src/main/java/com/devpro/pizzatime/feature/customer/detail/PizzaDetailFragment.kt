@@ -38,6 +38,7 @@ class PizzaDetailFragment : Fragment() {
     private var selectedCrust = ""
     private var basePrice = 0.0
     private val selectedToppings = linkedSetOf<String>()
+    private var productCategory = ProductCategory.UNKNOWN
 
     private lateinit var pizzaDetail: PizzaDetailUiModel
 
@@ -52,11 +53,13 @@ class PizzaDetailFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         pizzaDetail = buildPizzaDetail()
+        productCategory = resolveProductCategory(
+            categoryId = pizzaDetail.categoryId,
+            categoryName = pizzaDetail.categoryName,
+        )
         setupTopBar()
         bindPizzaDetail(pizzaDetail)
-        renderSizeOptions(pizzaDetail.sizeOptions)
-        renderCrustOptions(pizzaDetail.crustOptions)
-        renderToppings(pizzaDetail.toppings)
+        renderProductOptions()
         setupActions()
         loadFavoriteState()
         updateCartBadge()
@@ -91,6 +94,8 @@ class PizzaDetailFragment : Fragment() {
             description = args.getString(ARG_DESCRIPTION, ""),
             price = args.getString(ARG_PRICE, ""),
             rating = args.getString(ARG_RATING, getString(R.string.no_ratings)),
+            categoryId = args.getString(ARG_CATEGORY_ID, ""),
+            categoryName = args.getString(ARG_CATEGORY_NAME, ""),
             time = "25-30 MIN",
             kcal = "840 KCAL",
             imageRes = R.drawable.img_welcome_hero,
@@ -99,7 +104,7 @@ class PizzaDetailFragment : Fragment() {
                 .orEmpty()
                 .map { topping ->
                     ExtraToppingUiModel(
-                        id = topping.lowercase().replace(Regex("\\s+"), "_"),
+                        id = topping.lowercase(Locale.US).replace(Regex("\\s+"), "_"),
                         name = topping,
                         price = "",
                     )
@@ -107,6 +112,39 @@ class PizzaDetailFragment : Fragment() {
             sizeOptions = args.getStringArrayList(ARG_SIZE_OPTIONS).orEmpty(),
             crustOptions = args.getStringArrayList(ARG_CRUST_OPTIONS).orEmpty(),
         )
+    }
+
+    private fun renderProductOptions() {
+        when (productCategory) {
+            ProductCategory.PIZZA -> {
+                binding.sizeSection.isVisible = true
+                binding.crustSection.isVisible = true
+                binding.toppingsSection.isVisible = true
+                renderSizeOptions(pizzaDetail.sizeOptions)
+                renderCrustOptions(pizzaDetail.crustOptions)
+                renderToppings(pizzaDetail.toppings)
+            }
+
+            ProductCategory.DRINK -> {
+                clearCrustAndToppingsSelection()
+                binding.sizeSection.isVisible = true
+                binding.crustSection.isVisible = false
+                binding.toppingsSection.isVisible = false
+                renderSizeOptions(pizzaDetail.sizeOptions)
+                updateAddToCartLabel()
+            }
+
+            ProductCategory.COMBO,
+            ProductCategory.DESSERT,
+            ProductCategory.UNKNOWN,
+            -> {
+                clearAllCustomizations()
+                binding.sizeSection.isVisible = false
+                binding.crustSection.isVisible = false
+                binding.toppingsSection.isVisible = false
+                updateAddToCartLabel()
+            }
+        }
     }
 
     private fun bindPizzaDetail(item: PizzaDetailUiModel) {
@@ -123,14 +161,18 @@ class PizzaDetailFragment : Fragment() {
 
     private fun renderSizeOptions(options: List<String>) {
         val sizes = ProductOptionDefaults.sizesOrDefault(options)
-            .filter { it.equals("Small", true) || it.equals("Medium", true) || it.equals("Large", true) }
+            .filter { option ->
+                option.equals("Small", ignoreCase = true) ||
+                    option.equals("Medium", ignoreCase = true) ||
+                    option.equals("Large", ignoreCase = true)
+            }
             .ifEmpty { ProductOptionDefaults.sizeOptions }
         val sizeViews = listOf(
             binding.btnSizeSmall,
             binding.btnSizeMedium,
             binding.btnSizeLarge,
         )
-        if (selectedSize.isBlank()) {
+        if (selectedSize !in sizes) {
             selectedSize = sizes.firstOrNull().orEmpty()
         }
 
@@ -157,7 +199,7 @@ class PizzaDetailFragment : Fragment() {
             binding.btnCrustThin,
             binding.btnCrustThick,
         )
-        if (selectedCrust.isBlank()) {
+        if (selectedCrust !in crusts) {
             selectedCrust = crusts.firstOrNull().orEmpty()
         }
 
@@ -182,7 +224,7 @@ class PizzaDetailFragment : Fragment() {
             val itemBinding = ItemExtraToppingBinding.inflate(
                 layoutInflater,
                 binding.toppingContainer,
-                false
+                false,
             )
 
             itemBinding.tvToppingName.text = item.name
@@ -204,7 +246,7 @@ class PizzaDetailFragment : Fragment() {
                 Toast.makeText(
                     requireContext(),
                     if (isSelected) "Selected ${item.name}" else "Removed ${item.name}",
-                    Toast.LENGTH_SHORT
+                    Toast.LENGTH_SHORT,
                 ).show()
             }
 
@@ -255,7 +297,7 @@ class PizzaDetailFragment : Fragment() {
                 R.drawable.bg_chip_selected_gold
             } else {
                 R.drawable.bg_topping_checkbox
-            }
+            },
         )
     }
 
@@ -288,9 +330,9 @@ class PizzaDetailFragment : Fragment() {
                     price = unitPrice,
                     quantity = quantity,
                     imageRes = pizzaDetail.imageRes,
-                    selectedSize = selectedSize,
-                    selectedCrust = selectedCrust,
-                    selectedToppings = selectedToppings.toList(),
+                    selectedSize = selectedCartSize(),
+                    selectedCrust = selectedCartCrust(),
+                    selectedToppings = selectedCartToppings(),
                     imageUrl = pizzaDetail.imageUrl,
                 ),
             )
@@ -298,7 +340,7 @@ class PizzaDetailFragment : Fragment() {
             Toast.makeText(
                 requireContext(),
                 "Added $quantity ${pizzaDetail.name}",
-                Toast.LENGTH_SHORT
+                Toast.LENGTH_SHORT,
             ).show()
         }
 
@@ -387,8 +429,18 @@ class PizzaDetailFragment : Fragment() {
     }
 
     private fun computeCurrentUnitPrice(): Double {
-        val toppingPrice = selectedToppings.size * TOPPING_PRICE
-        return basePrice * sizeMultiplier(selectedSize) + toppingPrice
+        return when (productCategory) {
+            ProductCategory.PIZZA -> {
+                val toppingPrice = selectedToppings.size * TOPPING_PRICE
+                basePrice * sizeMultiplier(selectedSize) + toppingPrice
+            }
+
+            ProductCategory.DRINK -> basePrice * sizeMultiplier(selectedSize)
+            ProductCategory.COMBO,
+            ProductCategory.DESSERT,
+            ProductCategory.UNKNOWN,
+            -> basePrice
+        }
     }
 
     private fun updateCartBadge() = with(binding) {
@@ -409,10 +461,90 @@ class PizzaDetailFragment : Fragment() {
 
     private fun formatSizeLabel(size: String): String {
         return when (size.trim().lowercase(Locale.US)) {
-            "small" -> getString(R.string.detail_size_small_display, getString(R.string.small), getString(R.string.ten_inches))
-            "medium" -> getString(R.string.detail_size_medium_display, getString(R.string.medium), getString(R.string.twelve_inches))
-            "large" -> getString(R.string.detail_size_large_display, getString(R.string.large), getString(R.string.fourteen_inches))
+            "small" -> getString(
+                R.string.detail_size_small_display,
+                getString(R.string.small),
+                sizeSubtitleFor("small"),
+            )
+
+            "medium" -> getString(
+                R.string.detail_size_medium_display,
+                getString(R.string.medium),
+                sizeSubtitleFor("medium"),
+            )
+
+            "large" -> getString(
+                R.string.detail_size_large_display,
+                getString(R.string.large),
+                sizeSubtitleFor("large"),
+            )
+
             else -> size
+        }
+    }
+
+    private fun sizeSubtitleFor(size: String): String {
+        return when (productCategory) {
+            ProductCategory.DRINK -> when (size.lowercase(Locale.US)) {
+                "small" -> getString(R.string.detail_size_small_ml)
+                "medium" -> getString(R.string.detail_size_medium_ml)
+                "large" -> getString(R.string.detail_size_large_ml)
+                else -> ""
+            }
+
+            else -> when (size.lowercase(Locale.US)) {
+                "small" -> getString(R.string.ten_inches)
+                "medium" -> getString(R.string.twelve_inches)
+                "large" -> getString(R.string.fourteen_inches)
+                else -> ""
+            }
+        }
+    }
+
+    private fun selectedCartSize(): String {
+        return if (productCategory == ProductCategory.PIZZA || productCategory == ProductCategory.DRINK) {
+            selectedSize
+        } else {
+            ""
+        }
+    }
+
+    private fun selectedCartCrust(): String {
+        return if (productCategory == ProductCategory.PIZZA) selectedCrust else ""
+    }
+
+    private fun selectedCartToppings(): List<String> {
+        return if (productCategory == ProductCategory.PIZZA) {
+            selectedToppings.toList()
+        } else {
+            emptyList()
+        }
+    }
+
+    private fun clearCrustAndToppingsSelection() {
+        selectedCrust = ""
+        selectedToppings.clear()
+    }
+
+    private fun clearAllCustomizations() {
+        selectedSize = ""
+        clearCrustAndToppingsSelection()
+    }
+
+    private fun resolveProductCategory(
+        categoryId: String,
+        categoryName: String,
+    ): ProductCategory {
+        val normalized = listOf(categoryId, categoryName)
+            .joinToString(separator = " ")
+            .trim()
+            .lowercase(Locale.US)
+        return when {
+            normalized.contains("pizza") -> ProductCategory.PIZZA
+            normalized.contains("drink") || normalized.contains("beverage") -> ProductCategory.DRINK
+            normalized.contains("combo") -> ProductCategory.COMBO
+            normalized.contains("dessert") -> ProductCategory.DESSERT
+            else -> ProductCategory.UNKNOWN
         }
     }
 
@@ -440,6 +572,8 @@ class PizzaDetailFragment : Fragment() {
         private const val ARG_PRICE = "price"
         private const val ARG_RATING = "rating"
         private const val ARG_IMAGE_URL = "image_url"
+        private const val ARG_CATEGORY_ID = "category_id"
+        private const val ARG_CATEGORY_NAME = "category_name"
         private const val ARG_SIZE_OPTIONS = "size_options"
         private const val ARG_CRUST_OPTIONS = "crust_options"
         private const val ARG_TOPPING_OPTIONS = "topping_options"
@@ -452,6 +586,8 @@ class PizzaDetailFragment : Fragment() {
             price: String,
             rating: String,
             imageUrl: String = "",
+            categoryId: String = "",
+            categoryName: String = "",
             sizeOptions: List<String> = emptyList(),
             crustOptions: List<String> = emptyList(),
             toppingOptions: List<String> = emptyList(),
@@ -463,10 +599,20 @@ class PizzaDetailFragment : Fragment() {
                 putString(ARG_PRICE, price)
                 putString(ARG_RATING, rating)
                 putString(ARG_IMAGE_URL, imageUrl)
+                putString(ARG_CATEGORY_ID, categoryId)
+                putString(ARG_CATEGORY_NAME, categoryName)
                 putStringArrayList(ARG_SIZE_OPTIONS, ArrayList(sizeOptions))
                 putStringArrayList(ARG_CRUST_OPTIONS, ArrayList(crustOptions))
                 putStringArrayList(ARG_TOPPING_OPTIONS, ArrayList(toppingOptions))
             }
         }
+    }
+
+    private enum class ProductCategory {
+        PIZZA,
+        DRINK,
+        COMBO,
+        DESSERT,
+        UNKNOWN,
     }
 }

@@ -7,11 +7,14 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerNotificationsBinding
+import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerMemberQr
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
+import com.google.firebase.auth.FirebaseAuth
 
 class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifications) {
 
@@ -35,7 +38,15 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
         setupRecyclerView()
         setupActions()
         setupBottomNav()
+        loadCustomerAvatar()
         renderNotifications()
+    }
+
+    override fun onResume() {
+        super.onResume()
+        if (_binding != null) {
+            loadCustomerAvatar()
+        }
     }
 
     private fun setupRecyclerView() = with(binding.rvNotifications) {
@@ -79,6 +90,19 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
 
     private fun renderNotifications() {
         adapter.submitList(notifications)
+    }
+
+    private fun loadCustomerAvatar() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
+        CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
+            if (_binding == null) return@loadProfile
+            result.onSuccess { profile ->
+                binding.ivAvatar.loadProductImage(
+                    profile.avatarUrl,
+                    R.drawable.ic_customer_account_avatar_placeholder,
+                )
+            }
+        }
     }
 
     private fun markAllAsRead() {

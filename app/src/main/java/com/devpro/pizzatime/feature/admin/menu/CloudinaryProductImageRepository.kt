@@ -18,6 +18,33 @@ object CloudinaryProductImageRepository {
         imageUri: Uri,
         onResult: (Result<String>) -> Unit,
     ) {
+        uploadImage(
+            context = context,
+            imageUri = imageUri,
+            folder = CloudinaryConfig.FOLDER,
+            onResult = onResult,
+        )
+    }
+
+    fun uploadAvatarImage(
+        context: Context,
+        imageUri: Uri,
+        onResult: (Result<String>) -> Unit,
+    ) {
+        uploadImage(
+            context = context,
+            imageUri = imageUri,
+            folder = CloudinaryConfig.AVATAR_FOLDER,
+            onResult = onResult,
+        )
+    }
+
+    private fun uploadImage(
+        context: Context,
+        imageUri: Uri,
+        folder: String,
+        onResult: (Result<String>) -> Unit,
+    ) {
         if (!CloudinaryConfig.isConfigured) {
             onResult(Result.failure(Exception("Cloudinary is not configured.")))
             return
@@ -26,7 +53,11 @@ object CloudinaryProductImageRepository {
         val appContext = context.applicationContext
         Thread {
             val result = runCatching {
-                uploadMultipart(appContext, imageUri)
+                uploadMultipart(
+                    context = appContext,
+                    imageUri = imageUri,
+                    folder = folder,
+                )
             }
             mainHandler.post {
                 onResult(result)
@@ -37,6 +68,7 @@ object CloudinaryProductImageRepository {
     private fun uploadMultipart(
         context: Context,
         imageUri: Uri,
+        folder: String,
     ): String {
         val boundary = "PizzaTime${System.currentTimeMillis()}"
         val uploadUrl = URL(
@@ -63,7 +95,7 @@ object CloudinaryProductImageRepository {
                 output.writeText("--$boundary\r\n")
                 output.writeText(
                     "Content-Disposition: form-data; name=\"folder\"\r\n\r\n" +
-                        "${CloudinaryConfig.FOLDER}\r\n",
+                        "$folder\r\n",
                 )
                 output.writeText("--$boundary\r\n")
                 output.writeText(

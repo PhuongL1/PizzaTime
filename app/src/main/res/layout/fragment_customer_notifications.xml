@@ -51,6 +51,7 @@
             android:layout_height="48dp"
             android:layout_marginStart="42dp"
             android:contentDescription="@string/customer_notifications_avatar_description"
+            android:scaleType="centerCrop"
             android:src="@drawable/ic_customer_account_avatar_placeholder" />
     </LinearLayout>
 

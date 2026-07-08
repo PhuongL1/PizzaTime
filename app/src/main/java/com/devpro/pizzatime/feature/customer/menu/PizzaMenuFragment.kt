@@ -289,6 +289,8 @@ class PizzaMenuFragment : Fragment() {
             productPrice = item.price,
             productRating = if (item.ratingCount > 0) String.format(Locale.US, "%.1f", item.averageRating) else getString(R.string.no_ratings),
             productImageUrl = item.imageUrl,
+            productCategoryId = item.categoryId,
+            productCategoryName = item.categoryName,
             productSizeOptions = item.sizeOptions,
             productCrustOptions = item.crustOptions,
             productToppingOptions = item.toppingOptions,

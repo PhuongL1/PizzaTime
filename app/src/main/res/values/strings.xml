@@ -161,6 +161,9 @@
     <string name="detail_size_small_inch">10&quot;</string>
     <string name="detail_size_medium_inch">12&quot;</string>
     <string name="detail_size_large_inch">14&quot;</string>
+    <string name="detail_size_small_ml">350ml</string>
+    <string name="detail_size_medium_ml">500ml</string>
+    <string name="detail_size_large_ml">700ml</string>
     <string name="detail_size_small_display">%1$s\n%2$s</string>
     <string name="detail_size_medium_display">%1$s\n%2$s</string>
     <string name="detail_size_large_display">%1$s\n%2$s</string>
@@ -914,7 +917,7 @@
     <string name="customer_favorites_image_placeholder">🍕</string>
     <string name="customer_favorites_heart">♥</string>
     <string name="customer_favorites_add_to_cart">🛒  ADD TO CART</string>
-    <string name="customer_favorites_add">▢  ADD</string>
+    <string name="customer_favorites_add">ADD</string>
 
     <string name="customer_favorites_pairing_icon">✦</string>
 
@@ -1052,6 +1055,9 @@
     <string name="customer_account_name_required_toast">Name is required.</string>
     <string name="customer_account_profile_saved_toast">Profile updated.</string>
     <string name="customer_account_profile_save_failed">Could not update profile.</string>
+    <string name="customer_account_change_photo">Change photo</string>
+    <string name="customer_account_photo_updated">Profile photo updated.</string>
+    <string name="customer_account_photo_update_failed">Could not update photo.</string>
     <string name="customer_account_order_history_toast">Order history coming soon</string>
     <string name="customer_account_payment_methods_toast">Payment methods coming soon</string>
     <string name="customer_account_delivery_addresses_toast">Delivery addresses coming soon</string>

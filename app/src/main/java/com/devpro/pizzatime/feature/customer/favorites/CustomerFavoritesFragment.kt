@@ -114,7 +114,7 @@ class CustomerFavoritesFragment : Fragment() {
                     LinearLayout.LayoutParams.MATCH_PARENT,
                     LinearLayout.LayoutParams.WRAP_CONTENT,
                 ).apply {
-                    bottomMargin = 24.dp()
+                    bottomMargin = 16.dp()
                 },
             )
         }
@@ -124,7 +124,9 @@ class CustomerFavoritesFragment : Fragment() {
         val itemBinding = ItemCustomerFavoriteFeaturedBinding.inflate(layoutInflater)
 
         itemBinding.tvFavoriteName.text = item.name
-        itemBinding.tvFavoriteDescription.text = item.description
+        val descriptionText = item.description.trim()
+        itemBinding.tvFavoriteDescription.isVisible = descriptionText.isNotBlank()
+        itemBinding.tvFavoriteDescription.text = descriptionText
         itemBinding.tvFavoritePrice.text = formatPrice(item.price)
 
         itemBinding.tvBadge.isVisible = item.badge != null
@@ -153,6 +155,11 @@ class CustomerFavoritesFragment : Fragment() {
                 price = formatPrice(item.price),
                 rating = getString(R.string.no_ratings),
                 imageUrl = item.imageUrl,
+                categoryId = item.categoryId,
+                categoryName = item.categoryName,
+                sizeOptions = item.sizeOptions,
+                crustOptions = item.crustOptions,
+                toppingOptions = item.toppingOptions,
             )
         }
 
@@ -188,6 +195,11 @@ class CustomerFavoritesFragment : Fragment() {
                 price = formatPrice(item.price),
                 rating = getString(R.string.no_ratings),
                 imageUrl = item.imageUrl,
+                categoryId = item.categoryId,
+                categoryName = item.categoryName,
+                sizeOptions = item.sizeOptions,
+                crustOptions = item.crustOptions,
+                toppingOptions = item.toppingOptions,
             )
         }
 
@@ -282,6 +294,11 @@ class CustomerFavoritesFragment : Fragment() {
         price: String,
         rating: String,
         imageUrl: String,
+        categoryId: String,
+        categoryName: String,
+        sizeOptions: List<String>,
+        crustOptions: List<String>,
+        toppingOptions: List<String>,
     ) {
         openPizzaDetailScreen(
             productId = productId,
@@ -290,6 +307,11 @@ class CustomerFavoritesFragment : Fragment() {
             productPrice = price,
             productRating = rating,
             productImageUrl = imageUrl,
+            productCategoryId = categoryId,
+            productCategoryName = categoryName,
+            productSizeOptions = sizeOptions,
+            productCrustOptions = crustOptions,
+            productToppingOptions = toppingOptions,
         )
     }
 
