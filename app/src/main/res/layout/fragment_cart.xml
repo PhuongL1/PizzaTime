@@ -259,7 +259,7 @@
                         android:id="@+id/tvDiscount"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:textColor="#FF6262"
+                        android:textColor="@color/pt_cart_discount"
                         android:textSize="15sp" />
 
                 </LinearLayout>
@@ -268,7 +268,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="1dp"
                     android:layout_marginTop="14dp"
-                    android:background="#3A332E" />
+                    android:background="@color/pt_divider_dark" />
 
                 <LinearLayout
                     android:layout_width="match_parent"

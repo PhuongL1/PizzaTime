@@ -1,6 +1,5 @@
 package com.devpro.pizzatime.feature.customer.cart
 
-import android.annotation.SuppressLint
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -14,8 +13,8 @@ import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentCartBinding
 import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
-import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutConsistencyRepository
+import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import java.util.Locale
 
@@ -43,20 +42,18 @@ class CartFragment : Fragment() {
 
     private fun renderCart() {
         val cartItems = CartStore.items
-
-        binding.cartItemContainer.removeAllViews()
-
         val hasItems = cartItems.isNotEmpty()
         val selectedItemCount = cartItems.sumOf { it.quantity }
+
+        binding.cartItemContainer.removeAllViews()
+        binding.tvPromoHint.setText(CartStore.selectedPromoCode)
 
         binding.cartItemContainer.isVisible = hasItems
         binding.promoCodeBar.isVisible = hasItems
         binding.orderSummaryCard.isVisible = hasItems
         binding.cartBottomBar.isVisible = hasItems
         binding.emptyCartView.isVisible = !hasItems
-
         binding.tvCartBadge.text = selectedItemCount.toString()
-
         binding.tvCartSubtitle.text = if (hasItems) {
             getString(R.string.cart_items_selected_format, selectedItemCount)
         } else {
@@ -65,30 +62,26 @@ class CartFragment : Fragment() {
 
         if (!hasItems) {
             CartStore.clearPromo()
+            binding.tvPromoHint.text = null
+            renderSummary(emptyList())
             return
-        }
-
-        if (CartStore.selectedPromoCode.isNotBlank()) {
-            binding.tvPromoHint.setText(CartStore.selectedPromoCode)
         }
 
         cartItems.forEachIndexed { index, item ->
             val itemBinding = ItemCartPizzaBinding.inflate(
                 layoutInflater,
                 binding.cartItemContainer,
-                false
+                false,
             )
 
             bindCartItem(itemBinding, item)
 
             itemBinding.btnMinus.setOnClickListener {
-                CartStore.decreaseQuantity(item.cartKey)
-                renderCart()
+                updateCartQuantity(item.cartKey, increase = false)
             }
 
             itemBinding.btnPlus.setOnClickListener {
-                CartStore.increaseQuantity(item.cartKey)
-                renderCart()
+                updateCartQuantity(item.cartKey, increase = true)
             }
 
             itemBinding.btnRemove.setOnClickListener {
@@ -98,7 +91,7 @@ class CartFragment : Fragment() {
 
             itemBinding.root.layoutParams = LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                142.dp
+                LinearLayout.LayoutParams.WRAP_CONTENT,
             ).apply {
                 if (index > 0) {
                     topMargin = 22.dp
@@ -118,13 +111,30 @@ class CartFragment : Fragment() {
         itemBinding.imgPizza.loadProductImage(item.imageUrl, item.imageRes)
         itemBinding.imgPizza.contentDescription = item.name
         itemBinding.tvPizzaName.text = item.name
-        val customizationText = item.customizationText()
-        itemBinding.tvPizzaPrice.text = if (customizationText.isBlank()) {
-            formatMoney(item.price)
-        } else {
-            "${formatMoney(item.price)}\n$customizationText"
-        }
+
+        val descriptionText = item.displayDescription()
+        itemBinding.tvPizzaDescription.isVisible = descriptionText.isNotBlank()
+        itemBinding.tvPizzaDescription.text = descriptionText
+        itemBinding.tvPizzaPrice.text = formatMoney(item.lineTotalPrice)
         itemBinding.tvQuantity.text = item.quantity.toString()
+    }
+
+    private fun updateCartQuantity(cartKey: String, increase: Boolean) {
+        if (increase) {
+            CartStore.increaseQuantity(cartKey)
+        } else {
+            CartStore.decreaseQuantity(cartKey)
+        }
+        renderCart()
+    }
+
+    private fun CartItemUiModel.displayDescription(): String {
+        val normalizedDescription = description.compactText()
+        return if (normalizedDescription.isNotBlank()) {
+            normalizedDescription
+        } else {
+            customizationText()
+        }
     }
 
     private fun CartItemUiModel.customizationText(): String {
@@ -133,18 +143,20 @@ class CartFragment : Fragment() {
             if (selectedCrust.isNotBlank()) add("Crust: $selectedCrust")
             if (selectedToppings.isNotEmpty()) add("Toppings: ${selectedToppings.joinToString()}")
         }
-        return parts.joinToString(" • ")
+        return parts.joinToString(" | ")
     }
 
-    @SuppressLint("SetTextI18n")
+    private val CartItemUiModel.lineTotalPrice: Double
+        get() = price * quantity
+
+    private fun String.compactText(): String {
+        return trim().replace(Regex("\\s+"), " ")
+    }
+
     private fun renderSummary(cartItems: List<CartItemUiModel>) {
-        val subtotal = cartItems.sumOf { item ->
-            item.price * item.quantity
-        }
-
-        val deliveryFee = FakeCartData.deliveryFee
+        val subtotal = cartItems.sumOf { item -> item.lineTotalPrice }
+        val deliveryFee = if (cartItems.isEmpty()) 0.0 else FakeCartData.deliveryFee
         val discount = CartStore.promoDiscountAmount.coerceIn(0.0, subtotal)
-
         val total = (subtotal - discount).coerceAtLeast(0.0) + deliveryFee
 
         binding.tvSubtotal.text = formatMoney(subtotal)
@@ -163,8 +175,11 @@ class CartFragment : Fragment() {
         }
 
         binding.btnProceedCheckout.setOnClickListener {
-            if (FakeSessionStore.isLoggedIn) openCheckoutScreen()
-            else openLoginRequiredScreen()
+            if (FakeSessionStore.isLoggedIn) {
+                openCheckoutScreen()
+            } else {
+                openLoginRequiredScreen()
+            }
         }
     }
 
@@ -178,9 +193,7 @@ class CartFragment : Fragment() {
 
     private fun applyPromoCode() {
         val promoCode = binding.tvPromoHint.text?.toString().orEmpty().trim()
-        val subtotal = CartStore.items.sumOf { item ->
-            item.price * item.quantity
-        }
+        val subtotal = CartStore.items.sumOf { item -> item.lineTotalPrice }
         if (promoCode.isBlank() || subtotal <= 0.0) {
             clearInvalidPromo()
             return
@@ -221,6 +234,7 @@ class CartFragment : Fragment() {
 
     private fun clearInvalidPromo() {
         CartStore.clearPromo()
+        binding.tvPromoHint.text = null
         renderSummary(CartStore.items)
         Toast.makeText(
             requireContext(),
@@ -235,6 +249,7 @@ class CartFragment : Fragment() {
         when (reason) {
             CheckoutConsistencyRepository.PromoValidationFailureReason.NOT_ELIGIBLE -> {
                 CartStore.clearPromo()
+                binding.tvPromoHint.text = null
                 renderSummary(CartStore.items)
                 Toast.makeText(
                     requireContext(),

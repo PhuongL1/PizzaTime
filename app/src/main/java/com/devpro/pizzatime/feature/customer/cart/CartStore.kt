@@ -210,6 +210,7 @@ object CartStore {
         return JSONObject().apply {
             put("id", id)
             put("name", name)
+            put("description", description)
             put("price", price)
             put("quantity", quantity)
             put("imageRes", imageRes)
@@ -236,6 +237,7 @@ object CartStore {
         return CartItemUiModel(
             id = optString("id"),
             name = optString("name"),
+            description = optString("description"),
             price = optDouble("price", 0.0),
             quantity = optInt("quantity", 1).coerceAtLeast(1),
             imageRes = optInt("imageRes", 0),

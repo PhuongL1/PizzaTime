@@ -284,6 +284,7 @@ class PizzaDetailFragment : Fragment() {
                 CartItemUiModel(
                     id = pizzaDetail.id,
                     name = pizzaDetail.name,
+                    description = pizzaDetail.description,
                     price = unitPrice,
                     quantity = quantity,
                     imageRes = pizzaDetail.imageRes,

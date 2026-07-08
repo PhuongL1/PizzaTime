@@ -6,6 +6,7 @@ import com.devpro.pizzatime.R
 data class CartItemUiModel(
     val id: String,
     val name: String,
+    val description: String = "",
     val price: Double,
     val quantity: Int,
     @param:DrawableRes val imageRes: Int,
@@ -25,6 +26,7 @@ object FakeCartData {
         CartItemUiModel(
             id = "truffle_noir",
             name = "Truffle Noir",
+            description = "Black truffle cream, wild mushrooms, and aged parmesan.",
             price = 28.0,
             quantity = 1,
             imageRes = R.drawable.img_welcome_hero,
@@ -32,6 +34,7 @@ object FakeCartData {
         CartItemUiModel(
             id = "rustic_margherita",
             name = "Rustic Margherita",
+            description = "San Marzano tomato, mozzarella, and basil oil.",
             price = 20.0,
             quantity = 1,
             imageRes = R.drawable.img_welcome_hero,
