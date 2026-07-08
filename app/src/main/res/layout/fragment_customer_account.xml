@@ -40,10 +40,7 @@
             <FrameLayout
                 android:id="@+id/avatarArea"
                 android:layout_width="104dp"
-                android:layout_height="104dp"
-                android:clickable="true"
-                android:focusable="true"
-                android:foreground="?attr/selectableItemBackgroundBorderless">
+                android:layout_height="104dp">
 
                 <FrameLayout
                     android:layout_width="92dp"
@@ -52,12 +49,24 @@
                     android:background="@drawable/bg_splash_ring_inner"
                     android:padding="5dp">
 
-                    <ImageView
+                    <TextView
+                        android:id="@+id/tvAvatarInitials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_customer_account_avatar_fill"
+                        android:gravity="center"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="26sp"
+                        android:textStyle="bold"
+                        tools:text="JV" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
                         android:id="@+id/ivAvatar"
                         android:layout_width="match_parent"
                         android:layout_height="match_parent"
                         android:contentDescription="@string/register_avatar_content_description"
                         android:scaleType="centerCrop"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.PizzaTime.Circle"
                         tools:src="@drawable/ic_customer_account_avatar_placeholder" />
                 </FrameLayout>
 

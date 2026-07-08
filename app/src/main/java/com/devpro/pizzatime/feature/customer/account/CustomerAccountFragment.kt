@@ -16,8 +16,8 @@ import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.devpro.pizzatime.R
-import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
@@ -90,7 +90,7 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private fun bindAccount() = with(binding) {
-        ivAvatar.loadProductImage(accountData.avatarUrl, accountData.avatarRes)
+        bindAvatar()
         tvCustomerName.text = accountData.fullName
         tvTierName.text = if (currentRole == UserRole.CUSTOMER) {
             accountData.tierName
@@ -123,10 +123,9 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private fun setupActions() = with(binding) {
-        val openAvatarPicker = { startAvatarPicker() }
-        avatarArea.setOnClickListener { openAvatarPicker() }
-        editAvatarButton.setOnClickListener { openAvatarPicker() }
-        tvChangePhoto.setOnClickListener { openAvatarPicker() }
+        avatarArea.setOnClickListener(null)
+        editAvatarButton.setOnClickListener { showEditProfileDialog() }
+        tvChangePhoto.setOnClickListener { startAvatarPicker() }
 
         rowOrderHistory.setOnClickListener {
             if (currentRole == UserRole.CUSTOMER) {
@@ -166,6 +165,28 @@ class CustomerAccountFragment : Fragment() {
         }
 
         configureMenuForRole()
+    }
+
+    private fun bindAvatar() = with(binding) {
+        tvAvatarInitials.text = buildAvatarInitials(accountData.fullName)
+        val avatarUrl = accountData.avatarUrl.trim()
+        if (avatarUrl.isBlank()) {
+            Glide.with(ivAvatar).clear(ivAvatar)
+            ivAvatar.setImageDrawable(null)
+            ivAvatar.isVisible = false
+            tvAvatarInitials.isVisible = true
+            return@with
+        }
+
+        ivAvatar.isVisible = true
+        tvAvatarInitials.isVisible = false
+        Glide.with(ivAvatar)
+            .load(avatarUrl)
+            .placeholder(accountData.avatarRes)
+            .error(accountData.avatarRes)
+            .fallback(accountData.avatarRes)
+            .centerCrop()
+            .into(ivAvatar)
     }
 
     private fun startAvatarPicker() {
@@ -647,6 +668,18 @@ class CustomerAccountFragment : Fragment() {
         return NumberFormat.getCurrencyInstance(Locale.forLanguageTag("vi-VN")).format(value)
     }
 
+    private fun buildAvatarInitials(name: String): String {
+        val parts = name.trim()
+            .split(Regex("\\s+"))
+            .filter { it.isNotBlank() }
+        if (parts.isEmpty()) return DEFAULT_AVATAR_INITIALS
+        return parts
+            .take(2)
+            .mapNotNull { part -> part.firstOrNull()?.uppercaseChar() }
+            .joinToString(separator = "")
+            .ifBlank { DEFAULT_AVATAR_INITIALS }
+    }
+
     private fun Int.dp(): Int {
         return (this * resources.displayMetrics.density).toInt()
     }
@@ -661,6 +694,7 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private companion object {
+        const val DEFAULT_AVATAR_INITIALS = "PT"
         const val ENABLED_ALPHA = 1f
         const val DISABLED_ALPHA = 0.45f
         const val MIN_PASSWORD_LENGTH = 6
