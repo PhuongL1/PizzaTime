@@ -107,6 +107,7 @@
     <string name="home_category_dessert">DESSERT</string>
     <string name="home_no_featured_product">No featured product available yet.</string>
     <string name="home_chef_rank_label">BEST SELLER #%1$d</string>
+    <string name="home_most_ordered_label">MOST ORDERED</string>
     <string name="home_rating_label">★ %1$s</string>
     <string name="home_best_sellers">Best Sellers</string>
     <string name="home_see_all">SEE ALL</string>

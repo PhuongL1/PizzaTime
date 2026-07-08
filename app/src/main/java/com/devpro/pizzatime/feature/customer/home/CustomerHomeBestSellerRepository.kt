@@ -8,30 +8,22 @@ import kotlin.math.roundToInt
 object CustomerHomeBestSellerRepository {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val deliveredStatus = "DELIVERED"
     private val cancelledStatuses = setOf("CANCELLED", "CANCELED")
 
-    fun loadBestSellingProductIds(onResult: (Result<List<String>>) -> Unit) {
+    fun loadOrderedProductQuantities(onResult: (Result<Map<String, Int>>) -> Unit) {
         firestore.collection("orders")
             .get()
             .addOnSuccessListener { snapshot ->
                 val orders = snapshot.documents
-                val deliveredOrders = orders.filter { it.statusValue() == deliveredStatus }
-                val sourceOrders = when {
-                    deliveredOrders.isNotEmpty() -> deliveredOrders
-                    orders.any { it.statusValue() !in cancelledStatuses } -> {
-                        orders.filter { it.statusValue() !in cancelledStatuses }
-                    }
-                    else -> orders
-                }
-                onResult(Result.success(sourceOrders.toBestSellingProductIds()))
+                val sourceOrders = orders.filterNot { it.statusValue() in cancelledStatuses }
+                onResult(Result.success(sourceOrders.toOrderedProductQuantities()))
             }
             .addOnFailureListener { error ->
                 onResult(Result.failure(error))
             }
     }
 
-    private fun List<DocumentSnapshot>.toBestSellingProductIds(): List<String> {
+    private fun List<DocumentSnapshot>.toOrderedProductQuantities(): Map<String, Int> {
         val totals = linkedMapOf<String, Int>()
         forEach { doc ->
             val rawItems = doc.get("items") as? List<*> ?: return@forEach
@@ -45,9 +37,7 @@ object CustomerHomeBestSellerRepository {
             }
         }
 
-        return totals.entries
-            .sortedByDescending { it.value }
-            .map { it.key }
+        return totals.toMap()
     }
 
     private fun DocumentSnapshot.statusValue(): String {

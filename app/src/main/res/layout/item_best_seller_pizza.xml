@@ -75,7 +75,7 @@
                     android:includeFontPadding="false"
                     android:ellipsize="end"
                     android:maxLines="1"
-                    android:textColor="#151312"
+                    android:textColor="@color/pt_text_primary_card"
                     android:textSize="20sp"
                     tools:text="Diavola Noir" />
 
@@ -87,7 +87,7 @@
                     android:ellipsize="end"
                     android:lineSpacingExtra="2dp"
                     android:maxLines="2"
-                    android:textColor="#756A64"
+                    android:textColor="@color/pt_text_secondary_card"
                     android:textSize="13sp"
                     tools:text="Spicy salami, honey, activated charcoal dough." />
 
@@ -96,7 +96,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="12dp"
-                    android:textColor="#D1843D"
+                    android:textColor="@color/pt_gold"
                     android:textSize="15sp"
                     android:textStyle="bold"
                     tools:text="$24.00" />

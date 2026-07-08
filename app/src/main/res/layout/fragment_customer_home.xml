@@ -421,6 +421,7 @@
             </HorizontalScrollView>
 
             <LinearLayout
+                android:id="@+id/bestSellerHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"
@@ -468,6 +469,7 @@
             </HorizontalScrollView>
 
             <LinearLayout
+                android:id="@+id/chefSelectionHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="30dp"

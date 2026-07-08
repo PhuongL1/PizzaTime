@@ -138,13 +138,13 @@ class KitchenBoardFragment : Fragment() {
             .addOnSuccessListener { document ->
                 if (_binding == null) return@addOnSuccessListener
                 val profileName = document.getString("name").orEmpty()
-                binding.tvKitchenTitle.text = profileName.toChefFirstName(
+                binding.headerKitchen.tvAdminTitle.text = profileName.toChefFirstName(
                     fallback = user.email.orEmpty().substringBefore("@"),
                 )
             }
             .addOnFailureListener {
                 if (_binding == null) return@addOnFailureListener
-                binding.tvKitchenTitle.text = user.email.orEmpty()
+                binding.headerKitchen.tvAdminTitle.text = user.email.orEmpty()
                     .substringBefore("@")
                     .ifBlank { getString(R.string.kitchen_default_chef_name) }
             }

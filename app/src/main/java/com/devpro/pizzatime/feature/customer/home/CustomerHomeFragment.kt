@@ -39,11 +39,11 @@ class CustomerHomeFragment : Fragment() {
         }
 
     private var allAvailableProducts: List<ProductUiModel> = emptyList()
-    private var bestSellingProductIds: List<String> = emptyList()
     private var favoriteProductIds: Set<String> = emptySet()
     private var selectedCategory: HomeCategory = HomeCategory.ALL
     private var searchQuery: String = ""
     private var featuredProduct: ProductUiModel? = null
+    private var orderedProductQuantities: Map<String, Int> = emptyMap()
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -76,7 +76,7 @@ class CustomerHomeFragment : Fragment() {
             if (_binding == null) return@loadProducts
             allAvailableProducts = products
             renderFilteredProducts()
-            loadBestSellingProducts()
+            loadOrderedProductQuantities()
         }
     }
 
@@ -240,13 +240,18 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun renderFilteredProducts() {
-        featuredProduct = resolveFilteredProducts().firstOrNull() ?: allAvailableProducts.firstOrNull()
+        val filteredProducts = resolveFilteredProducts()
+        featuredProduct = filteredProducts.firstOrNull() ?: allAvailableProducts.firstOrNull()
         renderFeaturedProduct()
         renderBestSellers(
-                resolveBestSellerProducts()
-                    .map { it.toBestSellerUiModel() },
-            )
-        renderChefSelections(resolveBestSellingProducts())
+            resolveBestSellerProducts(filteredProducts)
+                .map { it.toBestSellerUiModel() },
+        )
+        renderChefSelections(
+            resolveChefSelectionProduct(filteredProducts)
+                ?.let { listOf(it.toChefPizzaUiModel()) }
+                .orEmpty(),
+        )
     }
 
     private fun renderFeaturedProduct() {
@@ -262,44 +267,52 @@ class CustomerHomeFragment : Fragment() {
         binding.tvPromoTitle.text = product.name
     }
 
-    private fun loadBestSellingProducts() {
-        CustomerHomeBestSellerRepository.loadBestSellingProductIds { result ->
-            if (_binding == null) return@loadBestSellingProductIds
+    private fun loadOrderedProductQuantities() {
+        CustomerHomeBestSellerRepository.loadOrderedProductQuantities { result ->
+            if (_binding == null) return@loadOrderedProductQuantities
             result
-                .onSuccess { productIds ->
-                    bestSellingProductIds = productIds.take(BEST_SELLER_LIMIT)
+                .onSuccess { quantities ->
+                    orderedProductQuantities = quantities
                     renderFilteredProducts()
                 }
                 .onFailure {
+                    orderedProductQuantities = emptyMap()
                     renderFilteredProducts()
                 }
         }
     }
 
-    private fun resolveBestSellingProducts(): List<ChefPizzaUiModel> {
-        val filteredProducts = resolveFilteredProducts()
-        val productsById = filteredProducts.associateBy { it.id }
-        val fallbackProducts = filteredProducts.sortedWith(
+    private fun resolveChefSelectionProduct(filteredProducts: List<ProductUiModel>): ProductUiModel? {
+        if (filteredProducts.isEmpty()) return null
+
+        val rankedProduct = filteredProducts
+            .mapNotNull { product ->
+                orderedProductQuantities[product.id]
+                    ?.takeIf { quantity -> quantity > 0 }
+                    ?.let { quantity -> product to quantity }
+            }
+            .sortedWith(
+                compareByDescending<Pair<ProductUiModel, Int>> { it.second }
+                    .thenByDescending { it.first.basePrice }
+                    .thenByDescending { it.first.rating }
+                    .thenBy { it.first.name.lowercase(Locale.US) },
+            )
+            .firstOrNull()
+            ?.first
+
+        return rankedProduct ?: filteredProducts.sortedWith(
             compareByDescending<ProductUiModel> { it.rating }
+                .thenByDescending { it.basePrice }
                 .thenBy { it.name.lowercase(Locale.US) },
-        )
-        val rankedProducts = bestSellingProductIds.mapNotNull { productsById[it] }
-        return (rankedProducts + fallbackProducts)
-            .distinctBy { it.id }
-            .take(CHEF_SELECTION_LIMIT)
-            .mapIndexed { index, product -> product.toChefPizzaUiModel(index + 1) }
+        ).firstOrNull()
     }
 
-    private fun resolveBestSellerProducts(): List<ProductUiModel> {
-        val filteredProducts = resolveFilteredProducts()
-        val productsById = filteredProducts.associateBy { it.id }
-        val fallbackProducts = filteredProducts.sortedWith(
-            compareByDescending<ProductUiModel> { it.rating }
+    private fun resolveBestSellerProducts(filteredProducts: List<ProductUiModel>): List<ProductUiModel> {
+        return filteredProducts.sortedWith(
+            compareByDescending<ProductUiModel> { it.basePrice }
+                .thenByDescending { it.rating }
                 .thenBy { it.name.lowercase(Locale.US) },
         )
-        val rankedProducts = bestSellingProductIds.mapNotNull { productsById[it] }
-        return (rankedProducts + fallbackProducts)
-            .distinctBy { it.id }
             .take(BEST_SELLER_LIMIT)
     }
 
@@ -323,6 +336,8 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun renderBestSellers(items: List<BestSellerPizzaUiModel>) {
+        binding.bestSellerHeader.isVisible = items.isNotEmpty()
+        binding.bestSellerScroll.isVisible = items.isNotEmpty()
         binding.bestSellerContainer.removeAllViews()
 
         items.forEachIndexed { index, item ->
@@ -370,6 +385,8 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun renderChefSelections(items: List<ChefPizzaUiModel>) {
+        binding.chefSelectionHeader.isVisible = items.isNotEmpty()
+        binding.chefSelectionScroll.isVisible = items.isNotEmpty()
         binding.chefSelectionContainer.removeAllViews()
 
         items.forEachIndexed { index, item ->
@@ -528,12 +545,12 @@ class CustomerHomeFragment : Fragment() {
             .ifBlank { DEFAULT_AVATAR_INITIALS }
     }
 
-    private fun ProductUiModel.toChefPizzaUiModel(rank: Int) = ChefPizzaUiModel(
+    private fun ProductUiModel.toChefPizzaUiModel() = ChefPizzaUiModel(
         id = id,
         name = name,
         description = description,
         price = priceText,
-        label = getString(R.string.home_chef_rank_label, rank),
+        label = getString(R.string.home_most_ordered_label),
         rating = getString(R.string.home_rating_label, ratingText),
         rawRating = ratingText,
         imageRes = R.drawable.img_welcome_hero,
@@ -637,7 +654,6 @@ class CustomerHomeFragment : Fragment() {
 
     private companion object {
         const val DEFAULT_AVATAR_INITIALS = "PT"
-        const val CHEF_SELECTION_LIMIT = 5
         const val BEST_SELLER_LIMIT = 3
         const val QUICK_INFO_MAX_LENGTH = 58
     }
