@@ -10,8 +10,10 @@ import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
+import com.bumptech.glide.Glide
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
@@ -169,7 +171,10 @@ class CustomerHomeFragment : Fragment() {
 
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            binding.btnHomeAvatar.setImageResource(R.drawable.bg_avatar)
+            bindHomeAvatar(
+                fullName = "",
+                avatarUrl = "",
+            )
             return
         }
 
@@ -180,12 +185,43 @@ class CustomerHomeFragment : Fragment() {
                 if (address.isNotBlank()) {
                     binding.tvHomeLocation.text = formatShortAddress(address)
                 }
-                binding.btnHomeAvatar.loadProductImage(
-                    profile.avatarUrl,
-                    R.drawable.bg_avatar,
+                bindHomeAvatar(
+                    fullName = profile.fullName,
+                    avatarUrl = profile.avatarUrl,
+                )
+            }
+            result.onFailure {
+                bindHomeAvatar(
+                    fullName = "",
+                    avatarUrl = "",
                 )
             }
         }
+    }
+
+    private fun bindHomeAvatar(
+        fullName: String,
+        avatarUrl: String,
+    ) = with(binding) {
+        tvHomeAvatarInitials.text = buildAvatarInitials(fullName)
+        val normalizedAvatarUrl = avatarUrl.trim()
+        if (normalizedAvatarUrl.isBlank()) {
+            Glide.with(ivHomeAvatar).clear(ivHomeAvatar)
+            ivHomeAvatar.setImageDrawable(null)
+            ivHomeAvatar.isVisible = false
+            tvHomeAvatarInitials.isVisible = true
+            return@with
+        }
+
+        ivHomeAvatar.isVisible = true
+        tvHomeAvatarInitials.isVisible = false
+        Glide.with(ivHomeAvatar)
+            .load(normalizedAvatarUrl)
+            .placeholder(R.drawable.bg_avatar)
+            .error(R.drawable.bg_avatar)
+            .fallback(R.drawable.bg_avatar)
+            .centerCrop()
+            .into(ivHomeAvatar)
     }
 
     private fun loadFavoriteProductIds() {
@@ -480,6 +516,18 @@ class CustomerHomeFragment : Fragment() {
         }
     }
 
+    private fun buildAvatarInitials(name: String): String {
+        val parts = name.trim()
+            .split(Regex("\\s+"))
+            .filter { it.isNotBlank() }
+        if (parts.isEmpty()) return DEFAULT_AVATAR_INITIALS
+        return parts
+            .take(2)
+            .mapNotNull { part -> part.firstOrNull()?.uppercaseChar() }
+            .joinToString(separator = "")
+            .ifBlank { DEFAULT_AVATAR_INITIALS }
+    }
+
     private fun ProductUiModel.toChefPizzaUiModel(rank: Int) = ChefPizzaUiModel(
         id = id,
         name = name,
@@ -588,6 +636,7 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private companion object {
+        const val DEFAULT_AVATAR_INITIALS = "PT"
         const val CHEF_SELECTION_LIMIT = 5
         const val BEST_SELLER_LIMIT = 3
         const val QUICK_INFO_MAX_LENGTH = 58

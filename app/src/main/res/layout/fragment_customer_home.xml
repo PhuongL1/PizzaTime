@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:id="@+id/customerHomeRoot"
     android:layout_width="match_parent"
@@ -68,15 +69,38 @@
 
                 </LinearLayout>
 
-                <ImageView
+                <FrameLayout
                     android:id="@+id/btnHomeAvatar"
-                    android:layout_width="36dp"
-                    android:layout_height="36dp"
+                    android:layout_width="40dp"
+                    android:layout_height="40dp"
                     android:background="@drawable/bg_avatar_circle"
                     android:contentDescription="@string/home_avatar_content_description"
-                    android:padding="2dp"
-                    android:scaleType="centerCrop"
-                    android:src="@drawable/bg_avatar" />
+                    android:clickable="true"
+                    android:focusable="true"
+                    android:foreground="?attr/selectableItemBackgroundBorderless"
+                    android:padding="2dp">
+
+                    <TextView
+                        android:id="@+id/tvHomeAvatarInitials"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:background="@drawable/bg_customer_account_avatar_fill"
+                        android:gravity="center"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="11sp"
+                        android:textStyle="bold"
+                        tools:text="JV" />
+
+                    <com.google.android.material.imageview.ShapeableImageView
+                        android:id="@+id/ivHomeAvatar"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/home_avatar_content_description"
+                        android:scaleType="centerCrop"
+                        app:shapeAppearanceOverlay="@style/ShapeAppearance.PizzaTime.Circle"
+                        tools:src="@drawable/bg_avatar" />
+
+                </FrameLayout>
 
             </LinearLayout>
 
