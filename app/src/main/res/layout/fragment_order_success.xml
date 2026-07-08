@@ -56,36 +56,44 @@
 
             <FrameLayout
                 android:id="@+id/heroArea"
-                android:layout_width="256dp"
-                android:layout_height="252dp"
-                android:layout_marginTop="-6dp">
+                android:layout_width="224dp"
+                android:layout_height="224dp"
+                android:layout_marginTop="20dp"
+                android:clipChildren="false"
+                android:clipToPadding="false">
 
                 <View
-                    android:layout_width="242dp"
-                    android:layout_height="242dp"
+                    android:layout_width="208dp"
+                    android:layout_height="208dp"
                     android:layout_gravity="center"
                     android:alpha="0.34"
                     android:background="@drawable/bg_order_success_glow_circle" />
 
-                <ImageView
-                    android:id="@+id/ivHeroPizza"
-                    android:layout_width="214dp"
-                    android:layout_height="214dp"
+                <FrameLayout
+                    android:layout_width="184dp"
+                    android:layout_height="184dp"
                     android:layout_gravity="center"
                     android:background="@drawable/bg_order_success_image_circle"
                     android:clipToOutline="true"
-                    android:contentDescription="@string/order_success_hero_description"
-                    android:padding="2dp"
-                    android:scaleType="centerCrop"
-                    tools:src="@drawable/img_pizza_time" />
+                    android:padding="6dp">
+
+                    <ImageView
+                        android:id="@+id/ivHeroPizza"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:clipToOutline="true"
+                        android:contentDescription="@string/order_success_hero_description"
+                        android:scaleType="centerCrop"
+                        tools:src="@drawable/img_pizza_time" />
+                </FrameLayout>
 
                 <TextView
                     android:id="@+id/tvCheckIcon"
                     android:layout_width="58dp"
                     android:layout_height="58dp"
                     android:layout_gravity="bottom|end"
-                    android:layout_marginEnd="22dp"
-                    android:layout_marginBottom="24dp"
+                    android:layout_marginEnd="10dp"
+                    android:layout_marginBottom="14dp"
                     android:background="@drawable/bg_order_success_check_circle"
                     android:gravity="center"
                     android:text="@string/order_success_check_icon"
@@ -98,7 +106,7 @@
                 android:id="@+id/tvOrderId"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="-4dp"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:letterSpacing="0.10"
                 android:textColor="@color/pt_copper"

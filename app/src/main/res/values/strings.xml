@@ -255,6 +255,10 @@
     <string name="order_success_check_icon">✓</string>
     <string name="order_success_clock_icon">◷</string>
     <string name="order_success_order_id_format">ORDER ID #%1$s</string>
+    <string name="order_success_title">Order Confirmed</string>
+    <string name="order_success_message">Your order was placed successfully and is now moving through the kitchen.</string>
+    <string name="order_success_estimated_time_default">25-35 min</string>
+    <string name="order_success_status_preparing">Preparing</string>
     <string name="order_success_estimated_arrival">ESTIMATED ARRIVAL</string>
     <string name="order_success_status">STATUS</string>
     <string name="order_success_track_pizza">Track Your Pizza</string>

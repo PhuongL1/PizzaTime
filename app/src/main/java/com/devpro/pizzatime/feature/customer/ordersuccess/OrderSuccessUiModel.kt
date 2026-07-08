@@ -9,5 +9,6 @@ data class OrderSuccessUiModel(
     val message: String,
     val estimatedArrival: String,
     val statusLabel: String,
+    val heroImageUrl: String = "",
     @param:DrawableRes val heroImageRes: Int,
 )

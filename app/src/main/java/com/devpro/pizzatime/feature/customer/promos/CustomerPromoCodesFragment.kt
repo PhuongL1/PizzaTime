@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.customer.promos
 
+import android.util.Log
 import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
@@ -33,6 +34,7 @@ class CustomerPromoCodesFragment : Fragment() {
     private var activePromos: List<CustomerPromoUiModel> = emptyList()
     private var pastPromos: List<CustomerPromoUiModel> = emptyList()
     private var selectedTab = PromoTab.ACTIVE
+    private var promoLoadFailed = false
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -61,14 +63,18 @@ class CustomerPromoCodesFragment : Fragment() {
             if (_binding == null) return@loadPromos
             result
                 .onSuccess { promos ->
+                    promoLoadFailed = false
                     activePromos = promos.filter { it.state == CustomerPromoState.ACTIVE }
                     pastPromos = promos.filter { it.state != CustomerPromoState.ACTIVE }
                     renderCurrentTab()
                 }
-                .onFailure {
+                .onFailure { error ->
+                    Log.e(TAG, "Could not load customer promo codes", error)
+                    promoLoadFailed = true
                     activePromos = emptyList()
                     pastPromos = emptyList()
                     renderCurrentTab()
+                    showToast(R.string.promo_load_failed)
                 }
         }
     }
@@ -122,13 +128,13 @@ class CustomerPromoCodesFragment : Fragment() {
             PromoTab.ACTIVE -> renderPromoList(
                 container = activePromosContainer,
                 promos = activePromos,
-                emptyText = R.string.no_active_promos,
+                emptyText = if (promoLoadFailed) R.string.promo_load_failed else R.string.no_active_promos,
             )
 
             PromoTab.PAST -> renderPromoList(
                 container = pastPromosContainer,
                 promos = pastPromos,
-                emptyText = R.string.no_past_rewards,
+                emptyText = if (promoLoadFailed) R.string.promo_load_failed else R.string.no_past_rewards,
             )
 
             PromoTab.POINTS -> {
@@ -320,5 +326,9 @@ class CustomerPromoCodesFragment : Fragment() {
         ACTIVE,
         PAST,
         POINTS,
+    }
+
+    companion object {
+        private const val TAG = "CustomerPromoCodes"
     }
 }
