@@ -13,6 +13,7 @@ import com.devpro.pizzatime.databinding.FragmentStaffDashboardBinding
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -39,6 +40,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
 
         setupRecyclerView()
         setupStatusChips()
+        setupTopBar()
         setupBottomNav()
         renderOrders()
         listenFirestoreOrders()
@@ -130,6 +132,13 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             onProfileClick = {
                 openCustomerAccount()
             },
+        )
+    }
+
+    private fun setupTopBar() {
+        bindStaffTopBar(
+            root = binding.staffTopBar.root,
+            title = getString(R.string.staff_dashboard_title),
         )
     }
 

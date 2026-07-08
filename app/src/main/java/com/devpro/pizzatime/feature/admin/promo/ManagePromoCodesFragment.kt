@@ -20,6 +20,10 @@ import com.devpro.pizzatime.databinding.FragmentManagePromoCodesBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import java.util.Locale
 
 class ManagePromoCodesFragment : Fragment() {
@@ -378,6 +382,10 @@ class ManagePromoCodesFragment : Fragment() {
         bindAdminBottomNav(
             root = binding.staffBottomNav.root,
             selectedDestination = AdminBottomNavDestination.PROMOS,
+            onDashboardClick = { openAdminDashboard() },
+            onManageMenuClick = { openManageMenu() },
+            onManagePromoCodesClick = { openShipperDeliveryDashboard() },
+            onManageStaffClick = { openCustomerAccount() },
         )
     }
 

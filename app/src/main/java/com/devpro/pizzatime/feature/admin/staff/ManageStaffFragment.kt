@@ -21,6 +21,10 @@ import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
 import com.devpro.pizzatime.databinding.FragmentManageStaffBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 
 class ManageStaffFragment : Fragment() {
 
@@ -250,6 +254,10 @@ class ManageStaffFragment : Fragment() {
         bindAdminBottomNav(
             root = binding.staffBottomNav.root,
             selectedDestination = AdminBottomNavDestination.STAFF,
+            onDashboardClick = { openAdminDashboard() },
+            onManageMenuClick = { openManageMenu() },
+            onManagePromoCodesClick = { openShipperDeliveryDashboard() },
+            onManageStaffClick = { openCustomerAccount() },
         )
     }
 

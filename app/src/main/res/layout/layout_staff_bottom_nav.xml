@@ -18,7 +18,7 @@
         android:background="@drawable/bg_bottom_nav_item_selected"
         android:gravity="center"
         android:text="@string/staff_nav_dashboard"
-        android:textColor="#3A210D"
+        android:textColor="@color/staff_nav_selected"
         android:textSize="13sp"
         android:textStyle="bold" />
 
@@ -29,7 +29,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/staff_nav_kitchen"
-        android:textColor="#D8C8BC"
+        android:textColor="@color/staff_nav_unselected"
         android:textSize="13sp"
         android:textStyle="bold" />
 
@@ -40,7 +40,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/staff_nav_delivery"
-        android:textColor="#D8C8BC"
+        android:textColor="@color/staff_nav_unselected"
         android:textSize="13sp"
         android:textStyle="bold" />
 
@@ -51,7 +51,7 @@
         android:layout_weight="1"
         android:gravity="center"
         android:text="@string/staff_nav_profile"
-        android:textColor="#D8C8BC"
+        android:textColor="@color/staff_nav_unselected"
         android:textSize="13sp"
         android:textStyle="bold" />
 

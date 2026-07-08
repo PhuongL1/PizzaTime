@@ -14,6 +14,10 @@ import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
 import com.devpro.pizzatime.feature.staff.navigation.openAddEditProduct
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 
 class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
 
@@ -167,6 +171,10 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         bindAdminBottomNav(
             root = binding.staffBottomNav.root,
             selectedDestination = AdminBottomNavDestination.MENU,
+            onDashboardClick = { openAdminDashboard() },
+            onManageMenuClick = { openManageMenu() },
+            onManagePromoCodesClick = { openShipperDeliveryDashboard() },
+            onManageStaffClick = { openCustomerAccount() },
         )
     }
 
@@ -174,7 +182,6 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
         bindAdminTopBar(
             root = binding.staffTopBar.root,
             title = getString(R.string.manage_menu_title),
-            onMenuClick = { openAddEditProduct(productId = null) },
         )
     }
 

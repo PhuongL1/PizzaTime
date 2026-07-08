@@ -12,7 +12,7 @@
         android:id="@+id/staffTopBar"
         layout="@layout/layout_staff_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="66dp"
+        android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -136,6 +136,6 @@
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="86dp" />
+        android:layout_height="88dp" />
 
 </LinearLayout>

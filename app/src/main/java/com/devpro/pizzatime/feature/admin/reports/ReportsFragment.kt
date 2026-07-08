@@ -11,6 +11,10 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentReportsBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 
 class ReportsFragment : Fragment() {
 
@@ -82,6 +86,10 @@ class ReportsFragment : Fragment() {
         bindAdminBottomNav(
             root = binding.staffBottomNav.root,
             selectedDestination = AdminBottomNavDestination.DASHBOARD,
+            onDashboardClick = { openAdminDashboard() },
+            onManageMenuClick = { openManageMenu() },
+            onManagePromoCodesClick = { openShipperDeliveryDashboard() },
+            onManageStaffClick = { openCustomerAccount() },
         )
     }
 

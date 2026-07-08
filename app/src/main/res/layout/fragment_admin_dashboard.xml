@@ -12,7 +12,7 @@
         android:id="@+id/staffTopBar"
         layout="@layout/layout_staff_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="66dp"
+        android:layout_height="wrap_content"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -22,7 +22,9 @@
         android:layout_width="match_parent"
         android:layout_height="0dp"
         android:layout_weight="1"
+        android:clipToPadding="false"
         android:overScrollMode="never"
+        android:paddingBottom="8dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -31,18 +33,20 @@
             android:layout_height="wrap_content"
             android:background="@drawable/bg_admin_dashboard_glow"
             android:orientation="vertical"
-            android:paddingHorizontal="24dp"
-            android:paddingTop="42dp"
-            android:paddingBottom="36dp">
+            android:paddingHorizontal="18dp"
+            android:paddingTop="10dp"
+            android:paddingBottom="6dp">
 
             <TextView
                 android:id="@+id/tvAdminHeadline"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
+                android:includeFontPadding="false"
+                android:maxLines="1"
                 android:text="@string/admin_dashboard_headline"
                 android:textColor="@color/pt_gold_light"
-                android:textSize="30sp"
+                android:textSize="26sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -50,20 +54,21 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
-                android:lineSpacingExtra="4dp"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
                 android:text="@string/admin_dashboard_subtitle"
                 android:textColor="@color/pt_gold_light"
-                android:textSize="17sp" />
+                android:textSize="14sp" />
 
             <LinearLayout
                 android:id="@+id/revenueCard"
                 android:layout_width="match_parent"
-                android:layout_height="132dp"
-                android:layout_marginTop="44dp"
+                android:layout_height="106dp"
+                android:layout_marginTop="26dp"
                 android:background="@drawable/bg_admin_metric_light_card"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="28dp">
+                android:paddingHorizontal="20dp">
 
                 <LinearLayout
                     android:layout_width="0dp"
@@ -77,13 +82,13 @@
                         android:letterSpacing="0.12"
                         android:text="@string/admin_total_revenue"
                         android:textColor="#D6BFB0"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="12dp"
+                        android:layout_marginTop="8dp"
                         android:gravity="center_vertical"
                         android:orientation="horizontal">
 
@@ -92,8 +97,9 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:fontFamily="serif"
+                            android:includeFontPadding="false"
                             android:textColor="#111111"
-                            android:textSize="36sp"
+                            android:textSize="30sp"
                             android:textStyle="bold"
                             tools:text="$4,250.00" />
 
@@ -101,9 +107,9 @@
                             android:id="@+id/tvRevenueGrowth"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:layout_marginStart="12dp"
+                            android:layout_marginStart="8dp"
                             android:textColor="#148E46"
-                            android:textSize="12sp"
+                            android:textSize="11sp"
                             tools:text="↗12%" />
 
                     </LinearLayout>
@@ -112,10 +118,10 @@
 
                 <ImageView
                     android:id="@+id/icRevenue"
-                    android:layout_width="74dp"
-                    android:layout_height="74dp"
+                    android:layout_width="56dp"
+                    android:layout_height="56dp"
                     android:contentDescription="@string/admin_revenue_icon_content_description"
-                    android:padding="10dp"
+                    android:padding="9dp"
                     android:src="@drawable/ic_admin_revenue" />
 
             </LinearLayout>
@@ -123,8 +129,8 @@
             <LinearLayout
                 android:id="@+id/metricRow"
                 android:layout_width="match_parent"
-                android:layout_height="156dp"
-                android:layout_marginTop="24dp"
+                android:layout_height="124dp"
+                android:layout_marginTop="18dp"
                 android:orientation="horizontal"
                 tools:ignore="DisableBaselineAlignment">
 
@@ -136,7 +142,7 @@
                     android:background="@drawable/bg_admin_metric_light_card"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -144,26 +150,28 @@
                         android:letterSpacing="0.12"
                         android:text="@string/admin_today_total"
                         android:textColor="#D6BFB0"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvTodayTotal"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="26dp"
+                        android:layout_marginTop="18dp"
                         android:fontFamily="serif"
+                        android:includeFontPadding="false"
                         android:textColor="#111111"
-                        android:textSize="32sp"
+                        android:textSize="28sp"
                         android:textStyle="bold"
                         tools:text="142" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:layout_marginTop="2dp"
                         android:text="@string/admin_live_dispatch"
                         android:textColor="#D6BFB0"
-                        android:textSize="13sp" />
+                        android:textSize="12sp" />
 
                 </LinearLayout>
 
@@ -171,12 +179,12 @@
                     android:id="@+id/pendingCard"
                     android:layout_width="0dp"
                     android:layout_height="match_parent"
-                    android:layout_marginStart="22dp"
+                    android:layout_marginStart="16dp"
                     android:layout_weight="1"
                     android:background="@drawable/bg_admin_pending_card"
                     android:gravity="center_vertical"
                     android:orientation="vertical"
-                    android:padding="24dp">
+                    android:padding="18dp">
 
                     <TextView
                         android:layout_width="match_parent"
@@ -184,17 +192,18 @@
                         android:letterSpacing="0.12"
                         android:text="@string/admin_pending"
                         android:textColor="#3A210D"
-                        android:textSize="14sp"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                     <TextView
                         android:id="@+id/tvPendingCount"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="28dp"
+                        android:layout_marginTop="22dp"
                         android:fontFamily="serif"
+                        android:includeFontPadding="false"
                         android:textColor="#3A210D"
-                        android:textSize="32sp"
+                        android:textSize="28sp"
                         android:textStyle="bold"
                         tools:text="8" />
 
@@ -205,26 +214,26 @@
             <LinearLayout
                 android:id="@+id/completedBar"
                 android:layout_width="match_parent"
-                android:layout_height="92dp"
-                android:layout_marginTop="28dp"
+                android:layout_height="72dp"
+                android:layout_marginTop="18dp"
                 android:background="@drawable/bg_admin_dark_panel"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingHorizontal="22dp">
+                android:paddingHorizontal="16dp">
 
                 <TextView
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
+                    android:layout_width="44dp"
+                    android:layout_height="44dp"
                     android:background="@drawable/bg_admin_completed_icon"
                     android:gravity="center"
                     android:text="@string/admin_check_icon"
                     android:textColor="#D8C8BC"
-                    android:textSize="26sp" />
+                    android:textSize="21sp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="18dp"
+                    android:layout_marginStart="14dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -234,7 +243,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.08"
                         android:textColor="#F4EEE8"
-                        android:textSize="15sp"
+                        android:textSize="14sp"
                         android:textStyle="bold"
                         tools:text="124 Completed" />
 
@@ -242,16 +251,16 @@
                         android:id="@+id/tvSatisfactionLabel"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="4dp"
+                        android:layout_marginTop="3dp"
                         android:textColor="#D8C8BC"
-                        android:textSize="13sp"
+                        android:textSize="12sp"
                         tools:text="98% Satisfaction tonight" />
 
                 </LinearLayout>
 
                 <View
-                    android:layout_width="88dp"
-                    android:layout_height="5dp"
+                    android:layout_width="74dp"
+                    android:layout_height="4dp"
                     android:background="@drawable/bg_admin_progress_short" />
 
             </LinearLayout>
@@ -260,17 +269,17 @@
                 android:id="@+id/tvQuickActionsTitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="46dp"
+                android:layout_marginTop="34dp"
                 android:text="@string/admin_quick_actions"
                 android:textColor="@color/pt_gold_light"
-                android:textSize="27sp"
+                android:textSize="22sp"
                 android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/quickActionRow"
                 android:layout_width="match_parent"
-                android:layout_height="118dp"
-                android:layout_marginTop="20dp"
+                android:layout_height="92dp"
+                android:layout_marginTop="14dp"
                 android:gravity="center"
                 android:orientation="horizontal"
                 tools:ignore="DisableBaselineAlignment">
@@ -285,18 +294,19 @@
                     tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_admin_quick_action_circle"
                         android:contentDescription="@string/admin_action_add_product"
-                        android:padding="18dp"
+                        android:padding="15dp"
                         android:src="@drawable/ic_admin_add_product" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:gravity="center"
+                        android:maxLines="1"
                         android:text="@string/admin_action_add_product"
                         android:textColor="@color/pt_white"
                         android:textSize="10sp"
@@ -314,18 +324,19 @@
                     tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_admin_quick_action_circle"
                         android:contentDescription="@string/admin_action_manage_staff"
-                        android:padding="18dp"
+                        android:padding="15dp"
                         android:src="@drawable/ic_admin_manage_staff" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:gravity="center"
+                        android:maxLines="1"
                         android:text="@string/admin_action_manage_staff"
                         android:textColor="@color/pt_white"
                         android:textSize="10sp"
@@ -343,18 +354,19 @@
                     tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_admin_quick_action_circle"
                         android:contentDescription="@string/admin_action_view_reports"
-                        android:padding="18dp"
+                        android:padding="15dp"
                         android:src="@drawable/ic_admin_view_reports" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:gravity="center"
+                        android:maxLines="1"
                         android:text="@string/admin_action_view_reports"
                         android:textColor="@color/pt_white"
                         android:textSize="10sp"
@@ -372,18 +384,19 @@
                     tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_admin_quick_action_circle"
                         android:contentDescription="@string/admin_action_inventory"
-                        android:padding="18dp"
+                        android:padding="15dp"
                         android:src="@drawable/ic_admin_inventory" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:gravity="center"
+                        android:maxLines="1"
                         android:text="@string/admin_action_inventory"
                         android:textColor="@color/pt_white"
                         android:textSize="10sp"
@@ -396,8 +409,8 @@
             <LinearLayout
                 android:id="@+id/quickActionRow2"
                 android:layout_width="match_parent"
-                android:layout_height="118dp"
-                android:layout_marginTop="12dp"
+                android:layout_height="92dp"
+                android:layout_marginTop="4dp"
                 android:gravity="center"
                 android:orientation="horizontal">
 
@@ -411,18 +424,19 @@
                     tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_admin_quick_action_circle"
                         android:contentDescription="@string/promotions"
-                        android:padding="18dp"
+                        android:padding="15dp"
                         android:src="@drawable/ic_admin_revenue" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:gravity="center"
+                        android:maxLines="1"
                         android:text="@string/promotions"
                         android:textColor="@color/pt_white"
                         android:textSize="10sp"
@@ -440,18 +454,19 @@
                     tools:ignore="UseCompoundDrawables">
 
                     <ImageView
-                        android:layout_width="66dp"
-                        android:layout_height="66dp"
+                        android:layout_width="54dp"
+                        android:layout_height="54dp"
                         android:background="@drawable/bg_admin_quick_action_circle"
                         android:contentDescription="@string/admin_action_store_settings"
-                        android:padding="18dp"
+                        android:padding="15dp"
                         android:src="@drawable/ic_admin_inventory" />
 
                     <TextView
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
-                        android:layout_marginTop="10dp"
+                        android:layout_marginTop="7dp"
                         android:gravity="center"
+                        android:maxLines="1"
                         android:text="@string/admin_action_store_settings"
                         android:textColor="@color/pt_white"
                         android:textSize="10sp"
@@ -470,7 +485,7 @@
                 android:id="@+id/recentOrdersHeader"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="42dp"
+                android:layout_marginTop="30dp"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
 
@@ -480,7 +495,7 @@
                     android:layout_weight="1"
                     android:text="@string/admin_recent_orders"
                     android:textColor="@color/pt_gold_light"
-                    android:textSize="27sp"
+                    android:textSize="22sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -489,7 +504,7 @@
                     android:layout_height="wrap_content"
                     android:text="@string/admin_see_all"
                     android:textColor="#F2A96B"
-                    android:textSize="13sp"
+                    android:textSize="12sp"
                     android:textStyle="bold" />
 
             </LinearLayout>
@@ -498,15 +513,15 @@
                 android:id="@+id/rvRecentOrders"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="22dp"
+                android:layout_marginTop="16dp"
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never" />
+
             <View
                 android:layout_width="match_parent"
-                android:layout_height="60dp" />
+                android:layout_height="50dp" />
 
         </LinearLayout>
-
 
     </ScrollView>
 
@@ -514,6 +529,6 @@
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="86dp" />
+        android:layout_height="88dp" />
 
 </LinearLayout>

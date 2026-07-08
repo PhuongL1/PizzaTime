@@ -31,20 +31,18 @@
                 android:orientation="horizontal"
                 android:paddingHorizontal="24dp">
 
-                <TextView
-                    android:id="@+id/tvMenu"
-                    android:layout_width="wrap_content"
-                    android:layout_height="48dp"
-                    android:gravity="center"
-                    android:text="@string/menu"
-                    android:textColor="@color/pt_gold_light"
-                    android:textSize="24sp" />
+                <ImageView
+                    android:id="@+id/btnBack"
+                    android:layout_width="30dp"
+                    android:layout_height="30dp"
+                    android:contentDescription="@string/detail_back_content_description"
+                    android:src="@drawable/ic_back" />
 
                 <TextView
                     android:id="@+id/tvBrandName"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="24dp"
+                    android:layout_marginStart="22dp"
                     android:layout_weight="1"
                     android:text="@string/midnight_artisan"
                     android:textColor="@color/pt_gold_light"
@@ -58,7 +56,7 @@
                     android:background="@drawable/bg_promo_avatar"
                     android:contentDescription="@string/profile"
                     android:padding="12dp"
-                    android:src="@drawable/ic_admin_view_reports" />
+                    android:src="@drawable/img_avatar" />
             </LinearLayout>
 
             <TextView
@@ -192,6 +190,6 @@
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="96dp" />
+        android:layout_height="88dp" />
 
 </LinearLayout>

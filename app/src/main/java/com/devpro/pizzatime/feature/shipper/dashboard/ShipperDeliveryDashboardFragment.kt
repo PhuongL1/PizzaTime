@@ -15,8 +15,12 @@ import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.google.firebase.auth.FirebaseAuth
@@ -56,6 +60,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
 
         renderDashboard(latestDashboard)
         setupAssignedDeliveries()
+        setupTopBar()
         setupBottomNav()
         listenFirestoreOrders()
     }
@@ -158,6 +163,10 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
             bindAdminBottomNav(
                 root = binding.staffBottomNav.root,
                 selectedDestination = AdminBottomNavDestination.SHIPPER,
+                onDashboardClick = { openAdminDashboard() },
+                onManageMenuClick = { openManageMenu() },
+                onManagePromoCodesClick = { openShipperDeliveryDashboard() },
+                onManageStaffClick = { openCustomerAccount() },
             )
         } else {
             bindStaffBottomNav(
@@ -179,6 +188,13 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
             showingHistory = !showingHistory
             renderDashboard(latestDashboard)
         }
+    }
+
+    private fun setupTopBar() {
+        bindStaffTopBar(
+            root = binding.headerShipper.root,
+            title = getString(R.string.staff_nav_delivery),
+        )
     }
 
     private fun startDelivery(order: ShipperDeliveryUiModel) {

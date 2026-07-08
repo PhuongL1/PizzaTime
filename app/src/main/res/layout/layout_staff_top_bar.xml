@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/staffTopBarRoot"
     android:layout_width="match_parent"
     android:layout_height="66dp"
@@ -25,19 +26,38 @@
         android:layout_weight="1"
         android:fontFamily="serif"
         android:text="@string/staff_dashboard_title"
-        android:textColor="#F2A96B"
-        android:textSize="30sp"
+        android:textColor="@color/pt_gold_light"
+        android:textSize="24sp"
         android:textStyle="bold" />
 
-    <TextView
-        android:id="@+id/tvAdminAvatar"
+    <FrameLayout
+        android:id="@+id/avatarFrame"
         android:layout_width="46dp"
         android:layout_height="46dp"
         android:background="@drawable/bg_avatar_circle"
-        android:gravity="center"
-        android:text="@string/staff_avatar_initial"
-        android:textColor="#F2A96B"
-        android:textSize="18sp"
-        android:textStyle="bold" />
+        android:contentDescription="@string/staff_avatar_content_description"
+        android:padding="2dp">
+
+        <TextView
+            android:id="@+id/tvAdminAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="@drawable/bg_customer_account_avatar_fill"
+            android:gravity="center"
+            android:text="@string/staff_avatar_initial"
+            android:textColor="@color/pt_text_primary"
+            android:textSize="16sp"
+            android:textStyle="bold" />
+
+        <com.google.android.material.imageview.ShapeableImageView
+            android:id="@+id/ivAdminAvatar"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/staff_avatar_content_description"
+            android:scaleType="centerCrop"
+            android:visibility="gone"
+            app:shapeAppearanceOverlay="@style/ShapeAppearance.PizzaTime.Circle" />
+
+    </FrameLayout>
 
 </LinearLayout>

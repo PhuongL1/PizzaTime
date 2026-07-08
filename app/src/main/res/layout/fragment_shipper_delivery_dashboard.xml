@@ -1,52 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/shipperDeliveryRoot"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_app_dark"
     android:orientation="vertical">
 
-    <LinearLayout
+    <include
         android:id="@+id/headerShipper"
+        layout="@layout/layout_staff_top_bar"
         android:layout_width="match_parent"
-        android:layout_height="76dp"
-        android:background="@drawable/bg_top_bar_dark"
-        android:gravity="center_vertical"
-        android:orientation="horizontal"
-        android:paddingHorizontal="24dp">
-
-        <ImageView
-            android:id="@+id/btnMenu"
-            android:layout_width="32dp"
-            android:layout_height="32dp"
-            android:contentDescription="@string/staff_menu_content_description"
-            android:padding="5dp"
-            android:src="@drawable/ic_menu" />
-
-        <TextView
-            android:id="@+id/tvShipperTitle"
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_marginStart="18dp"
-            android:layout_weight="1"
-            android:fontFamily="serif"
-            android:text="@string/staff_dashboard_title"
-            android:textColor="#F2A96B"
-            android:textSize="24sp" />
-
-        <TextView
-            android:id="@+id/tvShipperAvatar"
-            android:layout_width="44dp"
-            android:layout_height="44dp"
-            android:background="@drawable/bg_avatar_circle"
-            android:gravity="center"
-            android:text="@string/staff_avatar_initial"
-            android:textColor="#F2A96B"
-            android:textSize="18sp"
-            android:textStyle="bold" />
-
-    </LinearLayout>
+        android:layout_height="wrap_content"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toTopOf="parent" />
 
     <ScrollView
         android:id="@+id/shipperScroll"
@@ -398,6 +367,6 @@
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="86dp" />
+        android:layout_height="88dp" />
 
 </LinearLayout>

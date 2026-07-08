@@ -320,6 +320,7 @@
     <string name="staff_dashboard_title">Staff Dashboard</string>
     <string name="staff_avatar_initial">S</string>
     <string name="staff_menu_content_description">Open staff menu</string>
+    <string name="staff_avatar_content_description">Profile avatar</string>
     <string name="staff_chip_new_orders">New Orders</string>
     <string name="staff_chip_confirmed">Confirmed</string>
     <string name="staff_chip_preparing">Preparing</string>

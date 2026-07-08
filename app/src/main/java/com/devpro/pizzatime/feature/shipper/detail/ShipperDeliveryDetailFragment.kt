@@ -19,9 +19,13 @@ import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
+import com.devpro.pizzatime.feature.staff.navigation.bindCurrentProfileAvatar
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
+import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
+import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.devpro.pizzatime.shared.location.isValidLatitude
 import com.devpro.pizzatime.shared.location.isValidLongitude
@@ -45,6 +49,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
 
         val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
         setupBottomNav()
+        setupAvatar()
         loadOrder(orderId)
     }
 
@@ -277,6 +282,10 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             bindAdminBottomNav(
                 root = binding.staffBottomNav.root,
                 selectedDestination = AdminBottomNavDestination.SHIPPER,
+                onDashboardClick = { openAdminDashboard() },
+                onManageMenuClick = { openManageMenu() },
+                onManagePromoCodesClick = { openShipperDeliveryDashboard() },
+                onManageStaffClick = { openCustomerAccount() },
             )
         } else {
             bindStaffBottomNav(
@@ -293,6 +302,14 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 },
             )
         }
+    }
+
+    private fun setupAvatar() {
+        bindCurrentProfileAvatar(
+            initialsView = binding.tvDetailAvatar,
+            imageView = binding.ivDetailAvatar,
+        )
+        binding.detailAvatarFrame.setOnClickListener(null)
     }
 
     private fun showComingSoon(titleRes: Int) {

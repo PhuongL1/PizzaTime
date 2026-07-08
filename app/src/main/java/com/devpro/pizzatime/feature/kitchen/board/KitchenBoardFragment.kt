@@ -9,9 +9,9 @@ import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
+import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.databinding.FragmentKitchenBoardBinding
-import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -50,6 +50,7 @@ class KitchenBoardFragment : Fragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         setupOrders()
+        setupTopBar()
         setupBottomNav()
         loadChefFirstName()
         listenFirestoreOrders()
@@ -84,6 +85,13 @@ class KitchenBoardFragment : Fragment() {
             onProfileClick = {
                 openCustomerAccount()
             },
+        )
+    }
+
+    private fun setupTopBar() {
+        bindStaffTopBar(
+            root = binding.headerKitchen.root,
+            title = getString(R.string.kitchen_default_chef_name),
         )
     }
 
