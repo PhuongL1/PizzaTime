@@ -15,7 +15,6 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.product.ProductOptionDefaults
 import com.devpro.pizzatime.databinding.FragmentAddEditProductBinding
-import com.devpro.pizzatime.feature.admin.menu.AdminMenuCategory
 import com.devpro.pizzatime.feature.admin.menu.AdminMenuFirestoreRepository
 import com.devpro.pizzatime.feature.admin.menu.CloudinaryConfig
 import com.devpro.pizzatime.feature.admin.menu.CloudinaryProductImageRepository
@@ -33,7 +32,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     private var productId: String? = null
     private var imageUrl = ""
     private var isAvailable = true
-    private var selectedCategory = AdminMenuCategory.SIGNATURE
+    private var selectedCategoryId = ProductOptionDefaults.CATEGORY_ID_PIZZA
     private val selectedSizes = linkedSetOf<String>()
     private val selectedCrusts = linkedSetOf<String>()
     private val toppingOptions = mutableListOf<String>()
@@ -68,20 +67,18 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     private fun bindCreateDefaults() {
         isAvailable = true
         imageUrl = ""
-        selectedCategory = AdminMenuCategory.SIGNATURE
+        selectedCategoryId = ProductOptionDefaults.CATEGORY_ID_PIZZA
         selectedSizes.clear()
-        selectedSizes.addAll(ProductOptionDefaults.sizeOptions)
+        selectedSizes.addAll(ProductOptionDefaults.sizeOptionsFor(currentProductCategory()))
         selectedCrusts.clear()
-        selectedCrusts.addAll(ProductOptionDefaults.crustOptions)
+        selectedCrusts.addAll(ProductOptionDefaults.crustOptionsFor(currentProductCategory()))
         toppingOptions.clear()
-        toppingOptions.addAll(ProductOptionDefaults.toppingOptions)
+        toppingOptions.addAll(ProductOptionDefaults.toppingOptionsFor(currentProductCategory()))
         selectedToppings.clear()
         selectedToppings.addAll(toppingOptions)
         bindProductHeader(isEditMode = false)
         bindAvailability()
-        renderSizeOptions()
-        renderCrustOptions()
-        renderToppings()
+        renderProductOptions()
     }
 
     private fun loadProduct(productId: String) {
@@ -103,24 +100,26 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         etDescription.setText(product.description)
         etBasePrice.setText(formatPriceValue(product.basePrice))
         etImageUrl.setText(product.imageUrl)
-        selectedCategory = product.category
+        selectedCategoryId = ProductOptionDefaults.canonicalCategoryId(
+            categoryId = product.categoryId,
+            categoryName = product.category.name,
+        ).ifBlank { ProductOptionDefaults.CATEGORY_ID_PIZZA }
         imageUrl = product.imageUrl
         isAvailable = product.isAvailable
+        val productCategory = currentProductCategory()
 
         selectedSizes.clear()
-        selectedSizes.addAll(ProductOptionDefaults.sizesOrDefault(product.sizeOptions))
+        selectedSizes.addAll(ProductOptionDefaults.sizesOrDefault(product.sizeOptions, productCategory))
         selectedCrusts.clear()
-        selectedCrusts.addAll(ProductOptionDefaults.crustsOrDefault(product.crustOptions))
+        selectedCrusts.addAll(ProductOptionDefaults.crustsOrDefault(product.crustOptions, productCategory))
         toppingOptions.clear()
-        toppingOptions.addAll(product.toppingOptions)
+        toppingOptions.addAll(ProductOptionDefaults.sanitizeToppingOptions(product.toppingOptions, productCategory))
         selectedToppings.clear()
-        selectedToppings.addAll(product.toppingOptions)
+        selectedToppings.addAll(toppingOptions)
 
         bindProductHeader(isEditMode = true)
         bindAvailability()
-        renderSizeOptions()
-        renderCrustOptions()
-        renderToppings()
+        renderProductOptions()
     }
 
     private fun bindProductHeader(isEditMode: Boolean) = with(binding) {
@@ -130,7 +129,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         btnDiscardChanges.text = getString(
             if (isEditMode) R.string.manage_menu_delete_product else R.string.add_edit_product_discard_changes,
         )
-        tvCategoryValue.text = selectedCategory.name
+        tvCategoryValue.text = getString(categoryLabelRes(currentProductCategory()))
         ivHeroImage.loadProductImage(imageUrl, R.drawable.img_pizza_time)
         if (!isEditMode) {
             etImageUrl.setText("")
@@ -167,47 +166,72 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         }
     }
 
-    private fun renderSizeOptions() {
+    private fun renderProductOptions() {
+        val productCategory = currentProductCategory()
+        binding.sizeSection.isVisible = ProductOptionDefaults.supportsSizeOptions(productCategory)
+        binding.crustSection.isVisible = ProductOptionDefaults.supportsCrustOptions(productCategory)
+        binding.toppingsSection.isVisible = ProductOptionDefaults.supportsToppingOptions(productCategory)
+
+        if (binding.sizeSection.isVisible) {
+            renderSizeOptions(productCategory)
+        }
+        if (binding.crustSection.isVisible) {
+            renderCrustOptions(productCategory)
+        }
+        if (binding.toppingsSection.isVisible) {
+            renderToppings()
+        }
+    }
+
+    private fun renderSizeOptions(productCategory: ProductOptionDefaults.ProductCategory) {
         val sizeViews = listOf(
             binding.tvSizeSmall,
             binding.tvSizeMedium,
             binding.tvSizeLarge,
-            binding.tvSizeFamily,
         )
-        val options = ProductOptionDefaults.sizeOptions.take(sizeViews.size)
+        val options = ProductOptionDefaults.sizeOptionsFor(productCategory)
 
         sizeViews.forEachIndexed { index, textView ->
-            val option = options[index]
-            textView.isVisible = true
-            textView.text = option
-            bindChipState(textView, selectedSizes.contains(option))
-            textView.setOnClickListener {
-                toggleSelection(selectedSizes, option)
-                renderSizeOptions()
+            val option = options.getOrNull(index)
+            textView.isVisible = option != null
+            if (option != null) {
+                textView.text = formatSizeOptionLabel(option, productCategory)
+                bindChipState(textView, selectedSizes.contains(option))
+                textView.setOnClickListener {
+                    toggleSelection(selectedSizes, option)
+                    renderSizeOptions(productCategory)
+                }
+            } else {
+                textView.setOnClickListener(null)
             }
         }
     }
 
-    private fun renderCrustOptions() {
+    private fun renderCrustOptions(productCategory: ProductOptionDefaults.ProductCategory) {
         val crustViews = listOf(
             CrustOptionViews(binding.tvCrustSourdoughCheck, binding.tvCrustSourdough),
             CrustOptionViews(binding.tvCrustGlutenFreeCheck, binding.tvCrustGlutenFree),
             CrustOptionViews(binding.tvCrustCharredCheck, binding.tvCrustCharred),
         )
-        val options = ProductOptionDefaults.crustOptions.take(crustViews.size)
+        val options = ProductOptionDefaults.crustOptionsFor(productCategory)
 
         crustViews.forEachIndexed { index, views ->
-            val option = options[index]
-            views.checkView.isVisible = true
-            views.labelView.isVisible = true
-            views.labelView.text = option
-            bindCheckboxState(views.checkView, selectedCrusts.contains(option))
-            val clickListener = View.OnClickListener {
-                toggleSelection(selectedCrusts, option)
-                renderCrustOptions()
+            val option = options.getOrNull(index)
+            views.checkView.isVisible = option != null
+            views.labelView.isVisible = option != null
+            if (option != null) {
+                views.labelView.text = option
+                bindCheckboxState(views.checkView, selectedCrusts.contains(option))
+                val clickListener = View.OnClickListener {
+                    toggleSelection(selectedCrusts, option)
+                    renderCrustOptions(productCategory)
+                }
+                views.checkView.setOnClickListener(clickListener)
+                views.labelView.setOnClickListener(clickListener)
+            } else {
+                views.checkView.setOnClickListener(null)
+                views.labelView.setOnClickListener(null)
             }
-            views.checkView.setOnClickListener(clickListener)
-            views.labelView.setOnClickListener(clickListener)
         }
     }
 
@@ -366,13 +390,22 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     }
 
     private fun showCategoryDialog() {
-        val categories = AdminMenuCategory.entries.toTypedArray()
-        val labels = categories.map { it.name }.toTypedArray()
+        val categories = listOf(
+            ProductOptionDefaults.CATEGORY_ID_PIZZA to R.string.home_category_pizza,
+            ProductOptionDefaults.CATEGORY_ID_DRINK to R.string.home_category_drinks,
+            ProductOptionDefaults.CATEGORY_ID_COMBO to R.string.home_category_combo,
+            ProductOptionDefaults.CATEGORY_ID_DESSERT to R.string.home_category_dessert,
+        )
+        val labels = categories.map { (_, labelRes) -> getString(labelRes) }.toTypedArray()
+        val selectedIndex = categories.indexOfFirst { (categoryId, _) -> categoryId == selectedCategoryId }
         AlertDialog.Builder(requireContext())
             .setTitle(R.string.add_edit_product_category)
-            .setItems(labels) { _, which ->
-                selectedCategory = categories[which]
-                binding.tvCategoryValue.text = selectedCategory.name
+            .setSingleChoiceItems(labels, selectedIndex) { dialog, which ->
+                selectedCategoryId = categories[which].first
+                applyCategoryDefaultsFor(currentProductCategory())
+                bindProductHeader(isEditMode = productId != null)
+                renderProductOptions()
+                dialog.dismiss()
             }
             .show()
     }
@@ -420,6 +453,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         val sizes = getSelectedSizes()
         val crusts = getSelectedCrusts()
         val toppings = getSelectedToppings()
+        val productCategory = currentProductCategory()
 
         when {
             name.isBlank() -> {
@@ -432,12 +466,12 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                 return
             }
 
-            sizes.isEmpty() -> {
+            ProductOptionDefaults.supportsSizeOptions(productCategory) && sizes.isEmpty() -> {
                 showToast(R.string.add_edit_product_size_required)
                 return
             }
 
-            crusts.isEmpty() -> {
+            ProductOptionDefaults.supportsCrustOptions(productCategory) && crusts.isEmpty() -> {
                 showToast(R.string.add_edit_product_crust_required)
                 return
             }
@@ -486,7 +520,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
             name = name,
             description = description,
             basePrice = basePrice,
-            categoryId = selectedCategory.name,
+            categoryId = selectedCategoryId,
             imageUrl = imageUrl,
             available = isAvailable,
             sizeOptions = sizes,
@@ -519,7 +553,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
             name = name,
             description = description,
             basePrice = basePrice,
-            categoryId = selectedCategory.name,
+            categoryId = selectedCategoryId,
             imageUrl = imageUrl,
             available = isAvailable,
             sizeOptions = sizes,
@@ -580,11 +614,17 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         }
     }
 
-    private fun getSelectedSizes(): List<String> = selectedSizes.toList()
+    private fun getSelectedSizes(): List<String> {
+        return ProductOptionDefaults.sanitizeSizeOptions(selectedSizes.toList(), currentProductCategory())
+    }
 
-    private fun getSelectedCrusts(): List<String> = selectedCrusts.toList()
+    private fun getSelectedCrusts(): List<String> {
+        return ProductOptionDefaults.sanitizeCrustOptions(selectedCrusts.toList(), currentProductCategory())
+    }
 
-    private fun getSelectedToppings(): List<String> = selectedToppings.toList()
+    private fun getSelectedToppings(): List<String> {
+        return ProductOptionDefaults.sanitizeToppingOptions(selectedToppings.toList(), currentProductCategory())
+    }
 
     private fun normalizeProductId(rawName: String): String {
         return rawName.trim()
@@ -603,6 +643,69 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
 
     private fun dpToPx(dp: Int): Int {
         return (dp * resources.displayMetrics.density).toInt()
+    }
+
+    private fun currentProductCategory(): ProductOptionDefaults.ProductCategory {
+        return ProductOptionDefaults.resolveProductCategory(selectedCategoryId)
+    }
+
+    private fun applyCategoryDefaultsFor(category: ProductOptionDefaults.ProductCategory) {
+        selectedSizes.retainAll(ProductOptionDefaults.sizeOptionsFor(category).toSet())
+        if (ProductOptionDefaults.supportsSizeOptions(category) && selectedSizes.isEmpty()) {
+            selectedSizes.addAll(ProductOptionDefaults.sizeOptionsFor(category))
+        }
+
+        selectedCrusts.retainAll(ProductOptionDefaults.crustOptionsFor(category).toSet())
+        if (ProductOptionDefaults.supportsCrustOptions(category) && selectedCrusts.isEmpty()) {
+            selectedCrusts.addAll(ProductOptionDefaults.crustOptionsFor(category))
+        }
+
+        val validToppings = ProductOptionDefaults.sanitizeToppingOptions(toppingOptions, category)
+        toppingOptions.clear()
+        if (ProductOptionDefaults.supportsToppingOptions(category)) {
+            if (validToppings.isNotEmpty()) {
+                toppingOptions.addAll(validToppings)
+            } else {
+                toppingOptions.addAll(ProductOptionDefaults.toppingOptionsFor(category))
+            }
+        }
+
+        selectedToppings.retainAll(toppingOptions.toSet())
+        if (ProductOptionDefaults.supportsToppingOptions(category) && selectedToppings.isEmpty()) {
+            selectedToppings.addAll(toppingOptions)
+        }
+    }
+
+    private fun formatSizeOptionLabel(
+        size: String,
+        category: ProductOptionDefaults.ProductCategory,
+    ): String {
+        val detail = when (category) {
+            ProductOptionDefaults.ProductCategory.DRINK -> when (size) {
+                "Small" -> getString(R.string.detail_size_small_ml)
+                "Medium" -> getString(R.string.detail_size_medium_ml)
+                "Large" -> getString(R.string.detail_size_large_ml)
+                else -> ""
+            }
+
+            else -> when (size) {
+                "Small" -> getString(R.string.ten_inches)
+                "Medium" -> getString(R.string.twelve_inches)
+                "Large" -> getString(R.string.fourteen_inches)
+                else -> ""
+            }
+        }
+        return if (detail.isBlank()) size else "$size ($detail)"
+    }
+
+    private fun categoryLabelRes(category: ProductOptionDefaults.ProductCategory): Int {
+        return when (category) {
+            ProductOptionDefaults.ProductCategory.PIZZA -> R.string.home_category_pizza
+            ProductOptionDefaults.ProductCategory.DRINK -> R.string.home_category_drinks
+            ProductOptionDefaults.ProductCategory.COMBO -> R.string.home_category_combo
+            ProductOptionDefaults.ProductCategory.DESSERT -> R.string.home_category_dessert
+            ProductOptionDefaults.ProductCategory.UNKNOWN -> R.string.home_category_pizza
+        }
     }
 
     override fun onDestroyView() {
