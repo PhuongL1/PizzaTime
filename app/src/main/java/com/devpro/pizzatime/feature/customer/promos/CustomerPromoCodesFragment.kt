@@ -66,6 +66,7 @@ class CustomerPromoCodesFragment : Fragment() {
                     promoLoadFailed = false
                     activePromos = promos.filter { it.state == CustomerPromoState.ACTIVE }
                     pastPromos = promos.filter { it.state != CustomerPromoState.ACTIVE }
+                    Log.d(TAG, "customer loaded count=${promos.size}")
                     renderCurrentTab()
                 }
                 .onFailure { error ->
@@ -146,6 +147,12 @@ class CustomerPromoCodesFragment : Fragment() {
             }
         }
 
+        val filteredCount = when (selectedTab) {
+            PromoTab.ACTIVE -> activePromos.size
+            PromoTab.PAST -> pastPromos.size
+            PromoTab.POINTS -> 0
+        }
+        Log.d(TAG, "customer filtered tab=$selectedTab count=$filteredCount")
         renderChipState()
     }
 

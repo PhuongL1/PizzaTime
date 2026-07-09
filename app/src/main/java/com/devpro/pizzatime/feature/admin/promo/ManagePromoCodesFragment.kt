@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.admin.promo
 
 import android.app.AlertDialog
+import android.util.Log
 import android.os.Bundle
 import android.text.InputType
 import android.view.LayoutInflater
@@ -82,9 +83,11 @@ class ManagePromoCodesFragment : Fragment() {
             result
                 .onSuccess { promos ->
                     allPromos = promos
+                    Log.d(TAG, "admin loaded count=${promos.size}")
                 }
-                .onFailure {
+                .onFailure { error ->
                     allPromos = emptyList()
+                    Log.e(TAG, "Admin promo load failed", error)
                     showToast(R.string.promo_load_failed)
                 }
             renderPromos()
@@ -416,6 +419,7 @@ class ManagePromoCodesFragment : Fragment() {
             PromoFilter.ALL -> allPromos
         }
 
+        Log.d(TAG, "admin filtered tab=$selectedFilter count=${promos.size}")
         promoAdapter.submitList(promos)
         binding.rvPromos.isVisible = promos.isNotEmpty()
         binding.tvEmptyPromos.isVisible = promos.isEmpty()
@@ -506,5 +510,9 @@ class ManagePromoCodesFragment : Fragment() {
         ACTIVE,
         PAST,
         ALL,
+    }
+
+    companion object {
+        private const val TAG = "ManagePromoCodes"
     }
 }

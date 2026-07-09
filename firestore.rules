@@ -322,8 +322,7 @@ service cloud.firestore {
     }
 
     match /promoCodes/{promoCodeId} {
-      allow read: if isStaffRole()
-        || (isCustomer() && resource.data.active == true);
+      allow read: if isStaffRole() || isCustomer();
       allow write: if isAdmin();
     }
 

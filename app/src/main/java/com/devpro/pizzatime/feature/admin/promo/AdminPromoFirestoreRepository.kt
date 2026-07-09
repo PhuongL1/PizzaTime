@@ -1,8 +1,12 @@
 package com.devpro.pizzatime.feature.admin.promo
 
+import android.util.Log
+import com.devpro.pizzatime.shared.promo.toPromoDocumentModel
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import java.text.SimpleDateFormat
+import java.util.Date
 import java.util.Locale
 
 object AdminPromoFirestoreRepository {
@@ -14,11 +18,21 @@ object AdminPromoFirestoreRepository {
             .get()
             .addOnSuccessListener { snapshot ->
                 val promos = snapshot.documents
-                    .sortedBy { it.getString("code") ?: "" }
-                    .map { it.toAdminPromoUiModel() }
+                    .mapNotNull { doc ->
+                        runCatching { doc.toAdminPromoUiModel() }
+                            .onFailure { error ->
+                                Log.e(TAG, "Admin promo mapping failed for id=${doc.id}", error)
+                            }
+                            .getOrNull()
+                    }
+                    .sortedBy { it.code }
+                Log.d(TAG, "admin loaded count=${promos.size}")
                 onResult(Result.success(promos))
             }
-            .addOnFailureListener { e -> onResult(Result.failure(e)) }
+            .addOnFailureListener { e ->
+                Log.e(TAG, "Admin promo load failed", e)
+                onResult(Result.failure(e))
+            }
     }
 
     fun setActive(promoId: String, active: Boolean, onResult: (Result<Unit>) -> Unit) {
@@ -96,56 +110,55 @@ object AdminPromoFirestoreRepository {
     }
 
     private fun DocumentSnapshot.toAdminPromoUiModel(): AdminPromoUiModel {
-        val active = getBoolean("active") ?: true
-        val discountType = getString("discountType") ?: "PERCENT"
-        val discountValue = getDouble("discountValue") ?: 0.0
-        val minOrderAmount = getDouble("minOrderAmount") ?: 0.0
-        val usageCount = firstInt("usageCount", "usedCount", "redemptionCount", "redemptions") ?: 0
-        val maxUses = firstInt("maxUses", "maxUsage", "usageLimit")
-        val totalReach = firstInt("totalReach", "reach", "eligibleUsers", "audience")
-        val status = resolveStatus(active)
+        val promo = toPromoDocumentModel()
+        val status = resolveStatus(promo)
         return AdminPromoUiModel(
-            id = id,
-            code = getString("code") ?: id,
-            title = getString("title") ?: "",
-            description = getString("description") ?: "",
-            discountType = discountType,
-            discountValue = discountValue,
-            minOrderAmount = minOrderAmount,
+            id = promo.id,
+            code = promo.code,
+            title = promo.title,
+            description = promo.description,
+            discountType = promo.discountType,
+            discountValue = promo.discountValue,
+            minOrderAmount = promo.minOrderAmount,
             status = status,
-            discountText = formatDiscount(discountType, discountValue),
-            minSpendText = if (minOrderAmount > 0) String.format(Locale.US, "$%.2f", minOrderAmount) else null,
-            usedText = formatUsedText(usageCount, maxUses),
-            usageCount = usageCount,
-            maxUses = maxUses,
-            totalReach = totalReach,
+            discountText = formatDiscount(promo.discountType, promo.discountValue),
+            expiryText = promo.expiresAtMillis?.let(::formatDate),
+            minSpendText = if (promo.minOrderAmount > 0) String.format(Locale.US, "$%.2f", promo.minOrderAmount) else null,
+            endsInText = formatEndsInText(promo.startsAtMillis, promo.expiresAtMillis, status),
+            usedText = formatUsedText(promo.usageCount, promo.maxUses),
+            usageCount = promo.usageCount,
+            maxUses = promo.maxUses,
+            totalReach = promo.totalReach,
             isHighlighted = status == AdminPromoStatus.ACTIVE,
         )
     }
 
-    private fun DocumentSnapshot.resolveStatus(active: Boolean): AdminPromoStatus {
-        return when (getString("status")?.uppercase(Locale.US)) {
-            "ACTIVE" -> AdminPromoStatus.ACTIVE
-            "INACTIVE" -> AdminPromoStatus.INACTIVE
-            "SCHEDULED" -> AdminPromoStatus.SCHEDULED
-            "EXPIRED" -> AdminPromoStatus.EXPIRED
-            else -> if (active) AdminPromoStatus.ACTIVE else AdminPromoStatus.INACTIVE
+    private fun resolveStatus(promo: com.devpro.pizzatime.shared.promo.PromoDocumentModel): AdminPromoStatus {
+        return when {
+            promo.rawStatus == "EXPIRED" || promo.isExpired -> AdminPromoStatus.EXPIRED
+            !promo.isStarted -> AdminPromoStatus.SCHEDULED
+            !promo.activeFlag || promo.rawStatus in setOf("INACTIVE", "DISABLED", "UNAVAILABLE") -> {
+                AdminPromoStatus.INACTIVE
+            }
+            promo.rawStatus == "SCHEDULED" && promo.isStarted -> AdminPromoStatus.ACTIVE
+            promo.activeFlag -> AdminPromoStatus.ACTIVE
+            else -> AdminPromoStatus.INACTIVE
         }
     }
 
-    private fun DocumentSnapshot.firstInt(vararg fieldNames: String): Int? {
-        fieldNames.forEach { fieldName ->
-            val value = get(fieldName)
-            val intValue = when (value) {
-                is Number -> value.toInt()
-                is String -> value.toIntOrNull()
-                else -> null
-            }
-            if (intValue != null) {
-                return intValue.coerceAtLeast(0)
-            }
+    private fun formatEndsInText(
+        startsAtMillis: Long?,
+        expiresAtMillis: Long?,
+        status: AdminPromoStatus,
+    ): String? {
+        val now = System.currentTimeMillis()
+        return when {
+            status == AdminPromoStatus.SCHEDULED && startsAtMillis != null && startsAtMillis > now ->
+                "Starts ${formatDate(startsAtMillis)}"
+            expiresAtMillis != null && expiresAtMillis > now ->
+                "Ends ${formatDate(expiresAtMillis)}"
+            else -> null
         }
-        return null
     }
 
     private fun formatUsedText(usageCount: Int, maxUses: Int?): String {
@@ -163,5 +176,11 @@ object AdminPromoFirestoreRepository {
             else -> String.format(Locale.US, "%.0f Off", value)
         }
     }
+
+    private fun formatDate(timeMillis: Long): String {
+        return SimpleDateFormat("MMM dd, yyyy", Locale.US).format(Date(timeMillis))
+    }
+
+    private const val TAG = "AdminPromoRepo"
 }
 

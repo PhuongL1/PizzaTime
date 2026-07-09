@@ -1,13 +1,14 @@
 package com.devpro.pizzatime.feature.customer.checkout
 
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
+import com.devpro.pizzatime.shared.promo.firstDouble
+import com.devpro.pizzatime.shared.promo.firstString
+import com.devpro.pizzatime.shared.promo.resolveDiscountType
+import com.devpro.pizzatime.shared.promo.resolveDiscountValue
+import com.devpro.pizzatime.shared.promo.toPromoDocumentModel
 import com.google.android.gms.tasks.Tasks
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
-import java.text.ParseException
-import java.text.SimpleDateFormat
-import java.util.Date
 import java.util.Locale
 import kotlin.math.abs
 
@@ -205,145 +206,8 @@ object CheckoutConsistencyRepository {
     }
 
     private fun DocumentSnapshot.isUnavailable(): Boolean {
-        val status = firstString("status").uppercase(Locale.US)
-        val active = when (firstBoolean("active", "isActive", "enabled")) {
-            true -> true
-            false -> false
-            null -> status !in setOf("INACTIVE", "DISABLED", "EXPIRED", "UNAVAILABLE")
-        }
-        if (!active) {
-            return true
-        }
-        if (isExpired()) {
-            return true
-        }
-        val maxUses = firstLong("maxUses", "usageLimit", "maxUsage")
-        if (maxUses != null) {
-            val usedCount = firstLong("usedCount", "usageCount", "redeemedCount", "redemptionCount") ?: 0L
-            if (usedCount >= maxUses) {
-                return true
-            }
-        }
-        return false
-    }
-
-    private fun DocumentSnapshot.isExpired(): Boolean {
-        val expiryMillis = firstDateMillis("expiresAt", "endAt", "validUntil", "expiryAt", "endDate")
-        return expiryMillis?.let { it <= System.currentTimeMillis() } ?: false
-    }
-
-    private fun DocumentSnapshot.resolveDiscountType(): String {
-        val explicitType = firstString("discountType", "type")
-        if (explicitType.isNotBlank()) {
-            return explicitType.uppercase(Locale.US)
-        }
-        return when {
-            firstDouble("discountPercent", "percentOff", "percentage") != null -> "PERCENT"
-            firstDouble("discountAmount", "amountOff", "fixedAmount") != null -> "FIXED"
-            else -> "PERCENT"
-        }
-    }
-
-    private fun DocumentSnapshot.resolveDiscountValue(discountType: String): Double {
-        return when (discountType.uppercase(Locale.US)) {
-            "PERCENT" -> firstDouble("discountValue", "discountPercent", "percentOff", "percentage") ?: 0.0
-            "FIXED" -> firstDouble("discountValue", "discountAmount", "amountOff", "fixedAmount") ?: 0.0
-            else -> firstDouble("discountValue", "discountAmount", "discountPercent") ?: 0.0
-        }
-    }
-
-    private fun DocumentSnapshot.firstString(vararg fieldNames: String): String {
-        fieldNames.forEach { fieldName ->
-            val value = getString(fieldName)
-            if (!value.isNullOrBlank()) {
-                return value.trim()
-            }
-        }
-        return ""
-    }
-
-    private fun DocumentSnapshot.firstBoolean(vararg fieldNames: String): Boolean? {
-        fieldNames.forEach { fieldName ->
-            val value = get(fieldName)
-            val booleanValue = when (value) {
-                is Boolean -> value
-                is String -> value.equals("true", ignoreCase = true)
-                is Number -> value.toInt() != 0
-                else -> null
-            }
-            if (booleanValue != null) {
-                return booleanValue
-            }
-        }
-        return null
-    }
-
-    private fun DocumentSnapshot.firstDouble(vararg fieldNames: String): Double? {
-        fieldNames.forEach { fieldName ->
-            val value = get(fieldName)
-            val doubleValue = when (value) {
-                is Number -> value.toDouble()
-                is String -> value.toDoubleOrNull()
-                else -> null
-            }
-            if (doubleValue != null) {
-                return doubleValue
-            }
-        }
-        return null
-    }
-
-    private fun DocumentSnapshot.firstLong(vararg fieldNames: String): Long? {
-        fieldNames.forEach { fieldName ->
-            val value = get(fieldName)
-            val longValue = when (value) {
-                is Number -> value.toLong()
-                is String -> value.toLongOrNull()
-                else -> null
-            }
-            if (longValue != null) {
-                return longValue
-            }
-        }
-        return null
-    }
-
-    private fun DocumentSnapshot.firstDateMillis(vararg fieldNames: String): Long? {
-        fieldNames.forEach { fieldName ->
-            val value = get(fieldName)
-            val timeMillis = when (value) {
-                is Timestamp -> value.toDate().time
-                is Date -> value.time
-                is Number -> value.toLong()
-                is String -> value.toDateMillis()
-                else -> null
-            }
-            if (timeMillis != null) {
-                return timeMillis
-            }
-        }
-        return null
-    }
-
-    private fun String.toDateMillis(): Long? {
-        val value = trim()
-        if (value.isBlank()) {
-            return null
-        }
-        value.toLongOrNull()?.let { return it }
-        DATE_PATTERNS.forEach { pattern ->
-            try {
-                val parser = SimpleDateFormat(pattern, Locale.US).apply {
-                    isLenient = false
-                }
-                val parsed = parser.parse(value)
-                if (parsed != null) {
-                    return parsed.time
-                }
-            } catch (_: ParseException) {
-            }
-        }
-        return null
+        val promo = toPromoDocumentModel()
+        return !promo.isAvailableForCustomer
     }
 
     private sealed class ProductValidationResult {
@@ -364,14 +228,6 @@ object CheckoutConsistencyRepository {
         NOT_ELIGIBLE,
     }
 
-    private val DATE_PATTERNS = listOf(
-        "yyyy-MM-dd'T'HH:mm:ss.SSS'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss'Z'",
-        "yyyy-MM-dd'T'HH:mm:ss",
-        "yyyy-MM-dd",
-        "MM/dd/yyyy",
-        "dd/MM/yyyy",
-    )
 }
 
 sealed class CheckoutConsistencyResult {
