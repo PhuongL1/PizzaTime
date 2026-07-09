@@ -4,10 +4,10 @@
     android:id="@+id/assignedDeliveryRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="22dp"
+    android:layout_marginBottom="16dp"
     android:background="@drawable/bg_shipper_assigned_card"
     android:orientation="vertical"
-    android:padding="22dp">
+    android:padding="18dp">
 
     <LinearLayout
         android:id="@+id/assignedTopRow"
@@ -28,8 +28,8 @@
                 android:layout_height="wrap_content"
                 android:letterSpacing="0.12"
                 android:text="@string/shipper_order_label"
-                android:textColor="#D8C8BC"
-                android:textSize="13sp"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="11sp"
                 android:textStyle="bold" />
 
             <TextView
@@ -38,8 +38,8 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="2dp"
                 android:letterSpacing="0.08"
-                android:textColor="#D8C8BC"
-                android:textSize="13sp"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="12sp"
                 android:textStyle="bold"
                 tools:text="#PX-9925" />
 
@@ -48,13 +48,13 @@
         <TextView
             android:id="@+id/tvPaymentBadge"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="38dp"
             android:background="@drawable/bg_shipper_payment_badge"
             android:gravity="center"
-            android:minWidth="92dp"
+            android:minWidth="88dp"
             android:paddingHorizontal="12dp"
-            android:textColor="#FFB47A"
-            android:textSize="14sp"
+            android:textColor="@color/pt_gold_light"
+            android:textSize="12sp"
             android:textStyle="bold"
             tools:text="PREPAID" />
 
@@ -65,8 +65,10 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="8dp"
-        android:textColor="#F4EEE8"
-        android:textSize="26sp"
+        android:ellipsize="end"
+        android:maxLines="1"
+        android:textColor="@color/pt_text_primary_dark_bg"
+        android:textSize="22sp"
         android:textStyle="bold"
         tools:text="Leo Sterling" />
 
@@ -74,18 +76,22 @@
         android:id="@+id/tvAssignedAddress"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="20dp"
-        android:textColor="#D8C8BC"
-        android:textSize="18sp"
+        android:layout_marginTop="14dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="15sp"
         tools:text="404 Echo Park Ln, Apt 4" />
 
     <TextView
         android:id="@+id/tvAssignedMeta"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="10dp"
-        android:textColor="#D8C8BC"
-        android:textSize="13sp"
+        android:layout_marginTop="8dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="12sp"
         android:visibility="gone"
         tools:text="Delivered Jul 06, 08:30 PM • PAID • Cash collected"
         tools:visibility="visible" />
@@ -93,14 +99,14 @@
     <TextView
         android:id="@+id/btnStartDelivery"
         android:layout_width="match_parent"
-        android:layout_height="66dp"
-        android:layout_marginTop="24dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="18dp"
         android:background="@drawable/bg_shipper_start_delivery_button"
         android:gravity="center"
         android:letterSpacing="0.12"
         android:text="@string/shipper_start_delivery"
-        android:textColor="#FFB47A"
-        android:textSize="15sp"
+        android:textColor="@color/pt_gold_light"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
 </LinearLayout>

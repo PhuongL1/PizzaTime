@@ -5,10 +5,10 @@
     android:id="@+id/orderCardRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="18dp"
+    android:layout_marginBottom="16dp"
     android:background="@drawable/bg_product_card_light"
     android:orientation="vertical"
-    android:padding="22dp">
+    android:padding="18dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -21,8 +21,8 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="#CF843F"
-            android:textSize="15sp"
+            android:textColor="@color/pt_copper"
+            android:textSize="13sp"
             android:textStyle="bold"
             tools:text="#PT-9824" />
 
@@ -31,8 +31,8 @@
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:letterSpacing="0.12"
-            android:textColor="#CF843F"
-            android:textSize="14sp"
+            android:textColor="@color/pt_copper"
+            android:textSize="11sp"
             android:textStyle="bold"
             tools:text="2 MINS AGO" />
 
@@ -41,7 +41,7 @@
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="6dp"
+        android:layout_marginTop="8dp"
         android:baselineAligned="false"
         android:orientation="horizontal">
 
@@ -50,8 +50,10 @@
             android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_weight="1"
-            android:textColor="#33302E"
-            android:textSize="25sp"
+            android:ellipsize="end"
+            android:maxLines="1"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="20sp"
             android:textStyle="bold"
             tools:text="Alessandro Rossi" />
 
@@ -61,8 +63,8 @@
             android:layout_height="wrap_content"
             android:drawablePadding="6dp"
             android:gravity="center_vertical"
-            android:textColor="#4B4744"
-            android:textSize="17sp"
+            android:textColor="@color/pt_text_muted"
+            android:textSize="14sp"
             tools:text="Delivery" />
 
     </LinearLayout>
@@ -70,38 +72,40 @@
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="14dp"
-        android:background="#E3DCD7" />
+        android:layout_marginTop="12dp"
+        android:background="@color/pt_divider_light" />
 
     <TextView
         android:id="@+id/tvOrderSummary"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:textColor="#33302E"
-        android:textSize="17sp"
+        android:layout_marginTop="14dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/pt_text_dark"
+        android:textSize="15sp"
         tools:text="1x Truffle Mushroom Pizza, 1x San Pellegrino" />
 
     <TextView
         android:id="@+id/tvPrice"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:layout_marginTop="18dp"
-        android:textColor="#CF843F"
-        android:textSize="28sp"
+        android:layout_marginTop="14dp"
+        android:textColor="@color/pt_copper"
+        android:textSize="22sp"
         android:textStyle="bold"
         tools:text="$34.50" />
 
     <View
         android:layout_width="match_parent"
         android:layout_height="1dp"
-        android:layout_marginTop="18dp"
-        android:background="#E3DCD7" />
+        android:layout_marginTop="14dp"
+        android:background="@color/pt_divider_light" />
 
     <LinearLayout
         android:layout_width="match_parent"
-        android:layout_height="58dp"
-        android:layout_marginTop="18dp"
+        android:layout_height="56dp"
+        android:layout_marginTop="16dp"
         android:orientation="horizontal">
 
         <Button
@@ -113,21 +117,22 @@
             android:letterSpacing="0.14"
             android:stateListAnimator="@null"
             android:text="@string/staff_action_confirm_order"
-            android:textColor="#3A210D"
-            android:textSize="15sp"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="14sp"
             android:textStyle="bold" />
 
         <TextView
             android:id="@+id/btnViewDetails"
-            android:layout_width="118dp"
+            android:layout_width="wrap_content"
             android:layout_height="match_parent"
             android:layout_marginStart="12dp"
             android:background="@drawable/bg_button_outline_gold"
             android:gravity="center"
+            android:minWidth="110dp"
             android:paddingHorizontal="12dp"
             android:text="@string/staff_action_details"
-            android:textColor="#CF843F"
-            android:textSize="14sp"
+            android:textColor="@color/pt_copper"
+            android:textSize="13sp"
             android:textStyle="bold"
             app:drawableEndCompat="@drawable/ic_arrow_right" />
 

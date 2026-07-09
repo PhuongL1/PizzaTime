@@ -10,23 +10,22 @@
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
-        android:layout_height="92dp"
+        android:layout_height="64dp"
         android:background="@drawable/bg_staff_order_detail_top_bar"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="30dp"
-        android:paddingEnd="30dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <ImageView
             android:id="@+id/btnBack"
-            android:layout_width="42dp"
-            android:layout_height="42dp"
-            android:contentDescription="@string/staff_order_detail_back_content_description"
-            android:padding="8dp"
-            android:src="@drawable/ic_menu" />
+            android:layout_width="34dp"
+            android:layout_height="34dp"
+            android:contentDescription="@string/detail_back_content_description"
+            android:src="@drawable/ic_back" />
 
         <LinearLayout
             android:layout_width="0dp"
@@ -41,7 +40,7 @@
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
                 android:textColor="@color/pt_text_primary_dark_bg"
-                android:textSize="22sp"
+                android:textSize="14sp"
                 android:textStyle="bold"
                 tools:text="Order #MT-8291" />
 
@@ -51,7 +50,7 @@
                 android:layout_height="wrap_content"
                 android:layout_marginTop="4dp"
                 android:textColor="@color/pt_text_secondary_dark_bg"
-                android:textSize="12sp"
+                android:textSize="11sp"
                 tools:text="Received 8 min ago" />
         </LinearLayout>
 
@@ -65,7 +64,7 @@
             android:paddingStart="18dp"
             android:paddingEnd="18dp"
             android:textColor="@color/pt_text_dark"
-            android:textSize="13sp"
+            android:textSize="12sp"
             android:textStyle="bold"
             tools:text="CONFIRMED" />
     </LinearLayout>
@@ -75,9 +74,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingStart="32dp"
+        android:paddingStart="24dp"
         android:paddingTop="24dp"
-        android:paddingEnd="32dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="138dp"
         app:layout_constraintBottom_toTopOf="@id/bottomActionBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -490,13 +489,13 @@
     <LinearLayout
         android:id="@+id/bottomActionBar"
         android:layout_width="0dp"
-        android:layout_height="116dp"
+        android:layout_height="100dp"
         android:background="@drawable/bg_staff_order_detail_bottom_action_bar"
         android:baselineAligned="false"
         android:gravity="center"
         android:orientation="horizontal"
-        android:paddingStart="32dp"
-        android:paddingEnd="32dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent">
@@ -504,7 +503,7 @@
         <TextView
             android:id="@+id/btnDelay10"
             android:layout_width="0dp"
-            android:layout_height="64dp"
+            android:layout_height="56dp"
             android:layout_marginEnd="10dp"
             android:layout_weight="0.42"
             android:background="@drawable/bg_staff_order_detail_delay_button"
@@ -515,7 +514,8 @@
             android:letterSpacing="0.12"
             android:text="@string/staff_order_detail_delay_10m"
             android:textColor="@color/pt_text_primary_dark_bg"
-            android:textSize="16sp" />
+            android:textSize="14sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/btnAssignShipper"

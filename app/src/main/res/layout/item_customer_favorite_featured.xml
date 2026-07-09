@@ -85,7 +85,7 @@
             android:includeFontPadding="false"
             android:maxLines="1"
             android:textColor="@color/pt_text_primary_dark_bg"
-            android:textSize="22sp"
+            android:textSize="20sp"
             tools:text="The Midnight Truffle" />
 
         <TextView
@@ -95,7 +95,7 @@
             android:layout_marginStart="10dp"
             android:letterSpacing="0.08"
             android:textColor="@color/pt_copper"
-            android:textSize="13sp"
+            android:textSize="14sp"
             android:textStyle="bold"
             tools:text="$24.00" />
     </LinearLayout>
@@ -117,7 +117,7 @@
     <TextView
         android:id="@+id/btnAddToCart"
         android:layout_width="match_parent"
-        android:layout_height="46dp"
+        android:layout_height="52dp"
         android:layout_marginStart="16dp"
         android:layout_marginTop="14dp"
         android:layout_marginEnd="16dp"
@@ -129,7 +129,7 @@
         android:letterSpacing="0.10"
         android:text="@string/customer_favorites_add_to_cart"
         android:textColor="@color/pt_text_dark"
-        android:textSize="12sp"
+        android:textSize="14sp"
         android:textStyle="bold" />
 
 </LinearLayout>

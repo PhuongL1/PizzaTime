@@ -58,7 +58,7 @@
                 android:orientation="vertical"
                 android:paddingStart="18dp"
                 android:paddingTop="14dp"
-                android:paddingEnd="66dp"
+                android:paddingEnd="60dp"
                 android:paddingBottom="14dp">
 
                 <TextView
@@ -69,8 +69,8 @@
                     android:fontFamily="serif"
                     android:includeFontPadding="false"
                     android:maxLines="1"
-                    android:textColor="#2A2725"
-                    android:textSize="22sp"
+                    android:textColor="@color/pt_text_primary_card"
+                    android:textSize="20sp"
                     tools:text="Truffle Noir" />
 
                 <TextView
@@ -79,8 +79,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="6dp"
                     android:ellipsize="end"
-                    android:maxLines="1"
-                    android:textColor="#D6C4B9"
+                    android:maxLines="2"
+                    android:textColor="@color/pt_text_secondary_card"
                     android:textSize="13sp"
                     tools:text="Black truffle cream, wild mushrooms, fresh buffalo mozzarella, and aged..." />
 
@@ -89,7 +89,7 @@
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
-                    android:textColor="#D1843D"
+                    android:textColor="@color/pt_copper"
                     android:textSize="13sp"
                     android:textStyle="bold"
                     tools:text="$24.00" />
@@ -98,8 +98,8 @@
 
             <FrameLayout
                 android:id="@+id/btnAddToCart"
-                android:layout_width="40dp"
-                android:layout_height="40dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:layout_gravity="bottom|end"
                 android:layout_marginEnd="16dp"
                 android:layout_marginBottom="14dp"

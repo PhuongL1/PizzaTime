@@ -4,14 +4,14 @@
     android:id="@+id/adminMenuItemRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="22dp"
+    android:layout_marginBottom="16dp"
     android:background="@drawable/bg_manage_menu_card"
     android:orientation="vertical">
 
     <FrameLayout
         android:id="@+id/imageContainer"
         android:layout_width="match_parent"
-        android:layout_height="240dp">
+        android:layout_height="184dp">
 
         <ImageView
             android:id="@+id/ivMenuImage"
@@ -24,29 +24,29 @@
         <TextView
             android:id="@+id/tvCategoryBadge"
             android:layout_width="wrap_content"
-            android:layout_height="42dp"
+            android:layout_height="38dp"
             android:layout_gravity="top|start"
-            android:layout_marginStart="22dp"
-            android:layout_marginTop="22dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
             android:background="@drawable/bg_manage_menu_badge"
             android:gravity="center"
-            android:minWidth="132dp"
-            android:paddingHorizontal="18dp"
-            android:textColor="#3A210D"
-            android:textSize="15sp"
+            android:minWidth="88dp"
+            android:paddingHorizontal="14dp"
+            android:textColor="@color/pt_text_dark"
+            android:textSize="12sp"
             tools:text="SIGNATURE" />
 
         <TextView
             android:id="@+id/tvSoldOut"
             android:layout_width="wrap_content"
-            android:layout_height="44dp"
+            android:layout_height="38dp"
             android:layout_gravity="center"
             android:background="@drawable/bg_manage_menu_sold_out"
             android:gravity="center"
-            android:paddingHorizontal="22dp"
+            android:paddingHorizontal="18dp"
             android:text="@string/manage_menu_sold_out"
             android:textColor="@color/pt_white"
-            android:textSize="15sp"
+            android:textSize="12sp"
             android:visibility="gone"
             tools:visibility="visible" />
 
@@ -57,7 +57,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:padding="22dp">
+        android:padding="18dp">
 
         <LinearLayout
             android:id="@+id/menuNamePriceRow"
@@ -71,8 +71,10 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
+                android:ellipsize="end"
+                android:maxLines="1"
                 android:textColor="@color/pt_white"
-                android:textSize="24sp"
+                android:textSize="20sp"
                 android:textStyle="bold"
                 tools:text="Spiced Honey Heat" />
 
@@ -81,7 +83,7 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textColor="@color/pt_gold_light"
-                android:textSize="17sp"
+                android:textSize="15sp"
                 tools:text="$24.00" />
 
         </LinearLayout>
@@ -90,23 +92,25 @@
             android:id="@+id/tvMenuDescription"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="14dp"
-            android:lineSpacingExtra="5dp"
+            android:layout_marginTop="10dp"
+            android:ellipsize="end"
+            android:lineSpacingExtra="3dp"
+            android:maxLines="2"
             android:textColor="@color/pt_white_light"
-            android:textSize="17sp"
+            android:textSize="14sp"
             tools:text="Sourdough base, spicy calabrese, wildflower honey, and fresh basil." />
 
         <View
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="18dp"
-            android:background="#2F2926" />
+            android:layout_marginTop="16dp"
+            android:background="@color/pt_divider_dark" />
 
         <LinearLayout
             android:id="@+id/menuActionRow"
             android:layout_width="match_parent"
-            android:layout_height="58dp"
-            android:layout_marginTop="14dp"
+            android:layout_height="52dp"
+            android:layout_marginTop="12dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -116,13 +120,13 @@
                 android:layout_height="wrap_content"
                 android:text="@string/manage_menu_available"
                 android:textColor="@color/pt_white_light"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
             <LinearLayout
                 android:id="@+id/toggleAvailability"
                 android:layout_width="56dp"
                 android:layout_height="30dp"
-                android:layout_marginStart="16dp"
+                android:layout_marginStart="12dp"
                 android:background="@drawable/bg_manage_menu_toggle_on"
                 android:gravity="end|center_vertical"
                 android:padding="3dp">
@@ -142,10 +146,10 @@
 
             <ImageView
                 android:id="@+id/btnEdit"
-                android:layout_width="44dp"
-                android:layout_height="44dp"
+                android:layout_width="40dp"
+                android:layout_height="40dp"
                 android:contentDescription="@string/manage_menu_edit_content_description"
-                android:padding="10dp"
+                android:padding="8dp"
                 android:src="@drawable/ic_edit" />
 
         </LinearLayout>

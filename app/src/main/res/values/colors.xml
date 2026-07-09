@@ -66,6 +66,7 @@
 
     <color name="pt_text_hint_dark_bg">#82756D</color>
     <color name="pt_divider_dark">#2F2925</color>
+    <color name="pt_divider_light">#E3DCD7</color>
     <color name="pt_cart_discount">#FF6262</color>
     <color name="pt_border_warm">#5B493E</color>
     <color name="pt_input_dark">#100E0C</color>

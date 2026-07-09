@@ -46,6 +46,8 @@
             android:id="@+id/tvItemName"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:ellipsize="end"
+            android:maxLines="1"
             android:textColor="@color/pt_text_primary_dark_bg"
             android:textSize="15sp"
             android:textStyle="bold"
@@ -56,6 +58,9 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:ellipsize="end"
+            android:lineSpacingExtra="2dp"
+            android:maxLines="2"
             android:textColor="@color/pt_text_secondary_dark_bg"
             android:textSize="13sp"
             tools:text="Large · Thin Crust · Extra Truffle Oil" />

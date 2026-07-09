@@ -4,55 +4,68 @@
     android:layout_width="match_parent"
     android:layout_height="88dp"
     android:background="@drawable/bg_bottom_nav"
-    android:gravity="center"
+    android:gravity="center_vertical"
     android:orientation="horizontal"
-    android:paddingHorizontal="20dp"
-    android:paddingStart="18dp"
-    android:paddingEnd="18dp">
+    android:paddingStart="12dp"
+    android:paddingTop="8dp"
+    android:paddingEnd="12dp"
+    android:paddingBottom="8dp">
 
     <TextView
         android:id="@+id/navDashboard"
         android:layout_width="0dp"
-        android:layout_height="58dp"
+        android:layout_height="50dp"
         android:layout_weight="1"
         android:background="@drawable/bg_bottom_nav_item_selected"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
         android:text="@string/staff_nav_dashboard"
-        android:textColor="@color/staff_nav_selected"
-        android:textSize="13sp"
+        android:textColor="@color/pt_text_dark"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/navKitchen"
         android:layout_width="0dp"
-        android:layout_height="58dp"
+        android:layout_height="50dp"
         android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
         android:text="@string/staff_nav_kitchen"
-        android:textColor="@color/staff_nav_unselected"
-        android:textSize="13sp"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/navDelivery"
         android:layout_width="0dp"
-        android:layout_height="58dp"
+        android:layout_height="50dp"
         android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
         android:text="@string/staff_nav_delivery"
-        android:textColor="@color/staff_nav_unselected"
-        android:textSize="13sp"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
     <TextView
         android:id="@+id/navProfile"
         android:layout_width="0dp"
-        android:layout_height="58dp"
+        android:layout_height="50dp"
         android:layout_weight="1"
+        android:clickable="true"
+        android:focusable="true"
+        android:foreground="?attr/selectableItemBackground"
         android:gravity="center"
         android:text="@string/staff_nav_profile"
-        android:textColor="@color/staff_nav_unselected"
-        android:textSize="13sp"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="12sp"
         android:textStyle="bold" />
 
 </LinearLayout>

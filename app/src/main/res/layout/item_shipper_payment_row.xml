@@ -13,16 +13,18 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textColor="#D8C8BC"
-        android:textSize="17sp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="14sp"
         tools:text="1x Midnight Truffle Pizza (Large)" />
 
     <TextView
         android:id="@+id/tvPaymentItemPrice"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:textColor="#D8C8BC"
-        android:textSize="17sp"
+        android:textColor="@color/pt_text_secondary_dark_bg"
+        android:textSize="14sp"
         tools:text="$34.00" />
 
 </LinearLayout>

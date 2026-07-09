@@ -23,8 +23,8 @@
             android:layout_height="48dp"
             android:gravity="center"
             android:text="@string/common_back_arrow"
-            android:textColor="#D8C8BC"
-            android:textSize="34sp" />
+            android:textColor="@color/staff_nav_unselected"
+            android:textSize="28sp" />
 
         <TextView
             android:id="@+id/tvOrderTitle"
@@ -33,7 +33,7 @@
             android:layout_weight="1"
             android:fontFamily="serif"
             android:gravity="center"
-            android:textColor="#F2A96B"
+            android:textColor="@color/pt_copper"
             android:textSize="26sp"
             tools:text="Order #8821" />
 
@@ -181,8 +181,8 @@
                         android:layout_weight="1"
                         android:gravity="start"
                         android:text="@string/shipper_detail_progress_picked_up"
-                        android:textColor="#FFB47A"
-                        android:textSize="17sp"
+                        android:textColor="@color/pt_gold_light"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -192,8 +192,8 @@
                         android:layout_weight="1"
                         android:gravity="center"
                         android:text="@string/shipper_detail_progress_arriving"
-                        android:textColor="#FFB47A"
-                        android:textSize="17sp"
+                        android:textColor="@color/pt_gold_light"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -203,8 +203,8 @@
                         android:layout_weight="1"
                         android:gravity="end"
                         android:text="@string/shipper_detail_progress_delivered"
-                        android:textColor="#7C746F"
-                        android:textSize="17sp"
+                        android:textColor="@color/pt_text_muted"
+                        android:textSize="14sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -295,7 +295,7 @@
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.12"
                     android:text="@string/shipper_detail_customer"
-                    android:textColor="#FFB47A"
+                    android:textColor="@color/pt_gold_light"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -305,8 +305,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:fontFamily="serif"
-                    android:textColor="#F4EEE8"
-                    android:textSize="38sp"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="30sp"
                     android:textStyle="bold"
                     tools:text="Alessandra Rossi" />
 
@@ -321,7 +321,7 @@
 
                 <LinearLayout
                     android:layout_width="match_parent"
-                    android:layout_height="70dp"
+                    android:layout_height="56dp"
                     android:layout_marginTop="42dp"
                     android:orientation="horizontal">
 
@@ -333,8 +333,8 @@
                         android:background="@drawable/bg_button_primary_gold"
                         android:gravity="center"
                         android:text="@string/shipper_detail_call_customer"
-                        android:textColor="#2A160A"
-                        android:textSize="18sp"
+                        android:textColor="@color/pt_text_dark"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -346,8 +346,8 @@
                         android:background="@drawable/bg_shipper_detail_disabled_button"
                         android:gravity="center"
                         android:text="@string/shipper_open_delivery_map"
-                        android:textColor="#BDB6B1"
-                        android:textSize="18sp"
+                        android:textColor="@color/pt_text_secondary_dark_bg"
+                        android:textSize="16sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -370,7 +370,7 @@
                     android:layout_height="wrap_content"
                     android:letterSpacing="0.12"
                     android:text="@string/shipper_detail_delivery_address"
-                    android:textColor="#FFB47A"
+                    android:textColor="@color/pt_gold_light"
                     android:textSize="15sp"
                     android:textStyle="bold" />
 
@@ -380,8 +380,8 @@
                     android:layout_height="wrap_content"
                     android:layout_marginTop="8dp"
                     android:lineSpacingExtra="5dp"
-                    android:textColor="#F4EEE8"
-                    android:textSize="21sp"
+                    android:textColor="@color/pt_text_primary_dark_bg"
+                    android:textSize="18sp"
                     tools:text="422 Artisan Way, Suite 8B&#10;Manhattan, NY 10014" />
 
                 <TextView
@@ -425,7 +425,7 @@
                         android:layout_height="wrap_content"
                         android:letterSpacing="0.12"
                         android:text="@string/shipper_detail_courier_note"
-                        android:textColor="#FFB47A"
+                        android:textColor="@color/pt_gold_light"
                         android:textSize="15sp"
                         android:textStyle="bold" />
 
@@ -435,8 +435,8 @@
                         android:layout_height="wrap_content"
                         android:layout_marginTop="10dp"
                         android:lineSpacingExtra="6dp"
-                        android:textColor="#D8C8BC"
-                        android:textSize="18sp"
+                        android:textColor="@color/staff_nav_unselected"
+                        android:textSize="16sp"
                         tools:text="&quot;Gate code is 1992.&quot;" />
 
                 </LinearLayout>
@@ -463,8 +463,8 @@
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
                         android:text="@string/shipper_detail_payment_due"
-                        android:textColor="#F4EEE8"
-                        android:textSize="28sp"
+                        android:textColor="@color/pt_text_primary_dark_bg"
+                        android:textSize="22sp"
                         android:textStyle="bold" />
 
                     <LinearLayout
@@ -477,8 +477,8 @@
                             android:id="@+id/tvPaymentAmount"
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
-                            android:textColor="#FFB47A"
-                            android:textSize="34sp"
+                            android:textColor="@color/pt_gold_light"
+                            android:textSize="28sp"
                             tools:text="$42.50" />
 
                         <TextView
@@ -486,7 +486,7 @@
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:letterSpacing="0.12"
-                            android:textColor="#FFB47A"
+                            android:textColor="@color/pt_gold_light"
                             android:textSize="13sp"
                             android:textStyle="bold"
                             tools:text="CASH ON DELIVERY" />
@@ -511,7 +511,7 @@
                     android:layout_height="1dp"
                     android:layout_marginTop="28dp"
                     android:layout_marginBottom="22dp"
-                    android:background="#342D29" />
+                    android:background="@color/pt_divider_dark" />
 
                 <LinearLayout
                     android:id="@+id/llPaymentItems"
@@ -524,13 +524,13 @@
             <TextView
                 android:id="@+id/btnConfirmDelivery"
                 android:layout_width="match_parent"
-                android:layout_height="74dp"
+                android:layout_height="56dp"
                 android:layout_marginTop="42dp"
                 android:background="@drawable/bg_button_primary_gold"
                 android:gravity="center"
                 android:text="@string/shipper_detail_confirm_delivery"
-                android:textColor="#2A160A"
-                android:textSize="22sp"
+                android:textColor="@color/pt_text_dark"
+                android:textSize="16sp"
                 android:textStyle="bold" />
 
         </LinearLayout>
@@ -541,6 +541,9 @@
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="88dp" />
+        android:layout_height="88dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="18dp" />
 
 </LinearLayout>

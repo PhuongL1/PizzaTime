@@ -11,7 +11,9 @@
         android:id="@+id/customerTopBar"
         layout="@layout/layout_customer_top_bar"
         android:layout_width="0dp"
-        android:layout_height="66dp"
+        android:layout_height="64dp"
+        android:elevation="12dp"
+        android:translationZ="12dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent" />
@@ -22,10 +24,12 @@
         android:layout_height="0dp"
         android:clipToPadding="false"
         android:fillViewport="false"
-        android:paddingStart="30dp"
-        android:paddingTop="44dp"
-        android:paddingEnd="30dp"
+        android:overScrollMode="never"
+        android:paddingStart="24dp"
+        android:paddingTop="20dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="0dp"
+        android:scrollbars="none"
         app:layout_constraintBottom_toTopOf="@id/customerBottomNav"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
@@ -43,7 +47,7 @@
                 android:fontFamily="serif"
                 android:includeFontPadding="false"
                 android:textColor="@color/pt_text_primary_dark_bg"
-                android:textSize="38sp"
+                android:textSize="32sp"
                 android:textStyle="bold"
                 tools:text="Your Cravings" />
 
@@ -51,45 +55,46 @@
                 android:id="@+id/tvSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="10dp"
-                android:lineSpacingExtra="4dp"
+                android:layout_marginTop="8dp"
+                android:lineSpacingExtra="3dp"
+                android:maxLines="2"
                 android:textColor="@color/pt_text_secondary_dark_bg"
-                android:textSize="17sp"
-                android:textStyle="bold"
+                android:textSize="15sp"
+                android:textStyle="italic|bold"
                 tools:text="Hand-picked artisan selections for the midnight epicurean." />
 
             <LinearLayout
                 android:id="@+id/favoritesContainer"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="42dp"
+                android:layout_marginTop="34dp"
                 android:orientation="vertical" />
 
             <LinearLayout
                 android:id="@+id/pairingCard"
                 android:layout_width="match_parent"
-                android:layout_height="96dp"
-                android:layout_marginTop="4dp"
+                android:layout_height="82dp"
+                android:layout_marginTop="18dp"
                 android:background="@drawable/bg_customer_favorites_pairing_card"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
-                android:paddingStart="28dp"
-                android:paddingEnd="28dp">
+                android:paddingStart="20dp"
+                android:paddingEnd="20dp">
 
                 <TextView
                     android:id="@+id/tvPairingIcon"
-                    android:layout_width="54dp"
-                    android:layout_height="54dp"
+                    android:layout_width="48dp"
+                    android:layout_height="48dp"
                     android:background="@drawable/bg_customer_favorites_pairing_icon_circle"
                     android:gravity="center"
                     android:text="@string/customer_favorites_pairing_icon"
                     android:textColor="@color/pt_copper"
-                    android:textSize="24sp" />
+                    android:textSize="22sp" />
 
                 <LinearLayout
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
-                    android:layout_marginStart="22dp"
+                    android:layout_marginStart="18dp"
                     android:layout_weight="1"
                     android:orientation="vertical">
 
@@ -97,8 +102,9 @@
                         android:id="@+id/tvPairingTitle"
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
+                        android:includeFontPadding="false"
                         android:textColor="@color/pt_text_primary_dark_bg"
-                        android:textSize="24sp"
+                        android:textSize="22sp"
                         android:textStyle="bold"
                         tools:text="Weekly Pairings" />
 
@@ -107,14 +113,17 @@
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:layout_marginTop="4dp"
+                        android:maxLines="1"
+                        android:ellipsize="end"
                         android:textColor="@color/pt_text_secondary_dark_bg"
-                        android:textSize="15sp"
+                        android:textSize="14sp"
                         tools:text="Recommended wines for your favorites" />
                 </LinearLayout>
             </LinearLayout>
+
             <View
                 android:layout_width="match_parent"
-                android:layout_height="60dp" />
+                android:layout_height="74dp" />
 
         </LinearLayout>
     </androidx.core.widget.NestedScrollView>
@@ -124,6 +133,9 @@
         layout="@layout/layout_customer_bottom_nav"
         android:layout_width="0dp"
         android:layout_height="88dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="18dp"
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent" />

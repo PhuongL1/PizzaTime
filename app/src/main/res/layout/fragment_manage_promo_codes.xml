@@ -33,7 +33,7 @@
                 android:id="@+id/tvSectionLabel"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="28dp"
+                android:layout_marginStart="24dp"
                 android:layout_marginTop="22dp"
                 android:letterSpacing="0.12"
                 android:text="@string/promotions"
@@ -44,7 +44,7 @@
             <LinearLayout
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="28dp"
+                android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="8dp"
                 android:baselineAligned="false"
                 android:gravity="center_vertical"
@@ -57,7 +57,7 @@
                     android:layout_weight="1"
                     android:text="@string/manage_codes"
                     android:textColor="@color/pt_text_primary"
-                    android:textSize="38sp"
+                    android:textSize="34sp"
                     android:textStyle="bold" />
 
                 <TextView
@@ -79,7 +79,7 @@
                 android:id="@+id/layoutFilters"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="28dp"
+                android:layout_marginHorizontal="24dp"
                 android:layout_marginTop="28dp"
                 android:baselineAligned="false"
                 android:orientation="horizontal">
@@ -226,6 +226,9 @@
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="88dp" />
+        android:layout_height="88dp"
+        android:layout_marginStart="12dp"
+        android:layout_marginEnd="12dp"
+        android:layout_marginBottom="18dp" />
 
 </LinearLayout>

@@ -13,7 +13,7 @@
         android:layout_height="match_parent"
         android:clipToPadding="false"
         android:overScrollMode="never"
-        android:paddingBottom="96dp"
+        android:paddingBottom="120dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -21,14 +21,14 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingStart="20dp"
-            android:paddingEnd="20dp"
+            android:paddingStart="24dp"
+            android:paddingEnd="24dp"
             android:paddingBottom="16dp">
 
             <LinearLayout
                 android:id="@+id/homeTopBar"
                 android:layout_width="match_parent"
-                android:layout_height="58dp"
+                android:layout_height="60dp"
                 android:background="@drawable/bg_home_header"
                 android:gravity="center_vertical"
                 android:orientation="horizontal">
@@ -130,8 +130,8 @@
             <LinearLayout
                 android:id="@+id/searchBar"
                 android:layout_width="match_parent"
-                android:layout_height="50dp"
-                android:layout_marginTop="26dp"
+                android:layout_height="52dp"
+                android:layout_marginTop="24dp"
                 android:background="@drawable/bg_input_round_dark"
                 android:gravity="center_vertical"
                 android:orientation="horizontal"
@@ -323,15 +323,15 @@
 
                     <TextView
                         android:id="@+id/btnPromoAction"
-                        android:layout_width="132dp"
-                        android:layout_height="40dp"
+                        android:layout_width="140dp"
+                        android:layout_height="52dp"
                         android:layout_marginTop="14dp"
                         android:background="@drawable/bg_button_primary_light"
                         android:gravity="center"
                         android:letterSpacing="0.10"
                         android:text="@string/home_promo_button"
                         android:textColor="@color/pt_text_dark"
-                        android:textSize="11sp"
+                        android:textSize="12sp"
                         android:textStyle="bold" />
 
                 </LinearLayout>
@@ -354,11 +354,14 @@
 
                     <TextView
                         android:id="@+id/chipAll"
-                        android:layout_width="82dp"
-                        android:layout_height="36dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
                         android:background="@drawable/bg_chip_selected_gold"
                         android:gravity="center"
                         android:letterSpacing="0.10"
+                        android:minWidth="88dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/home_category_all"
                         android:textColor="@color/pt_text_dark"
                         android:textSize="11sp"
@@ -366,12 +369,15 @@
 
                     <TextView
                         android:id="@+id/chipPizza"
-                        android:layout_width="82dp"
-                        android:layout_height="36dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
+                        android:minWidth="88dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/home_category_pizza"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="11sp"
@@ -379,12 +385,15 @@
 
                     <TextView
                         android:id="@+id/chipCombo"
-                        android:layout_width="96dp"
-                        android:layout_height="36dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
+                        android:minWidth="88dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/home_category_combo"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="11sp"
@@ -392,12 +401,15 @@
 
                     <TextView
                         android:id="@+id/chipDrinks"
-                        android:layout_width="96dp"
-                        android:layout_height="36dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
+                        android:minWidth="88dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/home_category_drinks"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="11sp"
@@ -405,12 +417,15 @@
 
                     <TextView
                         android:id="@+id/chipDessert"
-                        android:layout_width="96dp"
-                        android:layout_height="36dp"
+                        android:layout_width="wrap_content"
+                        android:layout_height="38dp"
                         android:layout_marginStart="12dp"
                         android:background="@drawable/bg_chip_unselected_dark"
                         android:gravity="center"
                         android:letterSpacing="0.10"
+                        android:minWidth="88dp"
+                        android:paddingStart="18dp"
+                        android:paddingEnd="18dp"
                         android:text="@string/home_category_dessert"
                         android:textColor="@color/pt_text_primary"
                         android:textSize="11sp"
@@ -519,10 +534,10 @@
         android:id="@+id/bottomNav"
         layout="@layout/layout_customer_bottom_nav"
         android:layout_width="match_parent"
-        android:layout_height="92dp"
+        android:layout_height="88dp"
         android:layout_gravity="bottom"
         android:layout_marginStart="12dp"
         android:layout_marginEnd="12dp"
-        android:layout_marginBottom="12dp" />
+        android:layout_marginBottom="18dp" />
 
 </FrameLayout>

@@ -10,27 +10,27 @@
     <LinearLayout
         android:id="@+id/topBar"
         android:layout_width="0dp"
-        android:layout_height="76dp"
+        android:layout_height="64dp"
         android:background="@drawable/bg_add_edit_product_top_bar"
         android:gravity="center_vertical"
         android:orientation="horizontal"
-        android:paddingStart="28dp"
-        android:paddingEnd="28dp"
+        android:paddingStart="24dp"
+        android:paddingEnd="24dp"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent">
 
         <TextView
             android:id="@+id/btnClose"
-            android:layout_width="46dp"
-            android:layout_height="46dp"
+            android:layout_width="40dp"
+            android:layout_height="40dp"
             android:clickable="true"
             android:focusable="true"
             android:foreground="?attr/selectableItemBackground"
             android:gravity="center"
             android:text="@string/add_edit_product_close_icon"
             android:textColor="@color/pt_copper"
-            android:textSize="30sp" />
+            android:textSize="26sp" />
 
         <TextView
             android:id="@+id/tvScreenTitle"
@@ -40,7 +40,7 @@
             android:layout_weight="1"
             android:fontFamily="serif"
             android:textColor="@color/pt_copper"
-            android:textSize="23sp"
+            android:textSize="24sp"
             android:textStyle="bold"
             tools:text="Edit Artisan Pizza" />
 
@@ -56,9 +56,9 @@
         android:layout_width="0dp"
         android:layout_height="0dp"
         android:clipToPadding="false"
-        android:paddingStart="30dp"
+        android:paddingStart="24dp"
         android:paddingTop="20dp"
-        android:paddingEnd="30dp"
+        android:paddingEnd="24dp"
         android:paddingBottom="132dp"
         app:layout_constraintBottom_toTopOf="@id/bottomActionBar"
         app:layout_constraintEnd_toEndOf="parent"
@@ -139,7 +139,7 @@
             <LinearLayout
                 android:id="@+id/availabilityCard"
                 android:layout_width="match_parent"
-                android:layout_height="92dp"
+                android:layout_height="84dp"
                 android:layout_marginTop="34dp"
                 android:background="@drawable/bg_add_edit_product_card"
                 android:clickable="true"
@@ -161,7 +161,7 @@
                         android:layout_height="wrap_content"
                         android:text="@string/add_edit_product_available_title"
                         android:textColor="@color/pt_text_primary_dark_bg"
-                        android:textSize="24sp"
+                        android:textSize="18sp"
                         android:textStyle="bold" />
 
                     <TextView
@@ -435,7 +435,7 @@
     <LinearLayout
         android:id="@+id/bottomActionBar"
         android:layout_width="0dp"
-        android:layout_height="112dp"
+        android:layout_height="100dp"
         android:background="@drawable/bg_add_edit_product_bottom_bar"
         android:gravity="center"
         android:orientation="horizontal"
@@ -448,7 +448,7 @@
         <TextView
             android:id="@+id/btnDiscardChanges"
             android:layout_width="0dp"
-            android:layout_height="72dp"
+            android:layout_height="56dp"
             android:layout_marginEnd="8dp"
             android:layout_weight="0.34"
             android:background="@drawable/bg_add_edit_product_discard_button"
@@ -458,12 +458,13 @@
             android:gravity="center"
             android:text="@string/add_edit_product_discard_changes"
             android:textColor="@color/pt_text_primary_dark_bg"
-            android:textSize="17sp" />
+            android:textSize="15sp"
+            android:textStyle="bold" />
 
         <TextView
             android:id="@+id/btnSaveProduct"
             android:layout_width="0dp"
-            android:layout_height="72dp"
+            android:layout_height="56dp"
             android:layout_marginStart="8dp"
             android:layout_weight="0.66"
             android:background="@drawable/bg_add_edit_product_save_button"
@@ -473,7 +474,7 @@
             android:gravity="center"
             android:text="@string/add_edit_product_save_product"
             android:textColor="@color/pt_text_dark"
-            android:textSize="17sp"
+            android:textSize="16sp"
             android:textStyle="bold" />
     </LinearLayout>
 

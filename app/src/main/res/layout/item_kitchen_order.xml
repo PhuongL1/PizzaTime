@@ -4,7 +4,7 @@
     android:id="@+id/kitchenOrderRoot"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="22dp"
+    android:layout_marginBottom="16dp"
     android:background="@drawable/bg_kitchen_card_dark"
     android:orientation="vertical">
 
@@ -19,9 +19,9 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="vertical"
-        android:paddingHorizontal="22dp"
-        android:paddingTop="24dp"
-        android:paddingBottom="22dp">
+        android:paddingHorizontal="18dp"
+        android:paddingTop="18dp"
+        android:paddingBottom="18dp">
 
         <LinearLayout
             android:id="@+id/headerRow"
@@ -41,24 +41,24 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:textColor="@color/pt_gold_light"
-                    android:textSize="16sp"
+                    android:textSize="13sp"
                     tools:text="DINE-IN · TABLE 14" />
 
                 <TextView
                     android:id="@+id/tvOrderId"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="8dp"
+                    android:layout_marginTop="6dp"
                     android:fontFamily="serif"
                     android:textColor="@color/pt_text_primary"
-                    android:textSize="21sp"
+                    android:textSize="18sp"
                     android:textStyle="bold"
                     tools:text="ORD-7721" />
 
             </LinearLayout>
 
             <LinearLayout
-                android:layout_width="92dp"
+                android:layout_width="72dp"
                 android:layout_height="wrap_content"
                 android:gravity="end"
                 android:orientation="vertical">
@@ -69,7 +69,7 @@
                     android:layout_height="wrap_content"
                     android:gravity="end"
                     android:textColor="@color/pt_gold_light"
-                    android:textSize="21sp"
+                    android:textSize="16sp"
                     android:textStyle="bold"
                     tools:text="12m" />
 
@@ -77,10 +77,10 @@
                     android:id="@+id/tvOrderStatusLabel"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:layout_marginTop="6dp"
+                    android:layout_marginTop="4dp"
                     android:gravity="end"
                     android:textColor="@color/pt_text_secondary"
-                    android:textSize="16sp"
+                    android:textSize="12sp"
                     tools:text="Priority" />
 
             </LinearLayout>
@@ -91,7 +91,7 @@
             android:id="@+id/viewHeaderDivider"
             android:layout_width="match_parent"
             android:layout_height="1dp"
-            android:layout_marginTop="24dp"
+            android:layout_marginTop="18dp"
             android:background="@color/pt_stroke_dark" />
 
         <LinearLayout
@@ -103,32 +103,33 @@
         <LinearLayout
             android:id="@+id/layoutReadyPanel"
             android:layout_width="match_parent"
-            android:layout_height="92dp"
-            android:layout_marginTop="28dp"
+            android:layout_height="80dp"
+            android:layout_marginTop="20dp"
             android:background="@drawable/bg_kitchen_ready_panel"
             android:gravity="center_vertical"
             android:orientation="horizontal"
-            android:paddingHorizontal="18dp"
+            android:paddingHorizontal="16dp"
             android:visibility="gone">
 
             <TextView
-                android:layout_width="54dp"
-                android:layout_height="54dp"
+                android:layout_width="44dp"
+                android:layout_height="44dp"
                 android:background="@drawable/bg_kitchen_ready_icon_circle"
                 android:gravity="center"
                 android:text="▢"
                 android:textColor="@color/pt_status_ready"
-                android:textSize="24sp" />
+                android:textSize="20sp" />
 
             <TextView
                 android:id="@+id/tvReadyNote"
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="18dp"
+                android:layout_marginStart="14dp"
                 android:layout_weight="1"
-                android:lineSpacingExtra="6dp"
+                android:lineSpacingExtra="3dp"
+                android:maxLines="2"
                 android:textColor="@color/pt_text_primary"
-                android:textSize="17sp"
+                android:textSize="15sp"
                 tools:text="3 Items Ready&#10;Station 4 - Heat Racô" />
 
         </LinearLayout>
@@ -136,7 +137,7 @@
         <LinearLayout
             android:id="@+id/layoutPendingReview"
             android:layout_width="match_parent"
-            android:layout_height="160dp"
+            android:layout_height="96dp"
             android:gravity="center"
             android:orientation="vertical"
             android:visibility="gone">
@@ -147,29 +148,29 @@
                 android:gravity="center"
                 android:text="▣"
                 android:textColor="@color/pt_text_muted"
-                android:textSize="36sp" />
+                android:textSize="28sp" />
 
             <TextView
                 android:id="@+id/tvPendingReview"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginTop="12dp"
+                android:layout_marginTop="8dp"
                 android:gravity="center"
                 android:text="@string/kitchen_pending_review"
                 android:textColor="@color/pt_text_muted"
-                android:textSize="16sp" />
+                android:textSize="14sp" />
 
         </LinearLayout>
 
         <TextView
             android:id="@+id/btnPrimaryAction"
             android:layout_width="match_parent"
-            android:layout_height="68dp"
-            android:layout_marginTop="22dp"
+            android:layout_height="56dp"
+            android:layout_marginTop="18dp"
             android:background="@drawable/bg_button_primary_gold"
             android:gravity="center"
             android:textColor="@color/pt_text_dark"
-            android:textSize="20sp"
+            android:textSize="15sp"
             android:textStyle="bold"
             tools:text="🔥  START BAKING" />
 
