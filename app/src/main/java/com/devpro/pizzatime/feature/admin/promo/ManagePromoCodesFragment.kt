@@ -1,6 +1,8 @@
 package com.devpro.pizzatime.feature.admin.promo
 
 import android.app.AlertDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.util.Log
 import android.os.Bundle
 import android.text.InputType
@@ -40,13 +42,8 @@ class ManagePromoCodesFragment : Fragment() {
     private val promoAdapter by lazy {
         AdminPromoAdapter(
             onEditClick = { promo -> showEditPromoDialog(promo) },
-            onDeleteClick = { promo ->
-                AdminPromoFirestoreRepository.setActive(promo.id, false) { result ->
-                    if (!isAdded) return@setActive
-                    if (result.isSuccess) loadFirestorePromos()
-                }
-            },
-            onShareClick = { showActionToast(getString(R.string.share), it) },
+            onDeleteClick = { promo -> confirmDeletePromo(promo) },
+            onShareClick = { promo -> sharePromo(promo) },
             onReactivateClick = { promo ->
                 AdminPromoFirestoreRepository.setActive(promo.id, true) { result ->
                     if (!isAdded) return@setActive
@@ -360,9 +357,13 @@ class ManagePromoCodesFragment : Fragment() {
     }
 
     private fun setupRecyclerView() = with(binding.rvPromos) {
-        layoutManager = LinearLayoutManager(requireContext())
+        layoutManager = object : LinearLayoutManager(requireContext()) {
+            override fun canScrollVertically(): Boolean = false
+        }
         adapter = promoAdapter
+        setHasFixedSize(false)
         itemAnimator = null
+        isNestedScrollingEnabled = false
     }
 
     private fun setupActions() = with(binding) {
@@ -420,7 +421,11 @@ class ManagePromoCodesFragment : Fragment() {
         }
 
         Log.d(TAG, "admin filtered tab=$selectedFilter count=${promos.size}")
-        promoAdapter.submitList(promos)
+        promoAdapter.submitList(promos.toList()) {
+            binding.rvPromos.post {
+                binding.rvPromos.requestLayout()
+            }
+        }
         binding.rvPromos.isVisible = promos.isNotEmpty()
         binding.tvEmptyPromos.isVisible = promos.isEmpty()
         renderFilterState()
@@ -489,12 +494,50 @@ class ManagePromoCodesFragment : Fragment() {
         )
     }
 
-    private fun showActionToast(action: String, promo: AdminPromoUiModel) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.promo_action_coming_soon, "$action ${promo.code}"),
-            Toast.LENGTH_SHORT,
-        ).show()
+    private fun confirmDeletePromo(promo: AdminPromoUiModel) {
+        AlertDialog.Builder(requireContext())
+            .setTitle(R.string.promo_delete_title)
+            .setMessage(R.string.promo_delete_message)
+            .setNegativeButton(R.string.promo_delete_cancel, null)
+            .setPositiveButton(R.string.promo_delete_confirm) { _, _ ->
+                AdminPromoFirestoreRepository.deletePromo(promo.id) { result ->
+                    if (!isAdded) return@deletePromo
+                    result
+                        .onSuccess {
+                            showToast(R.string.promo_deleted)
+                            loadFirestorePromos()
+                        }
+                        .onFailure { error ->
+                            Log.e(TAG, "Could not delete promo id=${promo.id}", error)
+                            showToast(R.string.promo_delete_failed)
+                        }
+                }
+            }
+            .show()
+    }
+
+    private fun sharePromo(promo: AdminPromoUiModel) {
+        val shareParts = buildList {
+            add(getString(R.string.promo_share_intro, promo.code))
+            promo.discountText?.takeIf { it.isNotBlank() }?.let { add(it) }
+            promo.minSpendText?.takeIf { it.isNotBlank() }?.let {
+                add(getString(R.string.promo_share_min_spend, it))
+            }
+            promo.expiryText?.takeIf { it.isNotBlank() }?.let {
+                add(getString(R.string.promo_share_expires, it))
+            }
+        }
+        val shareText = shareParts.joinToString(separator = "\n")
+        val shareIntent = Intent(Intent.ACTION_SEND).apply {
+            type = "text/plain"
+            putExtra(Intent.EXTRA_TEXT, shareText)
+        }
+        val chooser = Intent.createChooser(shareIntent, getString(R.string.share))
+        try {
+            startActivity(chooser)
+        } catch (_: ActivityNotFoundException) {
+            showToast(R.string.promo_share_unavailable)
+        }
     }
 
     private fun showToast(messageRes: Int) {

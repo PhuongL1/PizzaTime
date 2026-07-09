@@ -726,6 +726,16 @@
     <string name="promo_filter_past_count">Past (%1$d)</string>
     <string name="promo_filter_all_count">All (%1$d)</string>
     <string name="promo_stat_not_available">N/A</string>
+    <string name="promo_delete_title">Delete promo?</string>
+    <string name="promo_delete_message">This promo code will be removed.</string>
+    <string name="promo_delete_confirm">Delete</string>
+    <string name="promo_delete_cancel">Cancel</string>
+    <string name="promo_deleted">Promo deleted.</string>
+    <string name="promo_delete_failed">Could not delete promo.</string>
+    <string name="promo_share_intro">Use promo code %1$s at PizzaTime.</string>
+    <string name="promo_share_min_spend">Minimum order: %1$s</string>
+    <string name="promo_share_expires">Expires: %1$s</string>
+    <string name="promo_share_unavailable">No app available to share.</string>
     <string name="no_promos_found">No promo codes found</string>
     <string name="promo_load_failed">Could not load promo codes.</string>
 

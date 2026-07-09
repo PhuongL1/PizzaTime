@@ -47,6 +47,13 @@ object AdminPromoFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun deletePromo(promoId: String, onResult: (Result<Unit>) -> Unit) {
+        firestore.collection("promoCodes").document(promoId)
+            .delete()
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error)) }
+    }
+
     fun updatePromo(
         promoId: String,
         title: String,
