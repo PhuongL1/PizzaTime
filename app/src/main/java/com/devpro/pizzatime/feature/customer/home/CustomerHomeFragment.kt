@@ -20,8 +20,10 @@ import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
+import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.customer.favorites.CustomerFavoritesFirestoreRepository
 import com.devpro.pizzatime.feature.customer.menu.FirebaseProductRepository
 import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
@@ -55,6 +57,7 @@ class CustomerHomeFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        setupTopBar()
         setupSearch()
         setupCategories()
         setupActions()
@@ -66,6 +69,7 @@ class CustomerHomeFragment : Fragment() {
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
+            setupTopBar()
             loadHomeProfile()
             loadFavoriteProductIds()
         }
@@ -94,6 +98,13 @@ class CustomerHomeFragment : Fragment() {
                 false
             }
         }
+    }
+
+    private fun setupTopBar() {
+        bindCustomerTopBar(
+            root = binding.customerTopBar.root,
+            cartItemCount = CartStore.items.sumOf { item -> item.quantity },
+        )
     }
 
     private fun setupCategories() = with(binding) {
@@ -131,42 +142,44 @@ class CustomerHomeFragment : Fragment() {
         )
         setTextColor(
             requireContext().getColor(
-                if (selected) R.color.pt_text_dark else R.color.pt_text_primary,
+                if (selected) R.color.pt_text_dark else R.color.pt_text_primary_dark_bg,
             ),
         )
     }
 
-    private fun setupActions() {
-        binding.btnHomeAvatar.setOnClickListener {
-            binding.tvSearchHint.requestFocus()
-            showKeyboard(binding.tvSearchHint)
-        }
-        binding.searchBar.setOnClickListener {
-            binding.tvSearchHint.requestFocus()
-            showKeyboard(binding.tvSearchHint)
+    private fun setupActions() = with(binding) {
+        customerTopBar.btnHomeAvatar.setOnClickListener {
+            tvSearchHint.requestFocus()
+            showKeyboard(tvSearchHint)
         }
 
-        binding.promoCard.setOnClickListener {
+        searchBar.setOnClickListener {
+            tvSearchHint.requestFocus()
+            showKeyboard(tvSearchHint)
+        }
+
+        promoCard.setOnClickListener {
             openFeaturedProductOrToast()
         }
 
-        binding.btnPromoAction.setOnClickListener {
+        btnPromoAction.setOnClickListener {
             openFeaturedProductOrToast()
         }
 
         bindCustomerBottomNav(
-            root = binding.bottomNav.root,
+            root = bottomNav.root,
             selectedTab = CustomerBottomNavTab.MENU,
         )
 
-        binding.tvSeeAll.setOnClickListener {
+        tvSeeAll.setOnClickListener {
             openPizzaMenuScreen()
         }
     }
 
     private fun loadHomeProfile() {
-        binding.tvHomeLocation.text = formatShortAddress(
-            binding.tvHomeLocation.text?.toString().orEmpty(),
+        val topBar = binding.customerTopBar
+        topBar.tvHomeLocation.text = formatShortAddress(
+            topBar.tvHomeLocation.text?.toString().orEmpty(),
         )
 
         val uid = FirebaseAuth.getInstance().currentUser?.uid
@@ -183,7 +196,7 @@ class CustomerHomeFragment : Fragment() {
             result.onSuccess { profile ->
                 val address = profile.deliveryAddress.trim()
                 if (address.isNotBlank()) {
-                    binding.tvHomeLocation.text = formatShortAddress(address)
+                    binding.customerTopBar.tvHomeLocation.text = formatShortAddress(address)
                 }
                 bindHomeAvatar(
                     fullName = profile.fullName,
@@ -202,9 +215,10 @@ class CustomerHomeFragment : Fragment() {
     private fun bindHomeAvatar(
         fullName: String,
         avatarUrl: String,
-    ) = with(binding) {
+    ) = with(binding.customerTopBar) {
         tvHomeAvatarInitials.text = buildAvatarInitials(fullName)
         val normalizedAvatarUrl = avatarUrl.trim()
+
         if (normalizedAvatarUrl.isBlank()) {
             Glide.with(ivHomeAvatar).clear(ivHomeAvatar)
             ivHomeAvatar.setImageDrawable(null)
@@ -312,8 +326,7 @@ class CustomerHomeFragment : Fragment() {
             compareByDescending<ProductUiModel> { it.basePrice }
                 .thenByDescending { it.rating }
                 .thenBy { it.name.lowercase(Locale.US) },
-        )
-            .take(BEST_SELLER_LIMIT)
+        ).take(BEST_SELLER_LIMIT)
     }
 
     private fun resolveFilteredProducts(): List<ProductUiModel> {
@@ -592,12 +605,20 @@ class CustomerHomeFragment : Fragment() {
     ) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                R.string.customer_favorites_login_required,
+                Toast.LENGTH_SHORT,
+            ).show()
             onComplete(item.id in favoriteProductIds)
             return
         }
         if (item.id.isBlank()) {
-            Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+            Toast.makeText(
+                requireContext(),
+                R.string.customer_favorites_update_failed,
+                Toast.LENGTH_SHORT,
+            ).show()
             onComplete(item.id in favoriteProductIds)
             return
         }
@@ -625,7 +646,11 @@ class CustomerHomeFragment : Fragment() {
                     ).show()
                 }
                 .onFailure {
-                    Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.customer_favorites_update_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
                     onComplete(isFavorite)
                 }
         }
