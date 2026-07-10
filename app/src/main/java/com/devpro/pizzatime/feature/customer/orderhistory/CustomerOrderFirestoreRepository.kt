@@ -69,6 +69,7 @@ object CustomerOrderFirestoreRepository {
         OrderTransitionRepository.cancelByCustomer(
             orderId = orderId,
             customerId = uid,
+            reason = null,
             onResult = onResult,
         )
     }

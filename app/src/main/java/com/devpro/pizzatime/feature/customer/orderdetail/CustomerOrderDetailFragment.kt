@@ -101,7 +101,11 @@ class CustomerOrderDetailFragment : Fragment() {
                     .onFailure {
                         Toast.makeText(
                             requireContext(),
-                            R.string.customer_order_detail_load_failed,
+                            if (it.message?.contains("not found", ignoreCase = true) == true) {
+                                R.string.notification_order_unavailable
+                            } else {
+                                R.string.customer_order_detail_load_failed
+                            },
                             Toast.LENGTH_SHORT,
                         ).show()
                         parentFragmentManager.popBackStack()

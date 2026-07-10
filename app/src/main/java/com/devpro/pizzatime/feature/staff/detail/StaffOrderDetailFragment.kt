@@ -41,8 +41,18 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         if (isFirestoreOrderId(orderId)) {
             StaffOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
                 if (!isAdded) return@loadOrderDetail
-                val order = result.getOrElse { FakeStaffOrderDetailData.getByOrderId(orderId) }
-                bindAndSetup(order)
+                result
+                    .onSuccess { order ->
+                        bindAndSetup(order)
+                    }
+                    .onFailure {
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.notification_order_unavailable,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        parentFragmentManager.popBackStack()
+                    }
             }
         } else {
             bindAndSetup(FakeStaffOrderDetailData.getByOrderId(orderId))
@@ -271,7 +281,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
 
         isCancellingOrder = true
         btnCancelOrder.isEnabled = false
-        StaffOrderFirestoreRepository.cancelOrder(orderId) { result ->
+        StaffOrderFirestoreRepository.cancelOrder(orderId, reason) { result ->
             if (!isAdded) return@cancelOrder
             result
                 .onSuccess {

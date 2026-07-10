@@ -7,6 +7,7 @@ import androidx.lifecycle.ViewModelProvider
 import androidx.core.view.isVisible
 import com.devpro.pizzatime.core.config.AppEdition
 import com.devpro.pizzatime.core.config.AppEditionConfig
+import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentWelcomeBinding
@@ -38,6 +39,7 @@ class WelcomeFragment : BaseFragment<FragmentWelcomeBinding>(
     }
 
     private fun continueAsGuest() {
+        FcmTokenRegistrar.clearCurrentDeviceToken()
         FirebaseAuth.getInstance().signOut()
         OrderNotificationMonitor.stop()
         FakeSessionStore.logout()

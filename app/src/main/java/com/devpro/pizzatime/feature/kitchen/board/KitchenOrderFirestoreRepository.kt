@@ -77,11 +77,13 @@ object KitchenOrderFirestoreRepository {
 
     fun cancelOrder(
         orderId: String,
+        reason: String? = null,
         onResult: (Result<Unit>) -> Unit,
     ) {
         OrderTransitionRepository.cancelByKitchen(
             orderId = orderId,
             kitchenId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+            reason = reason,
             onResult = onResult,
         )
     }

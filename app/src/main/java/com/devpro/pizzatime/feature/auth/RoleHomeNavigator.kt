@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.auth
 
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.core.config.AppEditionConfig
+import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
@@ -16,6 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 fun Fragment.restoreSessionAndOpenRoleHome(user: AuthUserUiModel): Boolean {
     if (!AppEditionConfig.isAllowedAuthRole(user.role)) {
+        FcmTokenRegistrar.clearCurrentDeviceToken()
         FirebaseAuth.getInstance().signOut()
         OrderNotificationMonitor.stop()
         FakeSessionStore.logout()

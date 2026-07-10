@@ -47,9 +47,10 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                 .onFailure {
                     Toast.makeText(
                         requireContext(),
-                        R.string.kitchen_order_detail_load_failed,
+                        R.string.notification_order_unavailable,
                         Toast.LENGTH_SHORT,
                     ).show()
+                    parentFragmentManager.popBackStack()
                 }
         }
     }
@@ -198,8 +199,11 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
             val orderId = bundle
                 .getString(CancelOrderConfirmationDialogFragment.KEY_ORDER_ID)
                 .orEmpty()
+            val reason = bundle
+                .getString(CancelOrderConfirmationDialogFragment.KEY_CANCEL_REASON)
+                .orEmpty()
 
-            cancelOrder(orderId)
+            cancelOrder(orderId, reason)
         }
     }
 
@@ -264,11 +268,14 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
         }
     }
 
-    private fun cancelOrder(orderId: String) {
+    private fun cancelOrder(
+        orderId: String,
+        reason: String,
+    ) {
         if (!canManageKitchenScreen()) return
 
         binding.btnCancelOrder.isEnabled = false
-        KitchenOrderFirestoreRepository.cancelOrder(orderId) { result ->
+        KitchenOrderFirestoreRepository.cancelOrder(orderId, reason) { result ->
             if (_binding == null || !isAdded) return@cancelOrder
             result
                 .onSuccess {

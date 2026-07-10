@@ -208,6 +208,22 @@
                     android:text="@string/customer_menu_subtitle_notifications" />
             </LinearLayout>
 
+            <TextView
+                android:id="@+id/tvNotificationsBadge"
+                android:layout_width="wrap_content"
+                android:layout_height="20dp"
+                android:layout_marginEnd="12dp"
+                android:background="@drawable/bg_customer_notifications_menu_badge"
+                android:gravity="center"
+                android:minWidth="20dp"
+                android:paddingStart="6dp"
+                android:paddingEnd="6dp"
+                android:textColor="@color/pt_white"
+                android:textSize="11sp"
+                android:textStyle="bold"
+                android:visibility="gone"
+                tools:text="3" />
+
             <ImageView
                 style="@style/CustomerMenuChevronImage"
                 android:src="@drawable/customer_menu_chevron" />

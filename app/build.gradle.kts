@@ -160,6 +160,8 @@ dependencies {
     implementation(libs.androidx.appcompat)
     implementation(libs.material)
     implementation(libs.osmdroid.android)
+    implementation("androidx.lifecycle:lifecycle-process:2.8.4")
+    implementation("androidx.work:work-runtime-ktx:2.9.1")
 
     implementation(platform("com.google.firebase:firebase-bom:34.15.0"))
     implementation("com.google.firebase:firebase-auth")

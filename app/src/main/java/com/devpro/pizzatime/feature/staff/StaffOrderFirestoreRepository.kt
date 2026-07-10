@@ -69,11 +69,13 @@ object StaffOrderFirestoreRepository {
 
     fun cancelOrder(
         orderId: String,
+        reason: String? = null,
         onResult: (Result<Unit>) -> Unit,
     ) {
         OrderTransitionRepository.cancelByStaff(
             orderId = orderId,
             staffId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+            reason = reason,
             onResult = onResult,
         )
     }

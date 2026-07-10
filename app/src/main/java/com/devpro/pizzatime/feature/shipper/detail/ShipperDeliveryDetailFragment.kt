@@ -66,9 +66,12 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                         setupActions(detail)
                     }
                     .onFailure {
-                        val detail = FakeShipperDeliveryDetailData.getDetail(orderId)
-                        bindDetail(detail)
-                        setupActions(detail)
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.notification_order_unavailable,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        parentFragmentManager.popBackStack()
                     }
             }
         } else {

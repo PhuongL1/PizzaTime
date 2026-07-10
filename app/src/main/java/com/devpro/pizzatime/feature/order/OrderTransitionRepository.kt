@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.order
 
+import com.devpro.pizzatime.core.notification.NotificationDefaults
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,6 +25,7 @@ object OrderTransitionRepository {
     fun cancelByCustomer(
         orderId: String,
         customerId: String,
+        reason: String? = null,
         onResult: (Result<Unit>) -> Unit,
     ) {
         updateStatus(
@@ -33,6 +35,7 @@ object OrderTransitionRepository {
             actorRole = "CUSTOMER",
             actorId = customerId,
             note = "Order cancelled",
+            extraFields = cancellationFields("CUSTOMER", reason),
             onResult = onResult,
         )
     }
@@ -56,6 +59,7 @@ object OrderTransitionRepository {
     fun cancelByStaff(
         orderId: String,
         staffId: String,
+        reason: String? = null,
         onResult: (Result<Unit>) -> Unit,
     ) {
         updateStatus(
@@ -65,6 +69,7 @@ object OrderTransitionRepository {
             actorRole = "STAFF",
             actorId = staffId,
             note = "Order cancelled",
+            extraFields = cancellationFields("STAFF", reason),
             onResult = onResult,
         )
     }
@@ -122,6 +127,7 @@ object OrderTransitionRepository {
     fun cancelByKitchen(
         orderId: String,
         kitchenId: String,
+        reason: String? = null,
         onResult: (Result<Unit>) -> Unit,
     ) {
         updateStatus(
@@ -131,10 +137,11 @@ object OrderTransitionRepository {
             actorRole = "KITCHEN",
             actorId = kitchenId,
             note = "Kitchen cancelled order",
-            extraFields = mapOf(
-                "kitchenStage" to STATUS_CANCELLED,
-                "kitchenUpdatedAt" to FieldValue.serverTimestamp(),
-            ),
+            extraFields = buildMap {
+                put("kitchenStage", STATUS_CANCELLED)
+                put("kitchenUpdatedAt", FieldValue.serverTimestamp())
+                putAll(cancellationFields("KITCHEN", reason))
+            },
             onResult = onResult,
         )
     }
@@ -354,6 +361,30 @@ object OrderTransitionRepository {
         val kitchenStage: String,
         val progressPercent: Int,
     )
+
+    private fun cancellationFields(
+        cancelledBy: String,
+        reason: String?,
+    ): Map<String, Any> {
+        val normalizedReason = reason
+            ?.trim()
+            ?.takeIf { value -> value.isNotBlank() }
+            ?.let { value ->
+                if (value.length <= NotificationDefaults.MAX_REASON_LENGTH) {
+                    value
+                } else {
+                    value.take(NotificationDefaults.MAX_REASON_LENGTH - 1).trimEnd() + "\u2026"
+                }
+            }
+
+        return buildMap {
+            put("cancelledBy", cancelledBy)
+            if (!normalizedReason.isNullOrBlank()) {
+                put("cancellationReason", normalizedReason)
+                put("statusReason", normalizedReason)
+            }
+        }
+    }
 }
 
 class OrderTransitionException(message: String) : Exception(message)

@@ -4,12 +4,20 @@ import android.app.Dialog
 import android.os.Bundle
 import android.view.View
 import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.notification.NotificationInboxStore
 import com.devpro.pizzatime.databinding.BottomSheetCustomerMenuBinding
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerNotifications
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
+import com.devpro.pizzatime.feature.staff.navigation.openPizzaMenuScreen
+import com.devpro.pizzatime.feature.staff.navigation.openSupportFaq
 import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
+import java.io.Closeable
 
 class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_sheet_customer_menu) {
 
@@ -18,6 +26,7 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
         get() = checkNotNull(_binding) {
             "BottomSheetCustomerMenuBinding is only valid between onViewCreated and onDestroyView."
         }
+    private var inboxObserver: Closeable? = null
 
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return BottomSheetDialog(requireContext(), R.style.ThemeOverlayPizzaTimeBottomSheet)
@@ -25,7 +34,9 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         _binding = BottomSheetCustomerMenuBinding.bind(view)
+        NotificationInboxStore.init(requireContext().applicationContext)
         setupActions()
+        observeUnreadCount()
     }
 
     private fun setupActions() = with(binding) {
@@ -34,7 +45,7 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
         }
 
         rowMenu.setOnClickListener {
-            showComingSoon(getString(R.string.customer_menu_title_menu))
+            openPizzaMenuScreen()
         }
 
         rowOrders.setOnClickListener {
@@ -42,11 +53,11 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
         }
 
         rowFavorites.setOnClickListener {
-            showComingSoon(getString(R.string.customer_menu_title_favorites))
+            openCustomerFavorites()
         }
 
         rowPromoCodes.setOnClickListener {
-            showComingSoon(getString(R.string.customer_menu_title_promo_codes))
+            openCustomerPromoCodes()
         }
 
         rowMemberQr.setOnClickListener {
@@ -54,11 +65,11 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
         }
 
         rowNotifications.setOnClickListener {
-            showComingSoon(getString(R.string.customer_menu_title_notifications))
+            openCustomerNotifications()
         }
 
         rowSupport.setOnClickListener {
-            showComingSoon(getString(R.string.customer_menu_title_support))
+            openSupportFaq()
         }
 
         rowLogout.setOnClickListener {
@@ -77,8 +88,31 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
     }
 
     override fun onDestroyView() {
+        inboxObserver?.close()
+        inboxObserver = null
         _binding = null
         super.onDestroyView()
+    }
+
+    private fun observeUnreadCount() {
+        binding.tvNotificationsBadge.isVisible = false
+        inboxObserver?.close()
+        inboxObserver = NotificationInboxStore.observeNotifications {
+            if (_binding == null) {
+                return@observeNotifications
+            }
+            renderUnreadCount(NotificationInboxStore.unreadCount())
+        }
+        NotificationInboxStore.loadForCurrentAccount()
+    }
+
+    private fun renderUnreadCount(unreadCount: Int) = with(binding.tvNotificationsBadge) {
+        isVisible = unreadCount > 0
+        text = if (unreadCount > 99) {
+            "99+"
+        } else {
+            unreadCount.toString()
+        }
     }
 
     companion object {

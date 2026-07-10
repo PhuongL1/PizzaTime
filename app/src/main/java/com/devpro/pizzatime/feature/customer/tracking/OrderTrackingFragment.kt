@@ -81,8 +81,12 @@ class OrderTrackingFragment : Fragment() {
             .addSnapshotListener { snapshot, error ->
                 if (_binding == null) return@addSnapshotListener
                 if (error != null || snapshot == null || !snapshot.exists()) {
-                    renderTrackingSteps(FakeTrackingData.steps)
-                    bindProduct(FakeTrackingData.product)
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.notification_order_unavailable,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    parentFragmentManager.popBackStack()
                     return@addSnapshotListener
                 }
                 val status = snapshot.getString("status") ?: "PENDING"

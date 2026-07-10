@@ -4,40 +4,45 @@
     android:id="@+id/notificationCard"
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:layout_marginBottom="18dp"
+    android:layout_marginBottom="14dp"
     android:background="@drawable/bg_customer_notifications_card"
     android:clickable="true"
     android:focusable="true"
     android:foreground="?attr/selectableItemBackground"
     android:gravity="top"
     android:orientation="horizontal"
-    android:paddingStart="28dp"
-    android:paddingTop="26dp"
-    android:paddingEnd="28dp"
-    android:paddingBottom="26dp">
+    android:paddingStart="16dp"
+    android:paddingTop="16dp"
+    android:paddingEnd="16dp"
+    android:paddingBottom="16dp">
 
-    <TextView
-        android:id="@+id/tvIcon"
-        android:layout_width="68dp"
-        android:layout_height="68dp"
-        android:background="@drawable/bg_customer_notifications_icon_neutral"
-        android:gravity="center"
-        android:textColor="@color/pt_border_warm"
-        android:textSize="28sp"
-        android:textStyle="bold"
-        tools:text="⌖" />
+    <FrameLayout
+        android:id="@+id/iconContainer"
+        android:layout_width="44dp"
+        android:layout_height="44dp"
+        android:background="@drawable/bg_customer_notifications_icon_neutral">
+
+        <ImageView
+            android:id="@+id/ivIcon"
+            android:layout_width="20dp"
+            android:layout_height="20dp"
+            android:layout_gravity="center"
+            android:contentDescription="@null"
+            android:src="@drawable/ic_bag"
+            tools:ignore="ContentDescription" />
+    </FrameLayout>
 
     <LinearLayout
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="24dp"
+        android:layout_marginStart="14dp"
         android:layout_weight="1"
         android:orientation="vertical">
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:gravity="top"
+            android:gravity="center_vertical"
             android:orientation="horizontal">
 
             <TextView
@@ -45,29 +50,38 @@
                 android:layout_width="0dp"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:textColor="@color/pt_text_dark"
-                android:textSize="23sp"
-                tools:text="Order Out for Delivery" />
+                android:textColor="@color/pt_text_primary_card"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                tools:text="Order confirmed" />
 
-            <TextView
-                android:id="@+id/tvTime"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:layout_marginStart="14dp"
-                android:textColor="@color/pt_copper"
-                android:textSize="14sp"
-                tools:text="JUST NOW" />
+            <View
+                android:id="@+id/unreadIndicator"
+                android:layout_width="8dp"
+                android:layout_height="8dp"
+                android:layout_marginStart="8dp"
+                android:background="@drawable/bg_customer_notifications_unread_dot" />
         </LinearLayout>
 
         <TextView
             android:id="@+id/tvMessage"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginTop="12dp"
-            android:lineSpacingExtra="5dp"
-            android:textColor="@color/pt_text_muted"
-            android:textSize="19sp"
-            tools:text="Your pizza is on its way with our courier." />
+            android:layout_marginTop="6dp"
+            android:ellipsize="end"
+            android:maxLines="3"
+            android:textColor="@color/pt_text_secondary_card"
+            android:textSize="14sp"
+            tools:text="Your order #ab-1234 has been confirmed." />
+
+        <TextView
+            android:id="@+id/tvTime"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="10dp"
+            android:textColor="@color/pt_text_secondary_card"
+            android:textSize="12sp"
+            tools:text="5 minutes ago" />
     </LinearLayout>
 
 </LinearLayout>

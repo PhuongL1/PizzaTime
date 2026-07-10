@@ -1,283 +1,251 @@
 package com.devpro.pizzatime.core.notification
 
-import android.annotation.SuppressLint
-import android.app.Activity
-import android.app.NotificationChannel
-import android.app.NotificationManager
 import android.content.Context
-import android.os.Build
 import android.util.Log
-import android.widget.Toast
-import androidx.core.app.NotificationCompat
-import androidx.core.app.NotificationManagerCompat
-import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.UserRole
-import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentChange
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.FirebaseFirestoreException
 import com.google.firebase.firestore.ListenerRegistration
-import com.google.firebase.firestore.Query
-import java.lang.ref.WeakReference
-import java.util.Locale
 
 object OrderNotificationMonitor {
 
     private val firestore = FirebaseFirestore.getInstance()
-    private val auth = FirebaseAuth.getInstance()
-    private val knownStatuses = mutableMapOf<String, String>()
 
     private var appContext: Context? = null
-    private var foregroundActivity: WeakReference<Activity>? = null
-    private var listener: ListenerRegistration? = null
-    private var activeRole: UserRole? = null
-    private var activeUserId: String = ""
-    private var initialSnapshot = true
+    private var activeScope: NotificationScope? = null
+    private val listeners = mutableListOf<ListenerRegistration>()
+    private var ordersInitialSnapshotComplete = false
+    private var reviewsInitialSnapshotComplete = false
+    private var loggedMissingOrderReviewSource = false
 
     fun init(context: Context) {
-        appContext = context.applicationContext
-        ensureChannel(context.applicationContext)
+        val applicationContext = context.applicationContext
+        appContext = applicationContext
+        AppForegroundState.init()
+        NotificationInboxStore.init(applicationContext)
+        NotificationStateStore.init(applicationContext)
+        NotificationDispatcher.init(applicationContext)
+        PizzaTimeNotificationManager.init(applicationContext)
     }
 
-    fun setForegroundActivity(activity: Activity?) {
-        foregroundActivity = activity?.let { WeakReference(it) }
-    }
+    fun setForegroundActivity(activity: android.app.Activity?) = Unit
 
     fun start(role: UserRole) {
-        val userId = auth.currentUser?.uid.orEmpty()
-        if (role == UserRole.GUEST || userId.isBlank()) {
+        val context = appContext ?: return
+        val scope = NotificationSessionResolver.currentScope(context)
+        if (role == UserRole.GUEST || scope == null || scope.role != role) {
             stop()
             return
         }
 
-        if (listener != null && activeRole == role && activeUserId == userId) {
+        if (activeScope == scope && listeners.isNotEmpty()) {
             return
         }
 
-        val context = appContext ?: return
-        val query = buildQuery(role, userId) ?: return
         stop()
-        activeRole = role
-        activeUserId = userId
-        initialSnapshot = true
+        activeScope = scope
+        ordersInitialSnapshotComplete = false
+        reviewsInitialSnapshotComplete = false
+        loggedMissingOrderReviewSource = false
 
-        Log.d(TAG, "Order notification listener start role=${role.name}")
-        listener = query.addSnapshotListener { snapshot, error ->
+        NotificationWorkScheduler.schedule(context, scope)
+        FcmTokenRegistrar.registerCurrentToken()
+        startOrderListener(scope)
+        if (scope.role == UserRole.ADMIN) {
+            startProductReviewListener(scope)
+            Log.d(TAG, "Order review source not found in current schema")
+            loggedMissingOrderReviewSource = true
+        }
+        Log.d(TAG, "Listener started role=${scope.role.name} edition=${scope.applicationId}")
+    }
+
+    fun stop() {
+        listeners.forEach { registration -> registration.remove() }
+        listeners.clear()
+        activeScope?.let { scope ->
+            appContext?.let { context ->
+                NotificationWorkScheduler.cancel(context, scope)
+            }
+        }
+        activeScope = null
+        ordersInitialSnapshotComplete = false
+        reviewsInitialSnapshotComplete = false
+        NotificationInboxStore.clearForSignedOutAccount()
+        Log.d(TAG, "Listener stopped")
+    }
+
+    private fun startOrderListener(scope: NotificationScope) {
+        val query = if (scope.role == UserRole.CUSTOMER) {
+            firestore.collection("orders").whereEqualTo("customerId", scope.userId)
+        } else {
+            firestore.collection("orders")
+        }
+
+        listeners += query.addSnapshotListener { snapshot, error ->
             if (error != null) {
-                Log.w(TAG, "Order notification listener failed", error)
+                logFirestoreError("orders", scope.role, error)
                 return@addSnapshotListener
             }
 
             val currentSnapshot = snapshot ?: return@addSnapshotListener
-            if (initialSnapshot) {
-                currentSnapshot.documents.forEach { doc ->
-                    knownStatuses[doc.id] = normalizeStatus(doc.getString("status"))
-                }
-                initialSnapshot = false
+            if (!ordersInitialSnapshotComplete) {
+                seedInitialOrderSnapshot(scope, currentSnapshot.documents)
+                ordersInitialSnapshotComplete = true
+                Log.d(TAG, "Initial order snapshot complete role=${scope.role.name}")
                 return@addSnapshotListener
             }
 
             currentSnapshot.documentChanges.forEach { change ->
-                val doc = change.document
-                val orderId = doc.id
-                val status = normalizeStatus(doc.getString("status"))
-                val previousStatus = knownStatuses[orderId]
-                knownStatuses[orderId] = status
-
-                val event = resolveEvent(
-                    role = role,
-                    status = status,
-                    previousStatus = previousStatus,
-                    isAdded = change.type == DocumentChange.Type.ADDED,
-                ) ?: return@forEach
-
-                dispatch(context, orderId, event)
+                if (change.type == DocumentChange.Type.REMOVED) {
+                    return@forEach
+                }
+                processOrderDocument(scope, change.document)
             }
         }
     }
 
-    fun stop() {
-        if (listener != null) {
-            Log.d(TAG, "Order notification listener stop")
-        }
-        listener?.remove()
-        listener = null
-        activeRole = null
-        activeUserId = ""
-        knownStatuses.clear()
-        initialSnapshot = true
+    private fun startProductReviewListener(scope: NotificationScope) {
+        listeners += firestore.collection("productReviews")
+            .addSnapshotListener { snapshot, error ->
+                if (error != null) {
+                    logFirestoreError("productReviews", scope.role, error)
+                    return@addSnapshotListener
+                }
+
+                val currentSnapshot = snapshot ?: return@addSnapshotListener
+                if (!reviewsInitialSnapshotComplete) {
+                    val newest = currentSnapshot.documents.maxOfOrNull { document ->
+                        document.getTimestamp("createdAt").toEpochMillis()
+                    } ?: System.currentTimeMillis()
+                    NotificationStateStore.setLastProductReviewSyncAt(scope, newest)
+                    reviewsInitialSnapshotComplete = true
+                    Log.d(TAG, "Initial product review snapshot complete")
+                    return@addSnapshotListener
+                }
+
+                currentSnapshot.documentChanges.forEach { change ->
+                    if (change.type != DocumentChange.Type.ADDED) {
+                        return@forEach
+                    }
+                    processProductReview(scope, change.document)
+                }
+            }
     }
 
-    private fun buildQuery(role: UserRole, userId: String): Query? {
-        val orders = firestore.collection("orders")
-        return when (role) {
-            UserRole.CUSTOMER -> orders.whereEqualTo("customerId", userId)
-            UserRole.STAFF -> orders.whereEqualTo("status", STATUS_PENDING)
-            UserRole.KITCHEN -> orders.whereEqualTo("status", STATUS_CONFIRMED)
-            UserRole.SHIPPER -> orders.whereIn("status", listOf(STATUS_READY_FOR_DELIVERY, STATUS_READY))
-            UserRole.ADMIN -> orders.whereEqualTo("status", STATUS_DELIVERED)
-            UserRole.GUEST -> null
-        }
-    }
-
-    private fun resolveEvent(
-        role: UserRole,
-        status: String,
-        previousStatus: String?,
-        isAdded: Boolean,
-    ): OrderNotificationEvent? {
-        return when (role) {
-            UserRole.CUSTOMER -> resolveCustomerEvent(status, previousStatus, isAdded)
-            UserRole.STAFF -> if (isAdded && status == STATUS_PENDING) {
-                OrderNotificationEvent(
-                    title = "New order",
-                    body = "A new customer order arrived.",
-                    foregroundMessage = "New order received.",
-                )
-            } else {
-                null
-            }
-            UserRole.KITCHEN -> if (status == STATUS_CONFIRMED && previousStatus != STATUS_CONFIRMED) {
-                OrderNotificationEvent(
-                    title = "Order confirmed",
-                    body = "A confirmed order is ready for kitchen.",
-                    foregroundMessage = "Order confirmed.",
-                )
-            } else {
-                null
-            }
-            UserRole.SHIPPER -> if (status in READY_FOR_DELIVERY_STATUSES && previousStatus != status) {
-                OrderNotificationEvent(
-                    title = "Order ready",
-                    body = "An order is ready for delivery.",
-                    foregroundMessage = "Order ready.",
-                )
-            } else {
-                null
-            }
-            UserRole.ADMIN -> if (status == STATUS_DELIVERED && previousStatus != STATUS_DELIVERED) {
-                OrderNotificationEvent(
-                    title = "Order delivered",
-                    body = "An order was delivered successfully.",
-                    foregroundMessage = "Order delivered.",
-                )
-            } else {
-                null
-            }
-            UserRole.GUEST -> null
-        }
-    }
-
-    private fun resolveCustomerEvent(
-        status: String,
-        previousStatus: String?,
-        isAdded: Boolean,
-    ): OrderNotificationEvent? {
-        if (isAdded && previousStatus == null) {
-            return OrderNotificationEvent(
-                title = "Order placed",
-                body = "Your order was created.",
-                foregroundMessage = "Your order was created.",
-            )
-        }
-
-        if (previousStatus == null || previousStatus == status) {
-            return null
-        }
-
-        return when (status) {
-            STATUS_DELIVERING -> OrderNotificationEvent(
-                title = "Delivery started",
-                body = "Your order is on the way.",
-                foregroundMessage = "Delivery started.",
-            )
-            STATUS_DELIVERED -> OrderNotificationEvent(
-                title = "Order delivered",
-                body = "Your order has arrived.",
-                foregroundMessage = "Order delivered.",
-            )
-            else -> OrderNotificationEvent(
-                title = "Order updated",
-                body = "Your order status changed.",
-                foregroundMessage = "Order status updated.",
-            )
-        }
-    }
-
-    private fun dispatch(
-        context: Context,
-        orderId: String,
-        event: OrderNotificationEvent,
+    private fun seedInitialOrderSnapshot(
+        scope: NotificationScope,
+        documents: List<DocumentSnapshot>,
     ) {
-        Log.i(TAG, "Order notification event title=${event.title} orderId=$orderId")
-        val activity = foregroundActivity?.get()
-            ?.takeIf { currentActivity -> !currentActivity.isFinishing && !currentActivity.isDestroyed }
-        if (activity != null) {
-            Toast.makeText(activity, event.foregroundMessage, Toast.LENGTH_SHORT).show()
-            return
+        val states = documents.associate { document ->
+            document.id to OrderNotificationState(
+                status = NotificationEventFactory.normalizeStatus(document.getString("status")),
+                updatedAtMillis = document.getTimestamp("updatedAt").toEpochMillis(),
+                latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+            )
         }
-
-        showLocalNotification(context, orderId, event)
+        NotificationStateStore.putOrderStates(scope, states)
+        val newest = documents.maxOfOrNull { document ->
+            document.getTimestamp("updatedAt").toEpochMillis()
+        } ?: System.currentTimeMillis()
+        NotificationStateStore.setLastOrdersSyncAt(scope, newest)
     }
 
-    @SuppressLint("MissingPermission")
-    private fun showLocalNotification(
-        context: Context,
-        orderId: String,
-        event: OrderNotificationEvent,
+    private fun processOrderDocument(
+        scope: NotificationScope,
+        document: DocumentSnapshot,
     ) {
-        if (!NotificationPermissionHelper.hasNotificationPermission(context)) {
-            Log.d(TAG, "Notification permission missing; local notification skipped")
-            return
+        val previousState = NotificationStateStore.getOrderState(scope, document.id)
+        val previousHistoryAt = previousState?.latestHistoryAtMillis ?: 0L
+        val historyEvents = NotificationEventFactory.historyEvents(document)
+            .filter { event -> event.createdAtMillis > previousHistoryAt }
+
+        NotificationEventFactory.createOrderNotifications(
+            context = appContext ?: return,
+            scope = scope,
+            document = document,
+            historyEvents = historyEvents,
+        ).forEach { notification ->
+            Log.d(TAG, "Event detected role=${scope.role.name} type=${notification.type.name}")
+            NotificationDispatcher.dispatch(notification, TAG)
         }
 
-        ensureChannel(context)
-        val notification = NotificationCompat.Builder(context, CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_bag)
-            .setContentTitle(event.title)
-            .setContentText(event.body)
-            .setStyle(NotificationCompat.BigTextStyle().bigText(event.body))
-            .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-            .setAutoCancel(true)
-            .build()
-
-        NotificationManagerCompat.from(context)
-            .notify(notificationId(orderId, event.title), notification)
-    }
-
-    private fun ensureChannel(context: Context) {
-        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.O) return
-        val manager = context.getSystemService(Context.NOTIFICATION_SERVICE) as? NotificationManager ?: return
-        if (manager.getNotificationChannel(CHANNEL_ID) != null) return
-
-        val channel = NotificationChannel(
-            CHANNEL_ID,
-            context.getString(R.string.app_name),
-            NotificationManager.IMPORTANCE_DEFAULT,
+        val updatedAt = document.getTimestamp("updatedAt").toEpochMillis()
+        NotificationStateStore.putOrderState(
+            scope = scope,
+            orderId = document.id,
+            state = OrderNotificationState(
+                status = NotificationEventFactory.normalizeStatus(document.getString("status")),
+                updatedAtMillis = updatedAt,
+                latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+            ),
         )
-        manager.createNotificationChannel(channel)
+        NotificationStateStore.setLastOrdersSyncAt(
+            scope,
+            maxOf(NotificationStateStore.lastOrdersSyncAt(scope), updatedAt),
+        )
     }
 
-    private fun notificationId(orderId: String, title: String): Int {
-        return "$orderId:$title".hashCode()
+    private fun processProductReview(
+        scope: NotificationScope,
+        document: DocumentSnapshot,
+    ) {
+        val createdAt = document.getTimestamp("createdAt").toEpochMillis()
+        if (createdAt <= NotificationStateStore.lastProductReviewSyncAt(scope)) {
+            return
+        }
+        val productId = document.getString("productId").orEmpty().trim()
+        if (productId.isBlank()) {
+            NotificationStateStore.setLastProductReviewSyncAt(scope, createdAt)
+            return
+        }
+
+        firestore.collection("products").document(productId)
+            .get()
+            .addOnSuccessListener { productDocument ->
+                val productName = productDocument.getString("name")
+                val notification = runCatching {
+                    NotificationEventFactory.createProductReviewNotification(
+                        context = appContext ?: return@addOnSuccessListener,
+                        scope = scope,
+                        document = document,
+                        productName = productName,
+                    )
+                }.getOrNull() ?: return@addOnSuccessListener
+                NotificationDispatcher.dispatch(notification, TAG)
+                NotificationStateStore.setLastProductReviewSyncAt(scope, createdAt)
+            }
+            .addOnFailureListener { error ->
+                Log.w(TAG, "Product review name lookup failed", error)
+                val notification = runCatching {
+                    NotificationEventFactory.createProductReviewNotification(
+                        context = appContext ?: return@addOnFailureListener,
+                        scope = scope,
+                        document = document,
+                        productName = null,
+                    )
+                }.getOrNull() ?: return@addOnFailureListener
+                NotificationDispatcher.dispatch(notification, TAG)
+                NotificationStateStore.setLastProductReviewSyncAt(scope, createdAt)
+            }
     }
 
-    private fun normalizeStatus(status: String?): String {
-        return status.orEmpty().trim().uppercase(Locale.US)
+    private fun logFirestoreError(
+        source: String,
+        role: UserRole,
+        error: FirebaseFirestoreException,
+    ) {
+        if (error.code == FirebaseFirestoreException.Code.PERMISSION_DENIED) {
+            Log.e(TAG, "Firestore PERMISSION_DENIED source=$source role=${role.name}", error)
+        } else {
+            Log.w(TAG, "Listener failed source=$source role=${role.name}", error)
+        }
     }
 
-    private data class OrderNotificationEvent(
-        val title: String,
-        val body: String,
-        val foregroundMessage: String,
-    )
+    private fun com.google.firebase.Timestamp?.toEpochMillis(): Long {
+        return this?.toDate()?.time ?: 0L
+    }
 
-    private val READY_FOR_DELIVERY_STATUSES = setOf(STATUS_READY_FOR_DELIVERY, STATUS_READY)
-    private const val CHANNEL_ID = "order_status_notifications"
-    private const val TAG = "OrderNotificationMonitor"
-    private const val STATUS_PENDING = "PENDING"
-    private const val STATUS_CONFIRMED = "CONFIRMED"
-    private const val STATUS_READY = "READY"
-    private const val STATUS_READY_FOR_DELIVERY = "READY_FOR_DELIVERY"
-    private const val STATUS_DELIVERING = "DELIVERING"
-    private const val STATUS_DELIVERED = "DELIVERED"
+    private const val TAG = "NotificationMonitor"
 }

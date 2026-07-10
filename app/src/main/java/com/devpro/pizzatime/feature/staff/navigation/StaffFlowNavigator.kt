@@ -5,6 +5,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
@@ -97,6 +98,7 @@ fun Fragment.clearAppBackStack() {
 }
 
 fun Fragment.signOutAndOpenLogin() {
+    FcmTokenRegistrar.clearCurrentDeviceToken()
     FirebaseAuth.getInstance().signOut()
     OrderNotificationMonitor.stop()
     FakeSessionStore.logout()

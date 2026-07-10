@@ -4,6 +4,7 @@ import android.Manifest
 import android.content.Context
 import android.content.pm.PackageManager
 import android.os.Build
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 
 object NotificationPermissionHelper {
@@ -18,6 +19,14 @@ object NotificationPermissionHelper {
                 context,
                 Manifest.permission.POST_NOTIFICATIONS,
             ) == PackageManager.PERMISSION_GRANTED
+    }
+
+    fun areNotificationsEnabled(context: Context): Boolean {
+        return NotificationManagerCompat.from(context).areNotificationsEnabled()
+    }
+
+    fun canPostSystemNotifications(context: Context): Boolean {
+        return hasNotificationPermission(context) && areNotificationsEnabled(context)
     }
 
     fun shouldRequestNotificationPermission(context: Context): Boolean {

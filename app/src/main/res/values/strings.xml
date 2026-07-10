@@ -270,8 +270,8 @@
     <string name="customer_notifications_brand">PizzaTime</string>
     <string name="customer_notifications_avatar_description">Customer avatar</string>
     <string name="customer_notifications_title">Notifications</string>
-    <string name="customer_notifications_subtitle">Your late-night updates</string>
-    <string name="customer_notifications_mark_all_read">MARK ALL AS READ</string>
+    <string name="customer_notifications_subtitle">Latest order updates</string>
+    <string name="customer_notifications_mark_all_read">Mark all read</string>
     <string name="customer_notifications_archive_icon">↺</string>
     <string name="customer_notifications_archive_text">Earlier notifications are archived</string>
 
@@ -283,6 +283,9 @@
     <string name="customer_notifications_marked_read_toast">All notifications marked as read.</string>
     <string name="customer_notifications_open_toast">Opened: %1$s</string>
     <string name="customer_notifications_profile_toast">Profile is coming soon.</string>
+    <string name="customer_notifications_empty_title">No notifications yet</string>
+    <string name="customer_notifications_empty_message">Order updates will appear here.</string>
+    <string name="customer_notifications_login_required_message">Log in to see your order updates.</string>
 
     <!-- Q&A -->
     <string name="support_brand">PizzaTime</string>
@@ -1199,6 +1202,44 @@
     <string name="shipper_complete_delivery_title">Complete delivery?</string>
     <string name="shipper_complete_delivery_message_with_amount">Confirm that this order has been delivered and cash payment has been collected from the customer.\n\nAmount to collect: %1$s</string>
     <string name="shipper_complete_delivery_confirm">Complete Order</string>
+    <string name="notification_permission_rationale">Allow notifications to receive order updates.</string>
+    <string name="notification_order_unavailable">This order is no longer available.</string>
+    <string name="notification_channel_orders_name">Order updates</string>
+    <string name="notification_channel_orders_description">Order and delivery updates from PizzaTime.</string>
+    <string name="notification_channel_reviews_name">Reviews</string>
+    <string name="notification_channel_reviews_description">Customer review updates.</string>
+    <string name="notification_status_assigned_to_shipper">assigned to shipper</string>
+    <string name="notification_customer_confirmed_title">Order confirmed</string>
+    <string name="notification_customer_confirmed_body">Your order %1$s has been confirmed.</string>
+    <string name="notification_customer_preparing_title">Order being prepared</string>
+    <string name="notification_customer_preparing_body">Your order %1$s is being prepared.</string>
+    <string name="notification_customer_updated_title">Order updated</string>
+    <string name="notification_customer_updated_body">Your order %1$s is now %2$s.</string>
+    <string name="notification_customer_ready_title">Order ready</string>
+    <string name="notification_customer_ready_body">Your order %1$s is ready for delivery.</string>
+    <string name="notification_customer_delivering_title">Order on the way</string>
+    <string name="notification_customer_delivering_body">Your order %1$s is on the way. Please keep your phone nearby to receive it.</string>
+    <string name="notification_customer_delivered_title">Order delivered</string>
+    <string name="notification_customer_delivered_body">Your order %1$s has been delivered.</string>
+    <string name="notification_customer_cancelled_title">Order cancelled</string>
+    <string name="notification_customer_cancelled_body_with_reason">Your order %1$s was cancelled. Reason: %2$s</string>
+    <string name="notification_customer_cancelled_body">Your order %1$s was cancelled.</string>
+    <string name="notification_staff_new_order_title">New order</string>
+    <string name="notification_staff_new_order_body">Order %1$s is waiting for confirmation.</string>
+    <string name="notification_kitchen_confirmed_title">New kitchen order</string>
+    <string name="notification_kitchen_confirmed_body">Order %1$s is ready to prepare.</string>
+    <string name="notification_shipper_ready_title">Order ready for delivery</string>
+    <string name="notification_shipper_ready_body">Order %1$s is ready for pickup.</string>
+    <string name="notification_admin_delivered_title">Order delivered</string>
+    <string name="notification_admin_delivered_body">Order %1$s was delivered successfully.</string>
+    <string name="notification_admin_cancelled_title">Order cancelled</string>
+    <string name="notification_admin_cancelled_body_with_reason">Order %1$s was cancelled. Reason: %2$s</string>
+    <string name="notification_admin_cancelled_body">Order %1$s was cancelled.</string>
+    <string name="notification_admin_order_review_title">New order review</string>
+    <string name="notification_admin_order_review_body">A customer rated order %1$s.</string>
+    <string name="notification_admin_product_review_title">New product review</string>
+    <string name="notification_admin_product_review_body">A customer reviewed %1$s.</string>
+    <string name="notification_admin_product_review_body_generic">A customer submitted a product review.</string>
 
     <!-- dialog select shipper  -->
     <string name="assign_shipper_active_deliveries">%1$d active</string>

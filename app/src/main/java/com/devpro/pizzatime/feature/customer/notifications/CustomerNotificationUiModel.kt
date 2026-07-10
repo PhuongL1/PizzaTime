@@ -1,18 +1,17 @@
 package com.devpro.pizzatime.feature.customer.notifications
 
-enum class CustomerNotificationType {
-    DELIVERY,
-    PROMO,
-    WEATHER,
-    ORDER,
-    LOYALTY,
-}
+import com.devpro.pizzatime.core.notification.NotificationDeepLink
 
 data class CustomerNotificationUiModel(
     val id: String,
     val title: String,
-    val message: String,
-    val timeLabel: String,
-    val type: CustomerNotificationType,
+    val body: String,
+    val timestampLabel: String,
     val isUnread: Boolean,
+    val orderId: String?,
+    val reviewId: String?,
+    val deepLinkType: NotificationDeepLink,
+    val iconRes: Int,
+    val iconBackgroundRes: Int,
+    val iconTintRes: Int,
 )

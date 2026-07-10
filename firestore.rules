@@ -153,7 +153,10 @@ service cloud.firestore {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         "status",
         "updatedAt",
-        "statusHistory"
+        "statusHistory",
+        "cancellationReason",
+        "statusReason",
+        "cancelledBy"
       ]);
     }
     function kitchenStatusUpdate() {
@@ -163,7 +166,10 @@ service cloud.firestore {
         "statusHistory",
         "kitchenStage",
         "kitchenProgressPercent",
-        "kitchenUpdatedAt"
+        "kitchenUpdatedAt",
+        "cancellationReason",
+        "statusReason",
+        "cancelledBy"
       ]);
     }
 
@@ -332,6 +338,28 @@ service cloud.firestore {
     }
 
     match /users/{userId} {
+      match /devices/{deviceId} {
+        allow get, list: if isOwner(userId) && isActiveUser();
+        allow create, update: if isOwner(userId)
+          && isActiveUser()
+          && request.resource.data.keys().hasOnly([
+            "fcmToken",
+            "appEdition",
+            "applicationId",
+            "role",
+            "installationId",
+            "notificationsEnabled",
+            "updatedAt"
+          ])
+          && request.resource.data.fcmToken is string
+          && request.resource.data.appEdition is string
+          && request.resource.data.applicationId is string
+          && request.resource.data.role is string
+          && request.resource.data.installationId == deviceId
+          && request.resource.data.notificationsEnabled is bool;
+        allow delete: if isOwner(userId) && isActiveUser();
+      }
+
       allow get: if (isOwner(userId) && isActiveUser()) || isAdmin();
       allow list: if isAdmin();
       allow create: if isAdmin() || validCustomerProfileCreate(userId);
