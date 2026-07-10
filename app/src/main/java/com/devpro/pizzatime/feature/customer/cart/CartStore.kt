@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.cart
 
 import android.content.Context
+import android.util.Log
 import com.devpro.pizzatime.R
 import com.google.firebase.auth.FirebaseAuth
 import org.json.JSONArray
@@ -9,9 +10,8 @@ import org.json.JSONObject
 object CartStore {
 
     private val cartItems = mutableListOf<CartItemUiModel>()
-    private var ownerUserId: String? = null
+    private var ownerUserId: String = GUEST_OWNER_ID
     private var appContext: Context? = null
-    private var restored = false
     var selectedPromoCode: String = ""
         private set
     var promoDiscountAmount: Double = 0.0
@@ -25,7 +25,8 @@ object CartStore {
 
     fun init(context: Context) {
         appContext = context.applicationContext
-        restoreFromDisk()
+        ownerUserId = currentOwnerId()
+        restoreFromDisk(ownerUserId)
     }
 
     fun onUserChanged(uid: String) {
@@ -35,37 +36,38 @@ object CartStore {
             return
         }
 
-        val previousOwnerId = ownerUserId
-        if (previousOwnerId != null && previousOwnerId != newOwnerId) {
-            cartItems.clear()
-            clearPromo()
+        if (ownerUserId == newOwnerId) {
+            return
         }
 
+        val guestItems = if (ownerUserId == GUEST_OWNER_ID) cartItems.toList() else emptyList()
         ownerUserId = newOwnerId
-        if (!restored) {
-            restoreFromDisk()
+        restoreFromDisk(newOwnerId)
+
+        if (guestItems.isNotEmpty()) {
+            mergeItems(guestItems)
+            selectedPromoCode = ""
+            promoDiscountAmount = 0.0
+            saveToDisk()
+            Log.d(TAG, "Guest cart migrated after login count=${cartItems.sumOf { it.quantity }}")
         }
     }
 
     fun clearForLogout() {
-        ownerUserId = null
-        cartItems.clear()
-        clearPromo()
-        clearPersistedCart()
+        ownerUserId = GUEST_OWNER_ID
+        restoreFromDisk(GUEST_OWNER_ID)
+        Log.d(TAG, "Guest cart restored count=${cartItems.sumOf { it.quantity }}")
+    }
+
+    fun onGuestSessionStarted() {
+        ownerUserId = GUEST_OWNER_ID
+        restoreFromDisk(GUEST_OWNER_ID)
+        Log.d(TAG, "Guest session entered cartCount=${cartItems.sumOf { it.quantity }}")
     }
 
     fun addItem(item: CartItemUiModel) {
         syncOwnerWithCurrentUser()
-        val index = cartItems.indexOfFirst { it.cartKey == item.cartKey }
-
-        if (index >= 0) {
-            val currentItem = cartItems[index]
-            cartItems[index] = currentItem.copy(
-                quantity = currentItem.quantity + item.quantity
-            )
-        } else {
-            cartItems.add(item)
-        }
+        mergeItems(listOf(item))
         clearPromo()
         saveToDisk()
     }
@@ -131,39 +133,34 @@ object CartStore {
     }
 
     private fun syncOwnerWithCurrentUser() {
-        val currentUid = FirebaseAuth.getInstance().currentUser?.uid
-        if (!currentUid.isNullOrBlank()) {
-            onUserChanged(currentUid)
-        }
-    }
-
-    private fun restoreFromDisk() {
-        val context = appContext ?: return
-        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-        val persistedOwnerId = prefs.getString(KEY_OWNER_ID, "").orEmpty()
-        val currentUid = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
-        if (currentUid.isNotBlank()) {
-            ownerUserId = currentUid
-        }
-        val effectiveOwnerId = ownerUserId.orEmpty()
-        if (persistedOwnerId.isNotBlank() && effectiveOwnerId.isNotBlank() && persistedOwnerId != effectiveOwnerId) {
-            restored = true
-            cartItems.clear()
-            selectedPromoCode = ""
-            promoDiscountAmount = 0.0
+        val activeOwnerId = currentOwnerId()
+        if (ownerUserId == activeOwnerId) {
             return
         }
 
-        val rawCart = prefs.getString(KEY_CART_JSON, "").orEmpty()
+        if (activeOwnerId == GUEST_OWNER_ID) {
+            clearForLogout()
+        } else {
+            onUserChanged(activeOwnerId)
+        }
+    }
+
+    private fun restoreFromDisk(ownerId: String) {
+        val context = appContext ?: return
+        val prefs = context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        val rawCart = prefs.getString(cartKey(ownerId), "").orEmpty()
+            .ifBlank { legacyCartPayloadFor(ownerId, prefs) }
+            .orEmpty()
+        cartItems.clear()
+        selectedPromoCode = ""
+        promoDiscountAmount = 0.0
         if (rawCart.isBlank()) {
-            restored = true
             return
         }
 
         runCatching {
             val payload = JSONObject(rawCart)
             val itemsJson = payload.optJSONArray("items") ?: JSONArray()
-            cartItems.clear()
             for (index in 0 until itemsJson.length()) {
                 val itemJson = itemsJson.optJSONObject(index) ?: continue
                 cartItems.add(itemJson.toCartItem())
@@ -175,12 +172,10 @@ object CartStore {
             selectedPromoCode = ""
             promoDiscountAmount = 0.0
         }
-        restored = true
     }
 
     private fun saveToDisk() {
         val context = appContext ?: return
-        val ownerId = ownerUserId ?: FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
         val payload = JSONObject().apply {
             put("selectedPromoCode", selectedPromoCode)
             put("promoDiscountAmount", promoDiscountAmount)
@@ -193,18 +188,51 @@ object CartStore {
         }
         context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
             .edit()
-            .putString(KEY_OWNER_ID, ownerId)
-            .putString(KEY_CART_JSON, payload.toString())
+            .putString(cartKey(ownerUserId), payload.toString())
             .apply()
     }
 
-    private fun clearPersistedCart() {
-        val context = appContext ?: return
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
-            .remove(KEY_OWNER_ID)
-            .remove(KEY_CART_JSON)
-            .apply()
+    private fun mergeItems(items: List<CartItemUiModel>) {
+        items.forEach { item ->
+            val index = cartItems.indexOfFirst { it.cartKey == item.cartKey }
+            if (index >= 0) {
+                val currentItem = cartItems[index]
+                cartItems[index] = currentItem.copy(
+                    quantity = currentItem.quantity + item.quantity,
+                )
+            } else {
+                cartItems.add(item)
+            }
+        }
+    }
+
+    private fun currentOwnerId(): String {
+        return FirebaseAuth.getInstance().currentUser?.uid
+            ?.trim()
+            ?.takeIf { uid -> uid.isNotBlank() }
+            ?: GUEST_OWNER_ID
+    }
+
+    private fun cartKey(ownerId: String): String {
+        return if (ownerId == GUEST_OWNER_ID) {
+            KEY_GUEST_CART_JSON
+        } else {
+            "$KEY_USER_CART_PREFIX$ownerId"
+        }
+    }
+
+    private fun legacyCartPayloadFor(
+        ownerId: String,
+        prefs: android.content.SharedPreferences,
+    ): String {
+        val legacyOwnerId = prefs.getString(KEY_OWNER_ID, "").orEmpty()
+        val legacyPayload = prefs.getString(KEY_CART_JSON, "").orEmpty()
+        if (legacyPayload.isBlank()) return ""
+        return when {
+            ownerId == GUEST_OWNER_ID && legacyOwnerId.isBlank() -> legacyPayload
+            ownerId != GUEST_OWNER_ID && legacyOwnerId == ownerId -> legacyPayload
+            else -> ""
+        }
     }
 
     private fun CartItemUiModel.toJson(): JSONObject {
@@ -252,6 +280,10 @@ object CartStore {
     }
 
     private const val PREFS_NAME = "pizza_time_cart"
+    private const val GUEST_OWNER_ID = "guest"
+    private const val KEY_GUEST_CART_JSON = "cart_guest"
+    private const val KEY_USER_CART_PREFIX = "cart_user_"
     private const val KEY_OWNER_ID = "ownerUserId"
     private const val KEY_CART_JSON = "cartJson"
+    private const val TAG = "CartStore"
 }

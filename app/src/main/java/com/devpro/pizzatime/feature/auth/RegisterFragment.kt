@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.auth
 
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -8,8 +9,16 @@ import android.view.ViewGroup
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
+import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.FakeSessionStore
+import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentRegisterBinding
+import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
+import com.devpro.pizzatime.feature.staff.navigation.openCheckoutScreen
 import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
+import com.google.firebase.auth.FirebaseAuth
 
 class RegisterFragment : Fragment() {
 
@@ -98,6 +107,9 @@ class RegisterFragment : Fragment() {
                         "Account created successfully!",
                         Toast.LENGTH_SHORT,
                     ).show()
+                    if (resumePendingCheckoutAfterRegister()) {
+                        return@onSuccess
+                    }
                     openLoginScreen(addToBackStack = false)
                 }
                 .onFailure { error ->
@@ -110,6 +122,31 @@ class RegisterFragment : Fragment() {
         }
     }
 
+    private fun resumePendingCheckoutAfterRegister(): Boolean {
+        val pendingDestination = PendingAuthDestinationStore.consume(requireContext())
+        if (pendingDestination != PendingAuthDestinationStore.DESTINATION_CHECKOUT) {
+            return false
+        }
+
+        val uid = FirebaseAuth.getInstance().currentUser?.uid?.trim().orEmpty()
+        if (uid.isBlank()) {
+            return false
+        }
+
+        CartStore.onUserChanged(uid)
+        FakeSessionStore.login(UserRole.CUSTOMER)
+        clearAppBackStack()
+        if (CartStore.items.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.cart_empty_message, Toast.LENGTH_SHORT).show()
+            openCartScreen(addToBackStack = false)
+            return true
+        }
+
+        Log.d(TAG, "Pending checkout resumed after register")
+        openCheckoutScreen(addToBackStack = false)
+        return true
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
@@ -117,5 +154,6 @@ class RegisterFragment : Fragment() {
 
     companion object {
         private const val MIN_PASSWORD_LENGTH = 6
+        private const val TAG = "RegisterFragment"
     }
 }

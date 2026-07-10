@@ -16,6 +16,7 @@ import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
+import com.devpro.pizzatime.core.session.GuestSession
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
@@ -282,6 +283,12 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private fun loadOrderedProductQuantities() {
+        if (GuestSession.isGuest()) {
+            orderedProductQuantities = emptyMap()
+            renderFilteredProducts()
+            return
+        }
+
         CustomerHomeBestSellerRepository.loadOrderedProductQuantities { result ->
             if (_binding == null) return@loadOrderedProductQuantities
             result

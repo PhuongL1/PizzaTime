@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.auth
 
 import android.Manifest
 import android.os.Bundle
+import android.util.Log
 import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
@@ -18,6 +19,9 @@ import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
+import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
+import com.devpro.pizzatime.feature.staff.navigation.openCheckoutScreen
 import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
 
 class LoginFragment : Fragment() {
@@ -142,7 +146,33 @@ class LoginFragment : Fragment() {
         val role = pendingLoginRole ?: return
         if (!isAdded) return
         pendingLoginRole = null
+        if (resumePendingCheckoutIfNeeded(role)) {
+            return
+        }
         openHomeByRole(role)
+    }
+
+    private fun resumePendingCheckoutIfNeeded(role: UserRole): Boolean {
+        val pendingDestination = PendingAuthDestinationStore.consume(requireContext())
+        if (pendingDestination != PendingAuthDestinationStore.DESTINATION_CHECKOUT) {
+            return false
+        }
+
+        if (role != UserRole.CUSTOMER) {
+            return false
+        }
+
+        FakeSessionStore.login(role)
+        clearAppBackStack()
+        if (CartStore.items.isEmpty()) {
+            Toast.makeText(requireContext(), R.string.cart_empty_message, Toast.LENGTH_SHORT).show()
+            openCartScreen(addToBackStack = false)
+            return true
+        }
+
+        Log.d(TAG, "Pending checkout resumed after login")
+        openCheckoutScreen(addToBackStack = false)
+        return true
     }
 
     private fun openHomeByRole(role: UserRole) {
@@ -163,5 +193,9 @@ class LoginFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    private companion object {
+        const val TAG = "LoginFragment"
     }
 }

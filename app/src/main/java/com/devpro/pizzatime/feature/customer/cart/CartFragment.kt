@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.cart
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -10,9 +11,10 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
-import com.devpro.pizzatime.core.session.FakeSessionStore
+import com.devpro.pizzatime.core.session.GuestSession
 import com.devpro.pizzatime.databinding.FragmentCartBinding
 import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
+import com.devpro.pizzatime.feature.auth.PendingAuthDestinationStore
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutConsistencyRepository
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
@@ -181,11 +183,13 @@ class CartFragment : Fragment() {
         }
 
         binding.btnProceedCheckout.setOnClickListener {
-            if (FakeSessionStore.isLoggedIn) {
-                openCheckoutScreen()
-            } else {
+            if (GuestSession.isGuest()) {
+                PendingAuthDestinationStore.setCheckout(requireContext())
+                Log.d(TAG, "Checkout blocked because authentication missing")
                 openLoginRequiredScreen()
+                return@setOnClickListener
             }
+            openCheckoutScreen()
         }
     }
 
@@ -279,5 +283,9 @@ class CartFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    private companion object {
+        const val TAG = "CartFragment"
     }
 }

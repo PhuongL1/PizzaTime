@@ -7,7 +7,7 @@ import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
-import com.devpro.pizzatime.core.session.FakeSessionStore
+import com.devpro.pizzatime.core.session.GuestSession
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.menubottomsheet.CustomerMenuBottomSheetDialog
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
@@ -99,7 +99,7 @@ fun Fragment.bindCustomerBottomNav(
 }
 
 private fun Fragment.openCustomerOrdersOrLogin(direction: NavigationDirection) {
-    if (FakeSessionStore.isLoggedIn) {
+    if (GuestSession.isSignedIn()) {
         openCustomerOrderHistory(addToBackStack = false, direction = direction)
     } else {
         openLoginRequiredScreen()
@@ -107,7 +107,7 @@ private fun Fragment.openCustomerOrdersOrLogin(direction: NavigationDirection) {
 }
 
 private fun Fragment.openCustomerProfileOrLogin(direction: NavigationDirection) {
-    if (FakeSessionStore.isLoggedIn) {
+    if (GuestSession.isSignedIn()) {
         openCustomerAccount(addToBackStack = false, direction = direction)
     } else {
         openLoginRequiredScreen()

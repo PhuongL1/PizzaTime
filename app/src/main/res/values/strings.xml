@@ -14,6 +14,7 @@
     <string name="welcome_hero_title">The Art of Late-Night\nDining</string>
     <string name="welcome_hero_subtitle">A sophisticated sanctuary for the discerning\nepicurean. Hand-stretched dough, heritage\ntomatoes, and midnight inspiration.</string>
     <string name="welcome_start_ordering">Start Ordering </string>
+    <string name="welcome_continue_as_guest">Continue as Guest</string>
     <string name="common_back_content_description">Back</string>
     <string name="welcome_login">Log In</string>
     <string name="welcome_scroll_to_discover">SCROLL TO DISCOVER</string>
@@ -72,9 +73,10 @@
     <string name="login_submit">Log In</string>
     <string name="login_new_user">New to the sanctuary?</string>
     <string name="login_create_account">Create Account</string>
-    <string name="login_required_title">Member Access</string>
-    <string name="login_required_description">A login is required to proceed. Join our circle of nighttime epicureans to access exclusive artisan selections.</string>
-    <string name="login_required_login">LOGIN</string>
+    <string name="login_required_title">Sign in required</string>
+    <string name="login_required_description">Please sign in to place your order.</string>
+    <string name="login_required_login">Sign in</string>
+    <string name="login_required_create_account">Create account</string>
     <string name="login_required_continue">CONTINUE BROWSING</string>
     <string name="login_required_footer">ARTISAN QUALITY â€¢ DELIVERED LATE</string>
     <string name="login_form_welcome_back">Welcome Back</string>
@@ -952,7 +954,7 @@
     <string name="customer_favorites_saved_toast">%1$s saved to favorites</string>
     <string name="customer_favorites_removed_toast">%1$s removed from favorites</string>
     <string name="customer_favorites_update_failed">Could not update favorites.</string>
-    <string name="customer_favorites_login_required">Please log in.</string>
+    <string name="customer_favorites_login_required">Sign in to save favorites.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 
     <string name="customer_favorites_nav_menu">Menu</string>

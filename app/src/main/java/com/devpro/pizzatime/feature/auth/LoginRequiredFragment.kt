@@ -5,6 +5,7 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentLoginRequiredBinding
 import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 
@@ -32,6 +33,14 @@ class LoginRequiredFragment : Fragment() {
     private fun setupActions() {
         binding.btnOpenLogin.setOnClickListener {
             openLoginScreen()
+        }
+
+        binding.btnCreateAccount.setOnClickListener {
+            parentFragmentManager.beginTransaction()
+                .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                .replace(R.id.fragmentContainer, RegisterFragment())
+                .addToBackStack(null)
+                .commit()
         }
 
         binding.btnContinueBrowsing.setOnClickListener {

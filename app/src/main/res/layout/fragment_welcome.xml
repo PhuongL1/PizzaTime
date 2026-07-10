@@ -196,6 +196,19 @@
                 android:textStyle="bold" />
 
             <TextView
+                android:id="@+id/btnContinueAsGuest"
+                android:layout_width="match_parent"
+                android:layout_height="48dp"
+                android:layout_marginTop="10dp"
+                android:clickable="true"
+                android:focusable="true"
+                android:gravity="center"
+                android:text="@string/welcome_continue_as_guest"
+                android:textColor="@color/pt_text_secondary"
+                android:textSize="15sp"
+                android:textStyle="bold" />
+
+            <TextView
                 android:id="@+id/tvScrollToDiscover"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

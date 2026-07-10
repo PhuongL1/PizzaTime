@@ -20,6 +20,7 @@ import com.devpro.pizzatime.feature.auth.LoginRequiredFragment
 import com.devpro.pizzatime.feature.auth.forgot.ForgotPasswordFragment
 import com.devpro.pizzatime.feature.customer.account.CustomerAccountFragment
 import com.devpro.pizzatime.feature.customer.cart.CartFragment
+import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
 import com.devpro.pizzatime.feature.customer.customize.BuildYourPizzaFragment
 import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
 import com.devpro.pizzatime.feature.customer.memberqr.CustomerMemberQrFragment
@@ -306,6 +307,12 @@ fun Fragment.openCustomerOrderHistory(
 fun Fragment.openCartScreen(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = CartFragment(),
+        addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openCheckoutScreen(addToBackStack: Boolean = true) {
+    replaceStaffFlowFragment(
+        fragment = CheckoutFragment(),
         addToBackStack = addToBackStack,
     )
 }

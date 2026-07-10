@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.checkout
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -8,13 +9,16 @@ import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.session.GuestSession
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
+import com.devpro.pizzatime.feature.auth.PendingAuthDestinationStore
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import com.devpro.pizzatime.feature.staff.navigation.replaceForward
 import com.devpro.pizzatime.shared.location.LocationDistanceCalculator
@@ -57,6 +61,10 @@ class CheckoutFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
+        if (blockCheckoutForGuest()) {
+            return
+        }
+
         orderItems = CartStore.items.map { it.toCheckoutItem() }
         appliedPromoCode = CartStore.selectedPromoCode
         appliedDiscount = CartStore.promoDiscountAmount
@@ -210,7 +218,7 @@ class CheckoutFragment : Fragment() {
         }
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
-            Toast.makeText(requireContext(), "Please log in to place an order.", Toast.LENGTH_SHORT).show()
+            blockCheckoutForGuest()
             return
         }
         if (selectedDeliveryAddress.trim().isBlank()) {
@@ -420,6 +428,17 @@ class CheckoutFragment : Fragment() {
         Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
     }
 
+    private fun blockCheckoutForGuest(): Boolean {
+        if (!GuestSession.isGuest()) {
+            return false
+        }
+
+        PendingAuthDestinationStore.setCheckout(requireContext())
+        Log.d(TAG, "Checkout blocked because authentication missing")
+        openLoginRequiredScreen(addToBackStack = false)
+        return true
+    }
+
     private fun setupMapPickerResult() {
         parentFragmentManager.setFragmentResultListener(
             MapPickerFragment.REQUEST_KEY,
@@ -521,6 +540,10 @@ class CheckoutFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    private companion object {
+        const val TAG = "CheckoutFragment"
     }
 }
 
