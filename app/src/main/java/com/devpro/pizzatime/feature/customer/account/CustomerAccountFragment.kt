@@ -26,10 +26,12 @@ import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
+import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
 import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
+import com.devpro.pizzatime.feature.staff.navigation.openOrderTracking
 import com.devpro.pizzatime.feature.staff.navigation.openStoreSettings
 import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.firebase.auth.EmailAuthProvider
@@ -49,6 +51,7 @@ class CustomerAccountFragment : Fragment() {
     private var currentRole: UserRole = UserRole.GUEST
     private var changePasswordRow: LinearLayout? = null
     private var isUploadingAvatar = false
+    private var isLoadingOrderRoute = false
 
     private val pickAvatarImage =
         registerForActivityResult(ActivityResultContracts.GetContent()) { imageUri ->
@@ -67,14 +70,12 @@ class CustomerAccountFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        if (FirebaseAuth.getInstance().currentUser == null) {
-            showToast(getString(R.string.account_login_required))
+        currentRole = if (FirebaseAuth.getInstance().currentUser == null) {
             FakeSessionStore.logout()
-            openLoginScreen(addToBackStack = false)
-            return
+            UserRole.GUEST
+        } else {
+            FakeSessionStore.currentRole
         }
-
-        currentRole = FakeSessionStore.currentRole
         bindAccount()
         setupTopBar()
         setupBottomNav()
@@ -129,7 +130,7 @@ class CustomerAccountFragment : Fragment() {
 
         rowOrderHistory.setOnClickListener {
             if (currentRole == UserRole.CUSTOMER) {
-                openCustomerOrderHistory()
+                openCustomerOrders()
             } else {
                 showStoreInfoDialog()
             }
@@ -165,6 +166,31 @@ class CustomerAccountFragment : Fragment() {
         }
 
         configureMenuForRole()
+        applyAuthenticatedRowVisibility()
+    }
+
+    private fun openCustomerOrders() {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank() || isLoadingOrderRoute) return
+
+        isLoadingOrderRoute = true
+        binding.rowOrderHistory.isEnabled = false
+        CustomerOrderFirestoreRepository.loadOrderHistory(uid) { result ->
+            if (_binding == null || !isAdded) return@loadOrderHistory
+            isLoadingOrderRoute = false
+            binding.rowOrderHistory.isEnabled = true
+
+            val orders = result.getOrElse {
+                showToast(getString(R.string.customer_account_no_orders_yet))
+                return@loadOrderHistory
+            }
+
+            when (orders.size) {
+                0 -> showToast(getString(R.string.customer_account_no_orders_yet))
+                1 -> openOrderTracking(orders.first().orderId)
+                else -> openCustomerOrderHistory()
+            }
+        }
     }
 
     private fun bindAvatar() = with(binding) {
@@ -222,6 +248,7 @@ class CustomerAccountFragment : Fragment() {
                     setupTopBar()
                     setupBottomNav()
                     configureMenuForRole()
+                    applyAuthenticatedRowVisibility()
                 }
                 .onFailure {
                     showToast(getString(R.string.customer_account_profile_load_failed))
@@ -409,6 +436,25 @@ class CustomerAccountFragment : Fragment() {
             ensureCustomerChangePasswordRow()
         } else {
             changePasswordRow?.visibility = View.GONE
+        }
+        applyAuthenticatedRowVisibility()
+    }
+
+    private fun applyAuthenticatedRowVisibility() = with(binding) {
+        val isAuthenticated = FirebaseAuth.getInstance().currentUser != null
+        val authenticatedRows = listOf(rowOrderHistory, rowFavorites, logoutCard)
+        authenticatedRows.forEach { row ->
+            if (isAuthenticated) {
+                row.isClickable = true
+                row.isFocusable = true
+                row.isEnabled = true
+            } else {
+                row.visibility = View.GONE
+                row.isClickable = false
+                row.isFocusable = false
+                row.isEnabled = false
+                row.setOnClickListener(null)
+            }
         }
     }
 

@@ -119,6 +119,26 @@ object OrderTransitionRepository {
         )
     }
 
+    fun cancelByKitchen(
+        orderId: String,
+        kitchenId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        updateStatus(
+            orderId = orderId,
+            newStatus = STATUS_CANCELLED,
+            allowedCurrentStatuses = setOf(STATUS_CONFIRMED, STATUS_PREPARING, STATUS_BAKING),
+            actorRole = "KITCHEN",
+            actorId = kitchenId,
+            note = "Kitchen cancelled order",
+            extraFields = mapOf(
+                "kitchenStage" to STATUS_CANCELLED,
+                "kitchenUpdatedAt" to FieldValue.serverTimestamp(),
+            ),
+            onResult = onResult,
+        )
+    }
+
     fun updateByShipper(
         orderId: String,
         newStatus: String,

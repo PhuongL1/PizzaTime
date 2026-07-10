@@ -28,6 +28,7 @@ fun Fragment.bindAdminTopBar(
     bindStaffTopBar(
         root = root,
         title = title ?: getString(R.string.staff_dashboard_title),
+        showEmployeeName = false,
         selectedDrawerItem = selectedDrawerItem,
         onMenuClick = onMenuClick,
         onAvatarClick = onAvatarClick,

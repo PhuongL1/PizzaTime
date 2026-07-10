@@ -45,10 +45,19 @@ import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
 import com.devpro.pizzatime.shared.drawer.StaffNavigationDrawerDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 
-fun Fragment.openStaffDashboard(addToBackStack: Boolean = true) {
+enum class NavigationDirection {
+    FORWARD,
+    BACKWARD,
+}
+
+fun Fragment.openStaffDashboard(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = StaffDashboardFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 fun Fragment.openLoginRequiredScreen(addToBackStack: Boolean = true) {
@@ -111,10 +120,14 @@ fun Fragment.openCustomerHomeScreen() {
         )
         .commit()
 }
-fun Fragment.openKitchenBoard(addToBackStack: Boolean = true) {
+fun Fragment.openKitchenBoard(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = KitchenBoardFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 
@@ -164,10 +177,14 @@ fun Fragment.openPizzaDetailScreen(
     )
 }
 
-fun Fragment.openShipperDeliveryDashboard(addToBackStack: Boolean = true) {
+fun Fragment.openShipperDeliveryDashboard(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = ShipperDeliveryDashboardFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 
@@ -188,10 +205,14 @@ fun Fragment.openOrderSuccess(
         addToBackStack = addToBackStack,
     )
 }
-fun Fragment.openCustomerHome(addToBackStack: Boolean = true) {
+fun Fragment.openCustomerHome(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = CustomerHomeFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 
@@ -264,10 +285,14 @@ fun Fragment.openCustomerOrderDetail(orderId: String) {
         addToBackStack = true,
     )
 }
-fun Fragment.openCustomerOrderHistory(addToBackStack: Boolean = true) {
+fun Fragment.openCustomerOrderHistory(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = CustomerOrderHistoryFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 fun Fragment.openCartScreen(addToBackStack: Boolean = true) {
@@ -276,10 +301,14 @@ fun Fragment.openCartScreen(addToBackStack: Boolean = true) {
         addToBackStack = addToBackStack,
     )
 }
-fun Fragment.openCustomerPromoCodes(addToBackStack: Boolean = true) {
+fun Fragment.openCustomerPromoCodes(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = CustomerPromoCodesFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 fun Fragment.openCustomerMemberQr(addToBackStack: Boolean = true) {
@@ -323,10 +352,14 @@ fun Fragment.openSupportFaq(addToBackStack: Boolean = true) {
         addToBackStack = addToBackStack,
     )
 }
-fun Fragment.openCustomerAccount(addToBackStack: Boolean = true) {
+fun Fragment.openCustomerAccount(
+    addToBackStack: Boolean = true,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
+) {
     replaceStaffFlowFragment(
         fragment = CustomerAccountFragment(),
         addToBackStack = addToBackStack,
+        direction = direction,
     )
 }
 fun Fragment.openCustomerFavorites(addToBackStack: Boolean = true) {
@@ -430,12 +463,32 @@ fun Fragment.backToPreviousStaffScreen() {
 private fun Fragment.replaceStaffFlowFragment(
     fragment: Fragment,
     addToBackStack: Boolean,
+    direction: NavigationDirection = NavigationDirection.FORWARD,
 ) {
     parentFragmentManager.beginTransaction()
-        .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+        .applyNavigationAnimations(direction)
         .replace(R.id.fragmentContainer, fragment)
         .applyBackStack(addToBackStack)
         .commit()
+}
+
+private fun FragmentTransaction.applyNavigationAnimations(
+    direction: NavigationDirection,
+): FragmentTransaction {
+    return when (direction) {
+        NavigationDirection.FORWARD -> setCustomAnimations(
+            R.anim.fragment_enter_from_right,
+            R.anim.fragment_exit_to_left,
+            R.anim.fragment_enter_from_left,
+            R.anim.fragment_exit_to_right,
+        )
+        NavigationDirection.BACKWARD -> setCustomAnimations(
+            R.anim.fragment_enter_from_left,
+            R.anim.fragment_exit_to_right,
+            R.anim.fragment_enter_from_right,
+            R.anim.fragment_exit_to_left,
+        )
+    }
 }
 
 private fun FragmentTransaction.applyBackStack(

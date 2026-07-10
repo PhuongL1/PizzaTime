@@ -13,6 +13,7 @@ import com.devpro.pizzatime.databinding.ItemStaffOrderBinding
 class StaffOrderAdapter(
     private val onConfirmClick: (StaffOrderUiModel) -> Unit,
     private val onDetailClick: (StaffOrderUiModel) -> Unit,
+    private val canManageActions: () -> Boolean = { true },
 ) : ListAdapter<StaffOrderUiModel, StaffOrderAdapter.StaffOrderViewHolder>(StaffOrderDiffCallback) {
 
     override fun onCreateViewHolder(parent: ViewGroup, viewType: Int): StaffOrderViewHolder {
@@ -68,6 +69,15 @@ class StaffOrderAdapter(
         }
 
         private fun bindAction(item: StaffOrderUiModel) = with(binding) {
+            if (!canManageActions()) {
+                btnViewDetails.isVisible = false
+                btnPrimaryAction.isVisible = false
+                btnPrimaryAction.setOnClickListener(null)
+                btnViewDetails.setOnClickListener(null)
+                return@with
+            }
+
+            btnPrimaryAction.isVisible = true
             val isPending = item.status == StaffOrderStatus.PENDING
 
             btnViewDetails.isVisible = isPending

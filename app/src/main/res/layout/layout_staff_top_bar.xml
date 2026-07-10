@@ -16,13 +16,13 @@
         android:layout_height="32dp"
         android:contentDescription="@string/staff_menu_content_description"
         android:padding="5dp"
-        android:src="@drawable/ic_menu" />
+        android:src="@drawable/ic_menu"
+        android:visibility="gone" />
 
     <TextView
         android:id="@+id/tvAdminTitle"
         android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_marginStart="18dp"
         android:layout_weight="1"
         android:fontFamily="serif"
         android:text="@string/staff_dashboard_title"

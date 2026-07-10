@@ -16,6 +16,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderHistory
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerPromoCodes
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
+import com.devpro.pizzatime.feature.staff.navigation.NavigationDirection
 
 fun Fragment.bindCustomerTopBar(
     root: View,
@@ -54,7 +55,8 @@ fun Fragment.bindCustomerBottomNav(
         selected = selectedTab == CustomerBottomNavTab.MENU,
         onClick = {
             if (selectedTab != CustomerBottomNavTab.MENU) {
-                onCustomerMenuClick?.invoke() ?: openCustomerHome()
+                onCustomerMenuClick?.invoke()
+                    ?: openCustomerHome(direction = selectedTab.directionTo(CustomerBottomNavTab.MENU))
             }
         },
     )
@@ -63,7 +65,8 @@ fun Fragment.bindCustomerBottomNav(
         selected = selectedTab == CustomerBottomNavTab.ORDERS,
         onClick = {
             if (selectedTab != CustomerBottomNavTab.ORDERS) {
-                onCustomerOrdersClick?.invoke() ?: openCustomerOrdersOrLogin()
+                onCustomerOrdersClick?.invoke()
+                    ?: openCustomerOrdersOrLogin(selectedTab.directionTo(CustomerBottomNavTab.ORDERS))
             }
         },
     )
@@ -72,7 +75,8 @@ fun Fragment.bindCustomerBottomNav(
         selected = selectedTab == CustomerBottomNavTab.LOYALTY,
         onClick = {
             if (selectedTab != CustomerBottomNavTab.LOYALTY) {
-                onCustomerLoyaltyClick?.invoke() ?: openCustomerPromoCodes()
+                onCustomerLoyaltyClick?.invoke()
+                    ?: openCustomerPromoCodes(direction = selectedTab.directionTo(CustomerBottomNavTab.LOYALTY))
             }
         },
     )
@@ -81,26 +85,31 @@ fun Fragment.bindCustomerBottomNav(
         selected = selectedTab == CustomerBottomNavTab.PROFILE,
         onClick = {
             if (selectedTab != CustomerBottomNavTab.PROFILE) {
-                onCustomerProfileClick?.invoke() ?: openCustomerProfileOrLogin()
+                onCustomerProfileClick?.invoke()
+                    ?: openCustomerProfileOrLogin(selectedTab.directionTo(CustomerBottomNavTab.PROFILE))
             }
         },
     )
 }
 
-private fun Fragment.openCustomerOrdersOrLogin() {
+private fun Fragment.openCustomerOrdersOrLogin(direction: NavigationDirection) {
     if (FakeSessionStore.isLoggedIn) {
-        openCustomerOrderHistory()
+        openCustomerOrderHistory(direction = direction)
     } else {
         openLoginRequiredScreen()
     }
 }
 
-private fun Fragment.openCustomerProfileOrLogin() {
+private fun Fragment.openCustomerProfileOrLogin(direction: NavigationDirection) {
     if (FakeSessionStore.isLoggedIn) {
-        openCustomerAccount()
+        openCustomerAccount(direction = direction)
     } else {
         openLoginRequiredScreen()
     }
+}
+
+private fun CustomerBottomNavTab.directionTo(target: CustomerBottomNavTab): NavigationDirection {
+    return if (target.ordinal > ordinal) NavigationDirection.FORWARD else NavigationDirection.BACKWARD
 }
 
 private fun TextView.bindCustomerNavItem(

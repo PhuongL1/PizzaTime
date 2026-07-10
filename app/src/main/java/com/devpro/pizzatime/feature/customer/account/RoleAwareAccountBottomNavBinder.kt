@@ -9,6 +9,8 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
+import com.devpro.pizzatime.feature.staff.navigation.directionTo
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
@@ -50,9 +52,17 @@ fun Fragment.bindRoleAwareAccountBottomNav(
                     third = getString(R.string.operations_nav_shipper),
                     fourth = getString(R.string.operations_nav_profile),
                 ),
-                onFirstClick = { openStaffDashboard() },
-                onSecondClick = { openKitchenBoard() },
-                onThirdClick = { openShipperDeliveryDashboard() },
+                onFirstClick = {
+                    openStaffDashboard(direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.DASHBOARD))
+                },
+                onSecondClick = {
+                    openKitchenBoard(direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.KITCHEN))
+                },
+                onThirdClick = {
+                    openShipperDeliveryDashboard(
+                        direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.DELIVERY),
+                    )
+                },
             )
 
         UserRole.GUEST -> root.visibility = View.GONE

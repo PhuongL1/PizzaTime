@@ -39,6 +39,7 @@ object CustomerProfileFirestoreRepository {
             .update(
                 mapOf(
                     "name" to name,
+                    "fullName" to name,
                     "phone" to phone,
                     "deliveryAddress" to deliveryAddress,
                     "updatedAt" to FieldValue.serverTimestamp(),
@@ -87,7 +88,9 @@ object CustomerProfileFirestoreRepository {
     private fun DocumentSnapshot.toCustomerAccountUiModel(): CustomerAccountUiModel {
         val fallback = FakeCustomerAccountData.getCustomerAccount()
         return CustomerAccountUiModel(
-            fullName = getString("name").orEmpty().ifBlank { fallback.fullName },
+            fullName = getString("fullName").orEmpty()
+                .ifBlank { getString("name").orEmpty() }
+                .ifBlank { fallback.fullName },
             tierName = fallback.tierName,
             doughPoints = getLong("doughPoints")?.toInt() ?: fallback.doughPoints,
             email = getString("email").orEmpty().ifBlank { fallback.email },

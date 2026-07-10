@@ -14,6 +14,7 @@ import com.devpro.pizzatime.databinding.ItemKitchenOrderFoodBinding
 class KitchenOrderAdapter(
     private val onPrimaryActionClick: (KitchenOrderUiModel) -> Unit,
     private val onItemClick: (KitchenOrderUiModel) -> Unit = {},
+    private val canManageActions: () -> Boolean = { true },
 ) : ListAdapter<KitchenOrderUiModel, KitchenOrderAdapter.KitchenOrderViewHolder>(
     KitchenOrderDiffCallback,
 ) {
@@ -24,7 +25,7 @@ class KitchenOrderAdapter(
             parent,
             false,
         )
-        return KitchenOrderViewHolder(binding, onPrimaryActionClick, onItemClick)
+        return KitchenOrderViewHolder(binding, onPrimaryActionClick, onItemClick, canManageActions)
     }
 
     override fun onBindViewHolder(holder: KitchenOrderViewHolder, position: Int) {
@@ -35,6 +36,7 @@ class KitchenOrderAdapter(
         private val binding: ItemKitchenOrderBinding,
         private val onPrimaryActionClick: (KitchenOrderUiModel) -> Unit,
         private val onItemClick: (KitchenOrderUiModel) -> Unit,
+        private val canManageActions: () -> Boolean,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: KitchenOrderUiModel) = with(binding) {
@@ -49,8 +51,14 @@ class KitchenOrderAdapter(
                 onItemClick(order)
             }
 
-            btnPrimaryAction.setOnClickListener {
-                onPrimaryActionClick(order)
+            val canManage = canManageActions()
+            btnPrimaryAction.visibility = if (canManage) View.VISIBLE else View.GONE
+            if (canManage) {
+                btnPrimaryAction.setOnClickListener {
+                    onPrimaryActionClick(order)
+                }
+            } else {
+                btnPrimaryAction.setOnClickListener(null)
             }
         }
 

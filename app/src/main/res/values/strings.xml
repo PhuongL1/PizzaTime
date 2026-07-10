@@ -493,6 +493,7 @@
 
     <string name="kitchen_order_detail_status_updated_toast">Kitchen order updated: %1$s</string>
     <string name="kitchen_order_detail_cancelled_toast">%1$s cancelled.</string>
+    <string name="kitchen_order_detail_cancel_failed">Could not cancel order.</string>
     <string name="kitchen_order_detail_load_failed">Could not load order detail.</string>
     <string name="kitchen_order_detail_update_failed">Could not update order status.</string>
     <string name="kitchen_order_detail_no_value">No</string>
@@ -1070,6 +1071,7 @@
     <string name="customer_account_cart_toast">Cart coming soon</string>
     <string name="customer_account_menu_toast">Menu coming soon</string>
     <string name="customer_account_orders_toast">Orders coming soon</string>
+    <string name="customer_account_no_orders_yet">No orders yet.</string>
     <string name="customer_account_loyalty_toast">Loyalty coming soon</string>
     <string name="customer_account_edit_profile_toast">Edit profile coming soon</string>
     <string name="customer_account_edit_profile_title">Edit profile</string>
@@ -1237,4 +1239,6 @@
     <string name="staff_drawer_support_toast">Support is coming soon.</string>
     <string name="staff_drawer_logout_toast">Logged out.</string>
     <string name="account_store_info_view_only_toast">Chỉ admin mới có thể chỉnh sửa</string>
+    <string name="role_employee_fallback">Employee</string>
+    <string name="role_view_only">View only</string>
 </resources>

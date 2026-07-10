@@ -12,6 +12,7 @@ import com.devpro.pizzatime.databinding.ItemShipperDeliveryOrderBinding
 class ShipperDeliveryAdapter(
     private val onStartDeliveryClick: (ShipperDeliveryUiModel) -> Unit,
     private val onItemClick: (ShipperDeliveryUiModel) -> Unit = {},
+    private val canManageActions: () -> Boolean = { true },
 ) : ListAdapter<ShipperDeliveryUiModel, ShipperDeliveryAdapter.ShipperDeliveryViewHolder>(
     ShipperDeliveryDiffCallback,
 ) {
@@ -22,7 +23,7 @@ class ShipperDeliveryAdapter(
             parent,
             false,
         )
-        return ShipperDeliveryViewHolder(binding, onStartDeliveryClick, onItemClick)
+        return ShipperDeliveryViewHolder(binding, onStartDeliveryClick, onItemClick, canManageActions)
     }
 
     override fun onBindViewHolder(holder: ShipperDeliveryViewHolder, position: Int) {
@@ -33,6 +34,7 @@ class ShipperDeliveryAdapter(
         private val binding: ItemShipperDeliveryOrderBinding,
         private val onStartDeliveryClick: (ShipperDeliveryUiModel) -> Unit,
         private val onItemClick: (ShipperDeliveryUiModel) -> Unit,
+        private val canManageActions: () -> Boolean,
     ) : RecyclerView.ViewHolder(binding.root) {
 
         fun bind(order: ShipperDeliveryUiModel) = with(binding) {
@@ -49,6 +51,8 @@ class ShipperDeliveryAdapter(
             } else {
                 order.paymentLabel
             }
+            val canManage = canManageActions()
+            btnStartDelivery.isVisible = canManage
             btnStartDelivery.text = when (order.status) {
                 ShipperDeliveryStatus.ACTIVE ->
                     root.context.getString(R.string.shipper_detail_delivered_cash_collected)
@@ -62,8 +66,12 @@ class ShipperDeliveryAdapter(
                 onItemClick(order)
             }
 
-            btnStartDelivery.setOnClickListener {
-                onStartDeliveryClick(order)
+            if (canManage) {
+                btnStartDelivery.setOnClickListener {
+                    onStartDeliveryClick(order)
+                }
+            } else {
+                btnStartDelivery.setOnClickListener(null)
             }
         }
     }

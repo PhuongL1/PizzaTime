@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.kitchen.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.Toast
 import androidx.core.view.isVisible
@@ -8,6 +9,7 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentKitchenOrderDetailBinding
 import com.devpro.pizzatime.feature.kitchen.board.KitchenOrderFirestoreRepository
+import com.devpro.pizzatime.feature.staff.navigation.canManageKitchenScreen
 import com.devpro.pizzatime.shared.dialog.CancelOrderConfirmationDialogFragment
 import com.devpro.pizzatime.shared.dialog.StatusUpdateConfirmationDialogFragment
 
@@ -115,6 +117,16 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     }
 
     private fun bindActionState(status: KitchenOrderDetailStatus) = with(binding) {
+        val canManage = canManageKitchenScreen()
+        tvReadOnlyIndicator.isVisible = !canManage
+        if (!canManage) {
+            btnStartPreparing.isVisible = false
+            btnStartBaking.isVisible = false
+            btnMarkReady.isVisible = false
+            btnCancelOrder.isVisible = false
+            return@with
+        }
+
         btnStartPreparing.isVisible = status == KitchenOrderDetailStatus.PENDING
         btnStartBaking.isVisible = status == KitchenOrderDetailStatus.PREPARING
         btnMarkReady.isVisible = status == KitchenOrderDetailStatus.BAKING
@@ -125,6 +137,14 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     private fun setupActions() = with(binding) {
         btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+
+        if (!canManageKitchenScreen()) {
+            btnStartPreparing.setOnClickListener(null)
+            btnStartBaking.setOnClickListener(null)
+            btnMarkReady.setOnClickListener(null)
+            btnCancelOrder.setOnClickListener(null)
+            return@with
         }
 
         btnStartPreparing.setOnClickListener {
@@ -179,11 +199,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                 .getString(CancelOrderConfirmationDialogFragment.KEY_ORDER_ID)
                 .orEmpty()
 
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.kitchen_order_detail_cancelled_toast, orderId),
-                Toast.LENGTH_SHORT,
-            ).show()
+            cancelOrder(orderId)
         }
     }
 
@@ -212,6 +228,8 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     }
 
     private fun updateStatus(status: KitchenOrderDetailStatus) {
+        if (!canManageKitchenScreen()) return
+
         val firestoreStatus = when (status) {
             KitchenOrderDetailStatus.PREPARING -> "PREPARING"
             KitchenOrderDetailStatus.BAKING -> "BAKING"
@@ -246,6 +264,36 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
         }
     }
 
+    private fun cancelOrder(orderId: String) {
+        if (!canManageKitchenScreen()) return
+
+        binding.btnCancelOrder.isEnabled = false
+        KitchenOrderFirestoreRepository.cancelOrder(orderId) { result ->
+            if (_binding == null || !isAdded) return@cancelOrder
+            result
+                .onSuccess {
+                    currentOrder = currentOrder.copy(status = KitchenOrderDetailStatus.CANCELLED)
+                    binding.tvStatus.text = mapStatusText(KitchenOrderDetailStatus.CANCELLED)
+                    bindActionState(KitchenOrderDetailStatus.CANCELLED)
+                    Toast.makeText(
+                        requireContext(),
+                        getString(R.string.kitchen_order_detail_cancelled_toast, orderId),
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                    parentFragmentManager.popBackStack()
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Could not cancel kitchen order $orderId", error)
+                    binding.btnCancelOrder.isEnabled = true
+                    Toast.makeText(
+                        requireContext(),
+                        R.string.kitchen_order_detail_cancel_failed,
+                        Toast.LENGTH_SHORT,
+                    ).show()
+                }
+        }
+    }
+
     private fun toKitchenStatus(status: String): KitchenOrderDetailStatus {
         return KitchenOrderDetailStatus.entries.firstOrNull { it.name == status }
             ?: currentOrder.status
@@ -269,6 +317,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
     companion object {
         const val ARG_ORDER_ID = "orderId"
 
+        private const val TAG = "KitchenOrderDetail"
         private const val STATUS_UPDATE_DIALOG_TAG = "StatusUpdateConfirmationDialog"
         private const val CANCEL_ORDER_DIALOG_TAG = "CancelOrderConfirmationDialog"
 

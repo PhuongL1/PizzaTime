@@ -1,9 +1,11 @@
 package com.devpro.pizzatime.feature.kitchen.board
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,12 +14,12 @@ import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.databinding.FragmentKitchenBoardBinding
+import com.devpro.pizzatime.feature.staff.navigation.canManageKitchenScreen
+import com.devpro.pizzatime.feature.staff.navigation.directionTo
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 
 class KitchenBoardFragment : Fragment() {
@@ -27,7 +29,8 @@ class KitchenBoardFragment : Fragment() {
         "Binding is only valid between onCreateView and onDestroyView"
     }
 
-    private var firestoreOrders: List<KitchenOrderUiModel>? = null
+    private var allOrders: List<KitchenOrderUiModel> = emptyList()
+    private var selectedFilter: KitchenFilter = KitchenFilter.WAITING
     private var ordersListener: ListenerRegistration? = null
 
     private val adapter = KitchenOrderAdapter(
@@ -37,6 +40,7 @@ class KitchenBoardFragment : Fragment() {
         onItemClick = { order ->
             openKitchenOrderDetail(order.orderId)
         },
+        canManageActions = { canManageKitchenScreen() },
     )
 
     override fun onCreateView(
@@ -52,7 +56,7 @@ class KitchenBoardFragment : Fragment() {
         setupOrders()
         setupTopBar()
         setupBottomNav()
-        loadChefFirstName()
+        setupFilters()
         listenFirestoreOrders()
     }
 
@@ -66,10 +70,56 @@ class KitchenBoardFragment : Fragment() {
         ordersListener = KitchenOrderFirestoreRepository.listenOrders { result ->
             if (!isAdded) return@listenOrders
             result.onSuccess { orders ->
-                firestoreOrders = orders
-                adapter.submitList(orders)
+                allOrders = orders.filter { it.status != KitchenOrderStatus.READY }
+                renderSelectedFilter()
             }
         }
+    }
+
+    private fun setupFilters() = with(binding) {
+        chipWaiting.setOnClickListener {
+            selectedFilter = KitchenFilter.WAITING
+            renderSelectedFilter()
+        }
+        chipPreparing.setOnClickListener {
+            selectedFilter = KitchenFilter.PREPARING
+            renderSelectedFilter()
+        }
+        renderSelectedFilter()
+    }
+
+    private fun renderSelectedFilter() = with(binding) {
+        val waitingOrders = allOrders.filter { it.status == KitchenOrderStatus.WAITING }
+        val preparingOrders = allOrders.filter { it.status == KitchenOrderStatus.PREPARING }
+        val selectedOrders = when (selectedFilter) {
+            KitchenFilter.WAITING -> waitingOrders
+            KitchenFilter.PREPARING -> preparingOrders
+        }
+
+        Log.d(
+            TAG,
+            "loaded=${allOrders.size} waiting=${waitingOrders.size} preparing=${preparingOrders.size} selected=${selectedOrders.size}",
+        )
+        adapter.submitList(selectedOrders.toList())
+        bindChip(chipWaiting, selectedFilter == KitchenFilter.WAITING, waitingOrders.size)
+        bindChip(chipPreparing, selectedFilter == KitchenFilter.PREPARING, preparingOrders.size)
+    }
+
+    private fun bindChip(chip: TextView, selected: Boolean, count: Int) {
+        val baseText = if (chip.id == R.id.chipWaiting) {
+            getString(R.string.kitchen_chip_waiting)
+        } else {
+            getString(R.string.kitchen_chip_preparing)
+        }
+        chip.text = "$baseText ($count)"
+        chip.setBackgroundResource(
+            if (selected) R.drawable.bg_chip_selected_gold else R.drawable.bg_chip_unselected_dark,
+        )
+        chip.setTextColor(
+            chip.context.getColor(
+                if (selected) R.color.pt_text_dark else R.color.pt_text_primary,
+            ),
+        )
     }
 
     private fun setupBottomNav() {
@@ -77,13 +127,15 @@ class KitchenBoardFragment : Fragment() {
             root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.KITCHEN,
             onDashboardClick = {
-                openStaffDashboard()
+                openStaffDashboard(direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.DASHBOARD))
             },
             onDeliveryClick = {
-                openShipperDeliveryDashboard()
+                openShipperDeliveryDashboard(
+                    direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.DELIVERY),
+                )
             },
             onProfileClick = {
-                openCustomerAccount()
+                openCustomerAccount(direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.PROFILE))
             },
         )
     }
@@ -104,7 +156,7 @@ class KitchenBoardFragment : Fragment() {
         }
 
         val nextStatus = nextFirestoreStatus(order.status)
-        if (firestoreOrders != null && nextStatus != null) {
+        if (nextStatus != null && canManageKitchenScreen()) {
             updateFirestoreStatus(order.orderId, nextStatus, messageRes)
         } else {
             Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
@@ -116,6 +168,14 @@ class KitchenBoardFragment : Fragment() {
             if (!isAdded) return@updateOrderStatus
             result
                 .onSuccess {
+                    allOrders = allOrders.map { order ->
+                        if (order.orderId == orderId) {
+                            order.copy(status = nextStatus.toKitchenOrderStatus())
+                        } else {
+                            order
+                        }
+                    }
+                    renderSelectedFilter()
                     Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
                 }
                 .onFailure { error ->
@@ -137,33 +197,11 @@ class KitchenBoardFragment : Fragment() {
         }
     }
 
-    private fun loadChefFirstName() {
-        val user = FirebaseAuth.getInstance().currentUser ?: return
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(user.uid)
-            .get()
-            .addOnSuccessListener { document ->
-                if (_binding == null) return@addOnSuccessListener
-                val profileName = document.getString("name").orEmpty()
-                binding.headerKitchen.tvAdminTitle.text = profileName.toChefFirstName(
-                    fallback = user.email.orEmpty().substringBefore("@"),
-                )
-            }
-            .addOnFailureListener {
-                if (_binding == null) return@addOnFailureListener
-                binding.headerKitchen.tvAdminTitle.text = user.email.orEmpty()
-                    .substringBefore("@")
-                    .ifBlank { getString(R.string.kitchen_default_chef_name) }
-            }
-    }
-
-    private fun String.toChefFirstName(fallback: String): String {
-        val parts = trim().split(Regex("\\s+")).filter { it.isNotBlank() }
-        return when {
-            parts.isNotEmpty() -> parts.last()
-            fallback.isNotBlank() -> fallback
-            else -> getString(R.string.kitchen_default_chef_name)
+    private fun String.toKitchenOrderStatus(): KitchenOrderStatus {
+        return when (this) {
+            "PREPARING", "BAKING" -> KitchenOrderStatus.PREPARING
+            "READY", "READY_FOR_DELIVERY" -> KitchenOrderStatus.READY
+            else -> KitchenOrderStatus.WAITING
         }
     }
 
@@ -182,5 +220,13 @@ class KitchenBoardFragment : Fragment() {
         super.onDestroyView()
     }
 
+    companion object {
+        private const val TAG = "KitchenBoard"
+    }
 
+}
+
+private enum class KitchenFilter {
+    WAITING,
+    PREPARING,
 }

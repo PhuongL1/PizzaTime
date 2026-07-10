@@ -6,3 +6,7 @@ enum class StaffBottomNavTab {
     DELIVERY,
     PROFILE,
 }
+
+fun StaffBottomNavTab.directionTo(target: StaffBottomNavTab): NavigationDirection {
+    return if (target.ordinal > ordinal) NavigationDirection.FORWARD else NavigationDirection.BACKWARD
+}

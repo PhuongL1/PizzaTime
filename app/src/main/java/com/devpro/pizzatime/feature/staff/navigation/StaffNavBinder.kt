@@ -16,6 +16,7 @@ import com.google.firebase.auth.FirebaseAuth
 fun Fragment.bindStaffTopBar(
     root: View,
     title: CharSequence? = null,
+    showEmployeeName: Boolean = true,
     selectedDrawerItem: StaffDrawerItem = StaffDrawerItem.STAFF_SCHEDULE,
     onMenuClick: (() -> Unit)? = null,
     onAvatarClick: (() -> Unit)? = null,
@@ -23,6 +24,9 @@ fun Fragment.bindStaffTopBar(
     root.findViewById<TextView>(R.id.tvAdminTitle)?.let { titleView ->
         if (title != null) {
             titleView.text = title
+        }
+        if (showEmployeeName) {
+            bindEmployeeName(titleView)
         }
     }
 
@@ -42,6 +46,31 @@ fun Fragment.bindStaffTopBar(
         initialsView = root.findViewById(R.id.tvAdminAvatar),
         imageView = root.findViewById(R.id.ivAdminAvatar),
     )
+}
+
+private fun Fragment.bindEmployeeName(titleView: TextView) {
+    val user = FirebaseAuth.getInstance().currentUser
+    val fallbackName = user?.displayName
+        ?: user?.email?.substringBefore("@")
+        ?: rootEmployeeFallback()
+    val uid = user?.uid
+    titleView.text = fallbackName.ifBlank { rootEmployeeFallback() }
+    if (uid.isNullOrBlank()) return
+
+    CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
+        if (!isAdded || view == null) return@loadProfile
+        val profile = result.getOrNull()
+        val employeeName = profile?.fullName
+            ?.trim()
+            .orEmpty()
+            .ifBlank { fallbackName }
+            .ifBlank { rootEmployeeFallback() }
+        titleView.text = employeeName
+    }
+}
+
+private fun Fragment.rootEmployeeFallback(): String {
+    return getString(R.string.role_employee_fallback)
 }
 
 fun Fragment.bindStaffBottomNav(

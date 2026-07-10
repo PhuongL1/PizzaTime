@@ -18,7 +18,7 @@ import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBotto
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderDetail
+import com.devpro.pizzatime.feature.staff.navigation.openOrderTracking
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
 import kotlin.math.roundToInt
@@ -160,6 +160,7 @@ class CustomerOrderHistoryFragment : Fragment() {
         tvStatus.text = order.status.label
         tvTotal.text = formatPrice(order.total)
         tvItemSummary.text = order.itemSummary.joinToString(separator = "\n")
+        root.setOnClickListener { openOrderTracking(order.orderId) }
 
         if (order.imageUrl.isNotBlank()) {
             ivOrderImage.loadProductImage(order.imageUrl, order.imageRes ?: R.drawable.img_pizza_time)
@@ -207,7 +208,7 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_primary_button)
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
 
-                btnSecondary.setOnClickListener { openCustomerOrderDetail(order.orderId) }
+                btnSecondary.setOnClickListener { openOrderTracking(order.orderId) }
                 btnPrimary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_reorder_toast) }
             }
 
@@ -227,8 +228,8 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_primary_button)
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
 
-                btnSecondary.setOnClickListener { openCustomerOrderDetail(order.orderId) }
-                btnPrimary.setOnClickListener { openCustomerOrderDetail(order.orderId) }
+                btnSecondary.setOnClickListener { openOrderTracking(order.orderId) }
+                btnPrimary.setOnClickListener { openOrderTracking(order.orderId) }
             }
         }
     }

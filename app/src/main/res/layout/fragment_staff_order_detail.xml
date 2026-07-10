@@ -464,6 +464,21 @@
             </LinearLayout>
 
             <TextView
+                android:id="@+id/tvReadOnlyIndicator"
+                android:layout_width="wrap_content"
+                android:layout_height="34dp"
+                android:layout_marginTop="28dp"
+                android:background="@drawable/bg_chip_unselected_dark"
+                android:gravity="center"
+                android:paddingStart="16dp"
+                android:paddingEnd="16dp"
+                android:text="@string/role_view_only"
+                android:textColor="@color/pt_text_primary"
+                android:textSize="12sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/btnCancelOrder"
                 android:layout_width="match_parent"
                 android:layout_height="58dp"

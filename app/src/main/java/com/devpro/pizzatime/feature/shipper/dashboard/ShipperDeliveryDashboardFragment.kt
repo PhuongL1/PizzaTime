@@ -16,6 +16,8 @@ import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
+import com.devpro.pizzatime.feature.staff.navigation.canManageShipperScreen
+import com.devpro.pizzatime.feature.staff.navigation.directionTo
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
@@ -41,6 +43,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         onItemClick = { order ->
             openShipperDeliveryDetail(order.orderId)
         },
+        canManageActions = { canManageShipperScreen() },
     )
     private var ordersListener: ListenerRegistration? = null
     private var latestDashboard = ShipperDashboardUiModel(
@@ -69,6 +72,8 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         activeDeliveryCard.isVisible = activeDelivery != null
         tvActiveDeliveryEmpty.isVisible = activeDelivery == null
         if (activeDelivery == null) {
+            btnNavigate.isVisible = false
+            btnCallCustomer.isVisible = false
             btnNavigate.setOnClickListener(null)
             btnCallCustomer.setOnClickListener(null)
             return@with
@@ -81,16 +86,24 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         tvActivePaymentLabel.text = activeDelivery.paymentLabel
         tvActivePaymentAmount.text = activeDelivery.paymentAmount
 
-        btnNavigate.setOnClickListener {
-            openShipperDeliveryDetail(activeDelivery.orderId)
-        }
+        val canManage = canManageShipperScreen()
+        btnNavigate.isVisible = canManage
+        btnCallCustomer.isVisible = canManage
+        if (canManage) {
+            btnNavigate.setOnClickListener {
+                openShipperDeliveryDetail(activeDelivery.orderId)
+            }
 
-        btnCallCustomer.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                R.string.shipper_message_call_customer,
-                Toast.LENGTH_SHORT,
-            ).show()
+            btnCallCustomer.setOnClickListener {
+                Toast.makeText(
+                    requireContext(),
+                    R.string.shipper_message_call_customer,
+                    Toast.LENGTH_SHORT,
+                ).show()
+            }
+        } else {
+            btnNavigate.setOnClickListener(null)
+            btnCallCustomer.setOnClickListener(null)
         }
     }
 
@@ -173,13 +186,13 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
                 root = binding.staffBottomNav.root,
                 currentTab = StaffBottomNavTab.DELIVERY,
                 onDashboardClick = {
-                    openStaffDashboard()
+                    openStaffDashboard(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.DASHBOARD))
                 },
                 onKitchenClick = {
-                    openKitchenBoard()
+                    openKitchenBoard(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.KITCHEN))
                 },
                 onProfileClick = {
-                    openCustomerAccount()
+                    openCustomerAccount(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.PROFILE))
                 },
             )
         }
@@ -198,6 +211,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
     }
 
     private fun startDelivery(order: ShipperDeliveryUiModel) {
+        if (!canManageShipperScreen()) return
         openShipperDeliveryDetail(order.orderId)
     }
 

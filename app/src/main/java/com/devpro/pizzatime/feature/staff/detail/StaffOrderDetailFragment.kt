@@ -9,6 +9,7 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStaffOrderDetailBinding
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderStatus
+import com.devpro.pizzatime.feature.staff.navigation.canManageStaffScreen
 import com.devpro.pizzatime.shared.dialog.AssignShipperDialogFragment
 import com.devpro.pizzatime.shared.dialog.CancelOrderConfirmationDialogFragment
 import java.util.Locale
@@ -161,6 +162,17 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     }
 
     private fun bindActionVisibility(status: StaffOrderStatus) = with(binding) {
+        val canManage = canManageStaffScreen()
+        tvReadOnlyIndicator.isVisible = !canManage
+        bottomActionBar.isVisible = canManage
+        btnCallCustomer.isVisible = canManage
+        if (!canManage) {
+            btnAssignShipper.isVisible = false
+            btnDelay10.isVisible = false
+            btnCancelOrder.isVisible = false
+            return@with
+        }
+
         btnAssignShipper.isVisible = status == StaffOrderStatus.READY
         btnDelay10.isVisible = status == StaffOrderStatus.PENDING ||
             status == StaffOrderStatus.CONFIRMED ||
@@ -171,6 +183,14 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     private fun setupActions() = with(binding) {
         btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
+        }
+
+        if (!canManageStaffScreen()) {
+            btnCallCustomer.setOnClickListener(null)
+            btnDelay10.setOnClickListener(null)
+            btnAssignShipper.setOnClickListener(null)
+            btnCancelOrder.setOnClickListener(null)
+            return@with
         }
 
         btnCallCustomer.setOnClickListener {
@@ -241,6 +261,10 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     }
 
     private fun cancelOrder(orderId: String, reason: String) = with(binding) {
+        if (!canManageStaffScreen()) {
+            return@with
+        }
+
         if (isCancellingOrder) {
             return@with
         }

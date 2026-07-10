@@ -75,6 +75,17 @@ object KitchenOrderFirestoreRepository {
         )
     }
 
+    fun cancelOrder(
+        orderId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        OrderTransitionRepository.cancelByKitchen(
+            orderId = orderId,
+            kitchenId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty(),
+            onResult = onResult,
+        )
+    }
+
     private fun DocumentSnapshot.toKitchenOrderUiModel(): KitchenOrderUiModel {
         val statusStr = getString("status") ?: "CONFIRMED"
         val kitchenStatus = mapToKitchenStatus(statusStr)

@@ -13,6 +13,8 @@ import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
+import com.devpro.pizzatime.feature.staff.navigation.canManageStaffScreen
+import com.devpro.pizzatime.feature.staff.navigation.directionTo
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
@@ -53,6 +55,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             onDetailClick = { order ->
                 openStaffOrderDetail(order.orderId)
             },
+            canManageActions = { canManageStaffScreen() },
         )
 
         binding.rvStaffOrders.apply {
@@ -62,6 +65,8 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     }
 
     private fun confirmOrder(order: StaffOrderUiModel) {
+        if (!canManageStaffScreen()) return
+
         StaffOrderFirestoreRepository.updateOrderStatus(
             orderId = order.orderId,
             newStatus = "CONFIRMED",
@@ -125,13 +130,15 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.DASHBOARD,
             onKitchenClick = {
-                openKitchenBoard()
+                openKitchenBoard(direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.KITCHEN))
             },
             onDeliveryClick = {
-                openShipperDeliveryDashboard()
+                openShipperDeliveryDashboard(
+                    direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.DELIVERY),
+                )
             },
             onProfileClick = {
-                openCustomerAccount()
+                openCustomerAccount(direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.PROFILE))
             },
         )
     }

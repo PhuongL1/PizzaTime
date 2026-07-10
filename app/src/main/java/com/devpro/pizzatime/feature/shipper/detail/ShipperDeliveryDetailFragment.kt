@@ -21,6 +21,8 @@ import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.bindCurrentProfileAvatar
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
+import com.devpro.pizzatime.feature.staff.navigation.canManageShipperScreen
+import com.devpro.pizzatime.feature.staff.navigation.directionTo
 import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
@@ -100,6 +102,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         tvPaymentAmount.text = detail.paymentAmount
         tvPaymentMethod.text = detail.paymentMethod
         tvPaymentStatus.text = detail.paymentStatus.ifBlank { getString(R.string.payment_status_unpaid) }
+        tvReadOnlyIndicator.isVisible = !canManageShipperScreen()
         renderActionButton(firestoreStatus)
 
         bindPaymentItems(detail.items)
@@ -125,6 +128,18 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     private fun setupActions(detail: ShipperDeliveryDetailUiModel) = with(binding) {
         btnBack.setOnClickListener {
             backToPreviousStaffScreen()
+        }
+
+        if (!canManageShipperScreen()) {
+            btnCallCustomer.isVisible = false
+            btnOpenPickupMap.isVisible = false
+            btnNavigate.isVisible = false
+            btnConfirmDelivery.isVisible = false
+            btnCallCustomer.setOnClickListener(null)
+            btnOpenPickupMap.setOnClickListener(null)
+            btnNavigate.setOnClickListener(null)
+            btnConfirmDelivery.setOnClickListener(null)
+            return@with
         }
 
         btnCallCustomer.setOnClickListener {
@@ -180,6 +195,13 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     private fun renderActionButton(status: String?) = with(binding.btnConfirmDelivery) {
+        if (!canManageShipperScreen()) {
+            isVisible = false
+            isEnabled = false
+            setOnClickListener(null)
+            return@with
+        }
+
         text = getString(nextActionLabel(status))
         isEnabled = status in setOf(
             "READY",
@@ -217,6 +239,9 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         nextStatus: String,
     ) {
         if (isUpdatingStatus) {
+            return
+        }
+        if (!canManageShipperScreen()) {
             return
         }
 
@@ -292,13 +317,13 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 root = binding.staffBottomNav.root,
                 currentTab = StaffBottomNavTab.DELIVERY,
                 onDashboardClick = {
-                    openStaffDashboard()
+                    openStaffDashboard(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.DASHBOARD))
                 },
                 onKitchenClick = {
-                    openKitchenBoard()
+                    openKitchenBoard(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.KITCHEN))
                 },
                 onProfileClick = {
-                    openCustomerAccount()
+                    openCustomerAccount(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.PROFILE))
                 },
             )
         }
