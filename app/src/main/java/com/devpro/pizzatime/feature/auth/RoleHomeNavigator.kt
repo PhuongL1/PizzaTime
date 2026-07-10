@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.auth
 
 import androidx.fragment.app.Fragment
+import com.devpro.pizzatime.core.config.AppEditionConfig
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
@@ -11,8 +12,17 @@ import com.devpro.pizzatime.feature.staff.navigation.openCustomerHome
 import com.devpro.pizzatime.feature.staff.navigation.openKitchenBoard
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
+import com.google.firebase.auth.FirebaseAuth
 
 fun Fragment.restoreSessionAndOpenRoleHome(user: AuthUserUiModel): Boolean {
+    if (!AppEditionConfig.isAllowedAuthRole(user.role)) {
+        FirebaseAuth.getInstance().signOut()
+        OrderNotificationMonitor.stop()
+        FakeSessionStore.logout()
+        CartStore.clearForLogout()
+        return false
+    }
+
     FakeSessionStore.login(user.role)
     CartStore.onUserChanged(user.uid)
     return openRoleHome(user.role)

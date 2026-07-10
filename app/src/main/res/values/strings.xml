@@ -955,6 +955,7 @@
     <string name="customer_favorites_removed_toast">%1$s removed from favorites</string>
     <string name="customer_favorites_update_failed">Could not update favorites.</string>
     <string name="customer_favorites_login_required">Sign in to save favorites.</string>
+    <string name="app_edition_mismatch">This account cannot use this app edition.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 
     <string name="customer_favorites_nav_menu">Menu</string>

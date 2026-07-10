@@ -9,9 +9,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.config.AppEdition
+import com.devpro.pizzatime.core.config.AppEditionConfig
 import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.NotificationPermissionHelper
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
@@ -23,6 +26,7 @@ import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.devpro.pizzatime.feature.staff.navigation.openCheckoutScreen
 import com.devpro.pizzatime.feature.staff.navigation.openForgotPassword
+import com.google.firebase.auth.FirebaseAuth
 
 class LoginFragment : Fragment() {
 
@@ -59,6 +63,9 @@ class LoginFragment : Fragment() {
     }
 
     private fun setupActions() {
+        binding.btnCreateAccount.isVisible =
+            AppEditionConfig.current == AppEdition.GUEST || AppEditionConfig.current == AppEdition.CUSTOMER
+
         binding.btnLogin.setOnClickListener {
             handleLogin()
         }
@@ -79,6 +86,19 @@ class LoginFragment : Fragment() {
         viewModel.loginResult.observe(viewLifecycleOwner) { result ->
             result
                 .onSuccess { user ->
+                    if (!AppEditionConfig.isAllowedAuthRole(user.role)) {
+                        FirebaseAuth.getInstance().signOut()
+                        OrderNotificationMonitor.stop()
+                        FakeSessionStore.logout()
+                        CartStore.clearForLogout()
+                        Toast.makeText(
+                            requireContext(),
+                            R.string.app_edition_mismatch,
+                            Toast.LENGTH_SHORT,
+                        ).show()
+                        return@onSuccess
+                    }
+
                     CartStore.onUserChanged(user.uid)
                     Toast.makeText(
                         requireContext(),

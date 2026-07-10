@@ -6,8 +6,11 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.config.AppEdition
+import com.devpro.pizzatime.core.config.AppEditionConfig
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentSplashBinding
@@ -15,6 +18,8 @@ import com.devpro.pizzatime.feature.auth.FirebaseAuthRepository
 import com.devpro.pizzatime.feature.auth.restoreSessionAndOpenRoleHome
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
+import com.devpro.pizzatime.feature.staff.navigation.openCustomerHomeScreen
+import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 import com.devpro.pizzatime.feature.welcome.WelcomeFragment
 import com.google.firebase.auth.FirebaseAuth
 
@@ -52,10 +57,7 @@ class SplashFragment : Fragment() {
     private fun routeFromSplash() {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
-            OrderNotificationMonitor.stop()
-            FakeSessionStore.logout()
-            CartStore.clearForLogout()
-            openWelcome()
+            openStartDestinationForEdition()
             return
         }
 
@@ -63,31 +65,57 @@ class SplashFragment : Fragment() {
             if (!isAdded) return@loadCurrentUserProfile
             result
                 .onSuccess { user ->
+                    if (!AppEditionConfig.isAllowedAuthRole(user.role)) {
+                        signOutAndOpenStartDestination(showMismatchMessage = true)
+                        return@onSuccess
+                    }
                     val openedHome = restoreSessionAndOpenRoleHome(user)
                     if (!openedHome) {
-                        signOutAndOpenWelcome()
+                        signOutAndOpenStartDestination(showMismatchMessage = true)
                     }
                 }
                 .onFailure {
-                    signOutAndOpenWelcome()
+                    signOutAndOpenStartDestination(showMismatchMessage = false)
                 }
         }
     }
 
-    private fun signOutAndOpenWelcome() {
+    private fun signOutAndOpenStartDestination(showMismatchMessage: Boolean) {
         FirebaseAuth.getInstance().signOut()
         OrderNotificationMonitor.stop()
         FakeSessionStore.logout()
         CartStore.clearForLogout()
-        openWelcome()
+        if (showMismatchMessage) {
+            Toast.makeText(
+                requireContext(),
+                R.string.app_edition_mismatch,
+                Toast.LENGTH_SHORT,
+            ).show()
+        }
+        openStartDestinationForEdition()
     }
 
-    private fun openWelcome() {
+    private fun openStartDestinationForEdition() {
         clearAppBackStack()
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, WelcomeFragment())
-            .commitAllowingStateLoss()
+        when {
+            AppEditionConfig.isGuestEdition -> {
+                OrderNotificationMonitor.stop()
+                FakeSessionStore.logout()
+                CartStore.onGuestSessionStarted()
+                openCustomerHomeScreen()
+            }
+
+            AppEditionConfig.current == AppEdition.CUSTOMER -> {
+                parentFragmentManager.beginTransaction()
+                    .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
+                    .replace(R.id.fragmentContainer, WelcomeFragment())
+                    .commitAllowingStateLoss()
+            }
+
+            else -> {
+                openLoginScreen(addToBackStack = false)
+            }
+        }
     }
 
     companion object {
