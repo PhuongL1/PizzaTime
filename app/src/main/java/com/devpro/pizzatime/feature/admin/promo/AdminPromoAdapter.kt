@@ -44,6 +44,8 @@ class AdminPromoAdapter(
 
             tvCode.text = item.code
             tvTitle.text = item.title
+            tvDescription.text = item.description
+            tvDescription.isVisible = item.description.isNotBlank()
             bindStatus(item)
 
             bindField(layoutDiscount, tvDiscountValue, item.discountText)

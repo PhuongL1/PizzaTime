@@ -67,6 +67,19 @@
         android:textStyle="bold"
         tools:text="20% Off Artisanal Range" />
 
+    <TextView
+        android:id="@+id/tvDescription"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginTop="10dp"
+        android:ellipsize="end"
+        android:maxLines="2"
+        android:textColor="@color/pt_text_secondary"
+        android:textSize="15sp"
+        android:visibility="gone"
+        tools:text="Save on late-night artisan pizzas."
+        tools:visibility="visible" />
+
     <View
         android:id="@+id/dividerPromo"
         android:layout_width="match_parent"

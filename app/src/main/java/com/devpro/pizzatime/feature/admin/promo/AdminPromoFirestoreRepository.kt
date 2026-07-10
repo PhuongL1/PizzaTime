@@ -143,6 +143,7 @@ object AdminPromoFirestoreRepository {
     private fun resolveStatus(promo: com.devpro.pizzatime.shared.promo.PromoDocumentModel): AdminPromoStatus {
         return when {
             promo.rawStatus == "EXPIRED" || promo.isExpired -> AdminPromoStatus.EXPIRED
+            promo.isExhausted -> AdminPromoStatus.INACTIVE
             !promo.isStarted -> AdminPromoStatus.SCHEDULED
             !promo.activeFlag || promo.rawStatus in setOf("INACTIVE", "DISABLED", "UNAVAILABLE") -> {
                 AdminPromoStatus.INACTIVE

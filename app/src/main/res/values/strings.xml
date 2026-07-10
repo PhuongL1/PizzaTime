@@ -723,7 +723,8 @@
     <string name="total_reach">TOTAL REACH</string>
     <string name="total_reach_value">4.8k</string>
     <string name="promo_filter_active_count">Active (%1$d)</string>
-    <string name="promo_filter_past_count">Past (%1$d)</string>
+    <string name="promo_filter_inactive_count">Inactive (%1$d)</string>
+    <string name="promo_filter_scheduled_count">Scheduled (%1$d)</string>
     <string name="promo_filter_all_count">All (%1$d)</string>
     <string name="promo_stat_not_available">N/A</string>
     <string name="promo_delete_title">Delete promo?</string>

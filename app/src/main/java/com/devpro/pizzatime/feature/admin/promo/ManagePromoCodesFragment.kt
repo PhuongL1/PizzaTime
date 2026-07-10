@@ -1,14 +1,14 @@
 package com.devpro.pizzatime.feature.admin.promo
 
-import android.app.AlertDialog
-import android.content.ActivityNotFoundException
-import android.content.Intent
-import android.util.Log
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import android.app.AlertDialog
+import android.content.ActivityNotFoundException
+import android.content.Intent
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
@@ -17,9 +17,9 @@ import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
-import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentManagePromoCodesBinding
+import com.devpro.pizzatime.databinding.ItemAdminPromoBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminTopBar
@@ -39,20 +39,6 @@ class ManagePromoCodesFragment : Fragment() {
 
     private var allPromos: List<AdminPromoUiModel> = emptyList()
 
-    private val promoAdapter by lazy {
-        AdminPromoAdapter(
-            onEditClick = { promo -> showEditPromoDialog(promo) },
-            onDeleteClick = { promo -> confirmDeletePromo(promo) },
-            onShareClick = { promo -> sharePromo(promo) },
-            onReactivateClick = { promo ->
-                AdminPromoFirestoreRepository.setActive(promo.id, true) { result ->
-                    if (!isAdded) return@setActive
-                    if (result.isSuccess) loadFirestorePromos()
-                }
-            },
-        )
-    }
-
     private var selectedFilter = PromoFilter.ALL
 
     override fun onCreateView(
@@ -65,7 +51,6 @@ class ManagePromoCodesFragment : Fragment() {
     }
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
-        setupRecyclerView()
         setupTopBar()
         setupActions()
         setupFilters()
@@ -356,16 +341,6 @@ class ManagePromoCodesFragment : Fragment() {
         }
     }
 
-    private fun setupRecyclerView() = with(binding.rvPromos) {
-        layoutManager = object : LinearLayoutManager(requireContext()) {
-            override fun canScrollVertically(): Boolean = false
-        }
-        adapter = promoAdapter
-        setHasFixedSize(false)
-        itemAnimator = null
-        isNestedScrollingEnabled = false
-    }
-
     private fun setupActions() = with(binding) {
         btnAddPromo.setOnClickListener {
             showCreatePromoDialog()
@@ -379,11 +354,16 @@ class ManagePromoCodesFragment : Fragment() {
         }
 
         tvChipInactive.setOnClickListener {
-            selectedFilter = PromoFilter.PAST
+            selectedFilter = PromoFilter.INACTIVE
             renderPromos()
         }
 
         tvChipScheduled.setOnClickListener {
+            selectedFilter = PromoFilter.SCHEDULED
+            renderPromos()
+        }
+
+        tvChipAll.setOnClickListener {
             selectedFilter = PromoFilter.ALL
             renderPromos()
         }
@@ -408,28 +388,87 @@ class ManagePromoCodesFragment : Fragment() {
     }
 
     private fun renderPromos() {
-        val promos = when (selectedFilter) {
-            PromoFilter.ACTIVE -> allPromos.filter {
-                it.status == AdminPromoStatus.ACTIVE
-            }
-
-            PromoFilter.PAST -> allPromos.filter {
-                it.status == AdminPromoStatus.INACTIVE || it.status == AdminPromoStatus.EXPIRED
-            }
-
+        val activePromos = allPromos.filter { promo -> promo.status == AdminPromoStatus.ACTIVE }
+        val inactivePromos = allPromos.filter { promo ->
+            promo.status == AdminPromoStatus.INACTIVE || promo.status == AdminPromoStatus.EXPIRED
+        }
+        val scheduledPromos = allPromos.filter { promo -> promo.status == AdminPromoStatus.SCHEDULED }
+        val filteredPromos = when (selectedFilter) {
+            PromoFilter.ACTIVE -> activePromos
+            PromoFilter.INACTIVE -> inactivePromos
+            PromoFilter.SCHEDULED -> scheduledPromos
             PromoFilter.ALL -> allPromos
         }
 
-        Log.d(TAG, "admin filtered tab=$selectedFilter count=${promos.size}")
-        promoAdapter.submitList(promos.toList()) {
-            binding.rvPromos.post {
-                binding.rvPromos.requestLayout()
-            }
-        }
-        binding.rvPromos.isVisible = promos.isNotEmpty()
-        binding.tvEmptyPromos.isVisible = promos.isEmpty()
+        Log.d(
+            TAG,
+            "admin filtered tab=$selectedFilter loaded=${allPromos.size} " +
+                "active=${activePromos.size} inactive=${inactivePromos.size} " +
+                "scheduled=${scheduledPromos.size} filtered=${filteredPromos.size}",
+        )
+        renderPromoList(filteredPromos)
+        binding.tvEmptyPromos.isVisible = filteredPromos.isEmpty()
         renderFilterState()
         renderStats()
+    }
+
+    private fun renderPromoList(promos: List<AdminPromoUiModel>) {
+        binding.promoListContainer.removeAllViews()
+        promos.forEach { promo ->
+            val itemBinding = ItemAdminPromoBinding.inflate(layoutInflater, binding.promoListContainer, false)
+            bindPromoCard(itemBinding, promo)
+            binding.promoListContainer.addView(itemBinding.root)
+        }
+        Log.d(TAG, "admin rendered count=${binding.promoListContainer.childCount}")
+    }
+
+    private fun bindPromoCard(
+        itemBinding: ItemAdminPromoBinding,
+        promo: AdminPromoUiModel,
+    ) = with(itemBinding) {
+        rootPromoCard.setBackgroundResource(
+            if (promo.isHighlighted) {
+                R.drawable.bg_promo_card_highlight
+            } else {
+                R.drawable.bg_promo_card
+            },
+        )
+
+        tvCode.text = promo.code
+        tvTitle.text = promo.title
+        tvDescription.text = promo.description
+        tvDescription.isVisible = promo.description.isNotBlank()
+        bindStatus(tvStatus, promo.status)
+        bindField(layoutDiscount, tvDiscountValue, promo.discountText)
+        bindField(layoutExpiry, tvExpiryValue, promo.expiryText)
+        bindField(layoutMinSpend, tvMinSpendValue, promo.minSpendText)
+        bindField(layoutEndsIn, tvEndsInValue, promo.endsInText)
+        bindField(layoutUsed, tvUsedValue, promo.usedText)
+
+        layoutMainFields.isVisible = layoutDiscount.isVisible || layoutExpiry.isVisible
+        dividerPromo.isVisible = layoutMainFields.isVisible || tvDescription.isVisible
+        layoutSecondaryFields.isVisible =
+            layoutMinSpend.isVisible || layoutEndsIn.isVisible || layoutUsed.isVisible
+
+        val isExpired = promo.status == AdminPromoStatus.EXPIRED
+        layoutActions.isVisible = !isExpired
+        tvReactivate.isVisible = isExpired
+
+        btnEdit.setOnClickListener { showEditPromoDialog(promo) }
+        btnDelete.setOnClickListener {
+            Log.d(TAG, "delete tapped promoId=${promo.id} code=${promo.code}")
+            confirmDeletePromo(promo)
+        }
+        btnShare.setOnClickListener {
+            Log.d(TAG, "share tapped promoId=${promo.id} code=${promo.code}")
+            sharePromo(promo)
+        }
+        tvReactivate.setOnClickListener {
+            AdminPromoFirestoreRepository.setActive(promo.id, true) { result ->
+                if (!isAdded) return@setActive
+                if (result.isSuccess) loadFirestorePromos()
+            }
+        }
     }
 
     private fun renderFilterState() = with(binding) {
@@ -438,15 +477,20 @@ class ManagePromoCodesFragment : Fragment() {
             allPromos.count { promo -> promo.status == AdminPromoStatus.ACTIVE },
         )
         tvChipInactive.text = getString(
-            R.string.promo_filter_past_count,
+            R.string.promo_filter_inactive_count,
             allPromos.count { promo ->
                 promo.status == AdminPromoStatus.INACTIVE || promo.status == AdminPromoStatus.EXPIRED
             },
         )
-        tvChipScheduled.text = getString(R.string.promo_filter_all_count, allPromos.size)
+        tvChipScheduled.text = getString(
+            R.string.promo_filter_scheduled_count,
+            allPromos.count { promo -> promo.status == AdminPromoStatus.SCHEDULED },
+        )
+        tvChipAll.text = getString(R.string.promo_filter_all_count, allPromos.size)
         tvChipActive.bindChip(selectedFilter == PromoFilter.ACTIVE)
-        tvChipInactive.bindChip(selectedFilter == PromoFilter.PAST)
-        tvChipScheduled.bindChip(selectedFilter == PromoFilter.ALL)
+        tvChipInactive.bindChip(selectedFilter == PromoFilter.INACTIVE)
+        tvChipScheduled.bindChip(selectedFilter == PromoFilter.SCHEDULED)
+        tvChipAll.bindChip(selectedFilter == PromoFilter.ALL)
     }
 
     private fun renderStats() = with(binding) {
@@ -492,6 +536,29 @@ class ManagePromoCodesFragment : Fragment() {
                 },
             ),
         )
+    }
+
+    private fun bindStatus(view: TextView, status: AdminPromoStatus) {
+        view.text = when (status) {
+            AdminPromoStatus.ACTIVE -> getString(R.string.active)
+            AdminPromoStatus.INACTIVE -> getString(R.string.inactive)
+            AdminPromoStatus.SCHEDULED -> getString(R.string.scheduled)
+            AdminPromoStatus.EXPIRED -> getString(R.string.expired)
+        }
+        view.setBackgroundResource(
+            when (status) {
+                AdminPromoStatus.ACTIVE -> R.drawable.bg_promo_status_active
+                AdminPromoStatus.INACTIVE,
+                AdminPromoStatus.EXPIRED,
+                    -> R.drawable.bg_promo_status_expired
+                AdminPromoStatus.SCHEDULED -> R.drawable.bg_promo_status_scheduled
+            },
+        )
+    }
+
+    private fun bindField(container: View, valueView: TextView, value: String?) {
+        container.isVisible = !value.isNullOrBlank()
+        valueView.text = value.orEmpty()
     }
 
     private fun confirmDeletePromo(promo: AdminPromoUiModel) {
@@ -551,7 +618,8 @@ class ManagePromoCodesFragment : Fragment() {
 
     private enum class PromoFilter {
         ACTIVE,
-        PAST,
+        INACTIVE,
+        SCHEDULED,
         ALL,
     }
 
