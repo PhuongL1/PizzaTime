@@ -317,13 +317,22 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 root = binding.staffBottomNav.root,
                 currentTab = StaffBottomNavTab.DELIVERY,
                 onDashboardClick = {
-                    openStaffDashboard(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.DASHBOARD))
+                    openStaffDashboard(
+                        addToBackStack = false,
+                        direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.DASHBOARD),
+                    )
                 },
                 onKitchenClick = {
-                    openKitchenBoard(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.KITCHEN))
+                    openKitchenBoard(
+                        addToBackStack = false,
+                        direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.KITCHEN),
+                    )
                 },
                 onProfileClick = {
-                    openCustomerAccount(direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.PROFILE))
+                    openCustomerAccount(
+                        addToBackStack = false,
+                        direction = StaffBottomNavTab.DELIVERY.directionTo(StaffBottomNavTab.PROFILE),
+                    )
                 },
             )
         }

@@ -6,6 +6,7 @@ import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentStoreSettingsBinding
+import com.devpro.pizzatime.feature.staff.navigation.replaceForward
 import com.devpro.pizzatime.shared.location.MapPickerFragment
 import com.devpro.pizzatime.shared.location.isValidLatitude
 import com.devpro.pizzatime.shared.location.isValidLongitude
@@ -148,19 +149,15 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
     }
 
     private fun openPickupMapPicker() = with(binding) {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(
-                R.id.fragmentContainer,
-                MapPickerFragment.newInstance(
-                    mode = MapPickerFragment.MODE_STORE_PICKUP,
-                    initialAddress = edtPickupAddress.text.toString().trim(),
-                    initialLat = currentPickupLat(),
-                    initialLng = currentPickupLng(),
-                ),
+        parentFragmentManager.replaceForward(
+            containerId = R.id.fragmentContainer,
+            fragment = MapPickerFragment.newInstance(
+                mode = MapPickerFragment.MODE_STORE_PICKUP,
+                initialAddress = edtPickupAddress.text.toString().trim(),
+                initialLat = currentPickupLat(),
+                initialLng = currentPickupLng(),
             )
-            .addToBackStack(null)
-            .commit()
+        )
     }
 
     private fun currentPickupLat(): Double? {

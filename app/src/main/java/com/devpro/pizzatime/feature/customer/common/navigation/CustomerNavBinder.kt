@@ -56,7 +56,10 @@ fun Fragment.bindCustomerBottomNav(
         onClick = {
             if (selectedTab != CustomerBottomNavTab.MENU) {
                 onCustomerMenuClick?.invoke()
-                    ?: openCustomerHome(direction = selectedTab.directionTo(CustomerBottomNavTab.MENU))
+                    ?: openCustomerHome(
+                        addToBackStack = false,
+                        direction = selectedTab.directionTo(CustomerBottomNavTab.MENU),
+                    )
             }
         },
     )
@@ -76,7 +79,10 @@ fun Fragment.bindCustomerBottomNav(
         onClick = {
             if (selectedTab != CustomerBottomNavTab.LOYALTY) {
                 onCustomerLoyaltyClick?.invoke()
-                    ?: openCustomerPromoCodes(direction = selectedTab.directionTo(CustomerBottomNavTab.LOYALTY))
+                    ?: openCustomerPromoCodes(
+                        addToBackStack = false,
+                        direction = selectedTab.directionTo(CustomerBottomNavTab.LOYALTY),
+                    )
             }
         },
     )
@@ -94,7 +100,7 @@ fun Fragment.bindCustomerBottomNav(
 
 private fun Fragment.openCustomerOrdersOrLogin(direction: NavigationDirection) {
     if (FakeSessionStore.isLoggedIn) {
-        openCustomerOrderHistory(direction = direction)
+        openCustomerOrderHistory(addToBackStack = false, direction = direction)
     } else {
         openLoginRequiredScreen()
     }
@@ -102,7 +108,7 @@ private fun Fragment.openCustomerOrdersOrLogin(direction: NavigationDirection) {
 
 private fun Fragment.openCustomerProfileOrLogin(direction: NavigationDirection) {
     if (FakeSessionStore.isLoggedIn) {
-        openCustomerAccount(direction = direction)
+        openCustomerAccount(addToBackStack = false, direction = direction)
     } else {
         openLoginRequiredScreen()
     }

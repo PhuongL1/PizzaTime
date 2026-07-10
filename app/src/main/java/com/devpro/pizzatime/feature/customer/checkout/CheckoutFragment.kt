@@ -16,6 +16,7 @@ import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRep
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
+import com.devpro.pizzatime.feature.staff.navigation.replaceForward
 import com.devpro.pizzatime.shared.location.LocationDistanceCalculator
 import com.devpro.pizzatime.shared.location.MapPickerFragment
 import com.devpro.pizzatime.shared.location.isValidCoordinate
@@ -449,19 +450,15 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun openDeliveryMapPicker() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(
-                R.id.fragmentContainer,
-                MapPickerFragment.newInstance(
-                    mode = MapPickerFragment.MODE_CUSTOMER_DELIVERY,
-                    initialAddress = selectedDeliveryAddress,
-                    initialLat = selectedDeliveryLat,
-                    initialLng = selectedDeliveryLng,
-                ),
+        parentFragmentManager.replaceForward(
+            containerId = R.id.fragmentContainer,
+            fragment = MapPickerFragment.newInstance(
+                mode = MapPickerFragment.MODE_CUSTOMER_DELIVERY,
+                initialAddress = selectedDeliveryAddress,
+                initialLat = selectedDeliveryLat,
+                initialLng = selectedDeliveryLng,
             )
-            .addToBackStack(null)
-            .commit()
+        )
     }
 
     private fun saveDeliveryLocation(address: String, lat: Double, lng: Double) {

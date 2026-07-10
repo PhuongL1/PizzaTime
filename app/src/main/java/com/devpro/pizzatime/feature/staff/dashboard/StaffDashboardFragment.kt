@@ -130,15 +130,22 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.DASHBOARD,
             onKitchenClick = {
-                openKitchenBoard(direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.KITCHEN))
+                openKitchenBoard(
+                    addToBackStack = false,
+                    direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.KITCHEN),
+                )
             },
             onDeliveryClick = {
                 openShipperDeliveryDashboard(
+                    addToBackStack = false,
                     direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.DELIVERY),
                 )
             },
             onProfileClick = {
-                openCustomerAccount(direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.PROFILE))
+                openCustomerAccount(
+                    addToBackStack = false,
+                    direction = StaffBottomNavTab.DASHBOARD.directionTo(StaffBottomNavTab.PROFILE),
+                )
             },
         )
     }

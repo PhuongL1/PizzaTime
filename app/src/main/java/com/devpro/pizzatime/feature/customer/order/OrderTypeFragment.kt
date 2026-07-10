@@ -10,6 +10,7 @@ import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.databinding.FragmentOrderTypeBinding
 import com.devpro.pizzatime.feature.customer.menu.PizzaMenuFragment
+import com.devpro.pizzatime.feature.staff.navigation.replaceForward
 
 class OrderTypeFragment : Fragment() {
 
@@ -91,11 +92,10 @@ class OrderTypeFragment : Fragment() {
             Toast.LENGTH_SHORT,
         ).show()
 
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, PizzaMenuFragment())
-            .addToBackStack(null)
-            .commit()
+        parentFragmentManager.replaceForward(
+            containerId = R.id.fragmentContainer,
+            fragment = PizzaMenuFragment(),
+        )
     }
 
     override fun onDestroyView() {

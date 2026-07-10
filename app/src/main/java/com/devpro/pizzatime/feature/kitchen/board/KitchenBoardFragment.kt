@@ -127,15 +127,22 @@ class KitchenBoardFragment : Fragment() {
             root = binding.staffBottomNav.root,
             currentTab = StaffBottomNavTab.KITCHEN,
             onDashboardClick = {
-                openStaffDashboard(direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.DASHBOARD))
+                openStaffDashboard(
+                    addToBackStack = false,
+                    direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.DASHBOARD),
+                )
             },
             onDeliveryClick = {
                 openShipperDeliveryDashboard(
+                    addToBackStack = false,
                     direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.DELIVERY),
                 )
             },
             onProfileClick = {
-                openCustomerAccount(direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.PROFILE))
+                openCustomerAccount(
+                    addToBackStack = false,
+                    direction = StaffBottomNavTab.KITCHEN.directionTo(StaffBottomNavTab.PROFILE),
+                )
             },
         )
     }

@@ -4,7 +4,6 @@ import android.view.View
 import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
-import androidx.fragment.app.FragmentTransaction
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
@@ -45,19 +44,16 @@ import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
 import com.devpro.pizzatime.shared.drawer.StaffNavigationDrawerDialogFragment
 import com.google.firebase.auth.FirebaseAuth
 
-enum class NavigationDirection {
-    FORWARD,
-    BACKWARD,
-}
-
 fun Fragment.openStaffDashboard(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = StaffDashboardFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 fun Fragment.openLoginRequiredScreen(addToBackStack: Boolean = true) {
@@ -123,11 +119,13 @@ fun Fragment.openCustomerHomeScreen() {
 fun Fragment.openKitchenBoard(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = KitchenBoardFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 
@@ -180,11 +178,13 @@ fun Fragment.openPizzaDetailScreen(
 fun Fragment.openShipperDeliveryDashboard(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = ShipperDeliveryDashboardFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 
@@ -208,11 +208,13 @@ fun Fragment.openOrderSuccess(
 fun Fragment.openCustomerHome(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = CustomerHomeFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 
@@ -229,10 +231,14 @@ fun Fragment.openShipperDeliveryDetail(orderId: String) {
     )
 }
 
-fun Fragment.openAdminDashboard(addToBackStack: Boolean = true) {
+fun Fragment.openAdminDashboard(
+    addToBackStack: Boolean = true,
+    animate: Boolean = true,
+) {
     replaceStaffFlowFragment(
         fragment = AdminDashboardFragment(),
         addToBackStack = addToBackStack,
+        animate = animate,
     )
 }
 
@@ -288,11 +294,13 @@ fun Fragment.openCustomerOrderDetail(orderId: String) {
 fun Fragment.openCustomerOrderHistory(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = CustomerOrderHistoryFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 fun Fragment.openCartScreen(addToBackStack: Boolean = true) {
@@ -304,11 +312,13 @@ fun Fragment.openCartScreen(addToBackStack: Boolean = true) {
 fun Fragment.openCustomerPromoCodes(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = CustomerPromoCodesFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 fun Fragment.openCustomerMemberQr(addToBackStack: Boolean = true) {
@@ -355,11 +365,13 @@ fun Fragment.openSupportFaq(addToBackStack: Boolean = true) {
 fun Fragment.openCustomerAccount(
     addToBackStack: Boolean = true,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
     replaceStaffFlowFragment(
         fragment = CustomerAccountFragment(),
         addToBackStack = addToBackStack,
         direction = direction,
+        animate = animate,
     )
 }
 fun Fragment.openCustomerFavorites(addToBackStack: Boolean = true) {
@@ -464,39 +476,23 @@ private fun Fragment.replaceStaffFlowFragment(
     fragment: Fragment,
     addToBackStack: Boolean,
     direction: NavigationDirection = NavigationDirection.FORWARD,
+    animate: Boolean = true,
 ) {
-    parentFragmentManager.beginTransaction()
-        .applyNavigationAnimations(direction)
-        .replace(R.id.fragmentContainer, fragment)
-        .applyBackStack(addToBackStack)
-        .commit()
-}
-
-private fun FragmentTransaction.applyNavigationAnimations(
-    direction: NavigationDirection,
-): FragmentTransaction {
-    return when (direction) {
-        NavigationDirection.FORWARD -> setCustomAnimations(
-            R.anim.fragment_enter_from_right,
-            R.anim.fragment_exit_to_left,
-            R.anim.fragment_enter_from_left,
-            R.anim.fragment_exit_to_right,
+    when {
+        !animate -> parentFragmentManager.replaceWithoutAnimation(
+            containerId = R.id.fragmentContainer,
+            fragment = fragment,
+            addToBackStack = addToBackStack,
         )
-        NavigationDirection.BACKWARD -> setCustomAnimations(
-            R.anim.fragment_enter_from_left,
-            R.anim.fragment_exit_to_right,
-            R.anim.fragment_enter_from_right,
-            R.anim.fragment_exit_to_left,
+        addToBackStack -> parentFragmentManager.replaceForward(
+            containerId = R.id.fragmentContainer,
+            fragment = fragment,
+            addToBackStack = true,
         )
-    }
-}
-
-private fun FragmentTransaction.applyBackStack(
-    addToBackStack: Boolean,
-): FragmentTransaction {
-    return if (addToBackStack) {
-        addToBackStack(null)
-    } else {
-        this
+        else -> parentFragmentManager.replaceWithDirection(
+            containerId = R.id.fragmentContainer,
+            fragment = fragment,
+            moveForward = direction == NavigationDirection.FORWARD,
+        )
     }
 }

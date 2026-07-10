@@ -53,13 +53,20 @@ fun Fragment.bindRoleAwareAccountBottomNav(
                     fourth = getString(R.string.operations_nav_profile),
                 ),
                 onFirstClick = {
-                    openStaffDashboard(direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.DASHBOARD))
+                    openStaffDashboard(
+                        addToBackStack = false,
+                        direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.DASHBOARD),
+                    )
                 },
                 onSecondClick = {
-                    openKitchenBoard(direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.KITCHEN))
+                    openKitchenBoard(
+                        addToBackStack = false,
+                        direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.KITCHEN),
+                    )
                 },
                 onThirdClick = {
                     openShipperDeliveryDashboard(
+                        addToBackStack = false,
                         direction = StaffBottomNavTab.PROFILE.directionTo(StaffBottomNavTab.DELIVERY),
                     )
                 },

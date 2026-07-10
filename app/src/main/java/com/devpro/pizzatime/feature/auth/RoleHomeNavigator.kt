@@ -26,11 +26,11 @@ fun Fragment.openRoleHome(role: UserRole): Boolean {
     OrderNotificationMonitor.start(role)
     clearAppBackStack()
     when (role) {
-        UserRole.CUSTOMER -> openCustomerHome(addToBackStack = false)
-        UserRole.STAFF -> openStaffDashboard(addToBackStack = false)
-        UserRole.KITCHEN -> openKitchenBoard(addToBackStack = false)
-        UserRole.SHIPPER -> openShipperDeliveryDashboard(addToBackStack = false)
-        UserRole.ADMIN -> openAdminDashboard(addToBackStack = false)
+        UserRole.CUSTOMER -> openCustomerHome(addToBackStack = false, animate = false)
+        UserRole.STAFF -> openStaffDashboard(addToBackStack = false, animate = false)
+        UserRole.KITCHEN -> openKitchenBoard(addToBackStack = false, animate = false)
+        UserRole.SHIPPER -> openShipperDeliveryDashboard(addToBackStack = false, animate = false)
+        UserRole.ADMIN -> openAdminDashboard(addToBackStack = false, animate = false)
         UserRole.GUEST -> return false
     }
     return true

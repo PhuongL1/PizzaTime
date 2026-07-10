@@ -16,6 +16,7 @@ import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutConsistencyRepository
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
+import com.devpro.pizzatime.feature.staff.navigation.replaceForward
 import java.util.Locale
 
 class CartFragment : Fragment() {
@@ -189,11 +190,10 @@ class CartFragment : Fragment() {
     }
 
     private fun openCheckoutScreen() {
-        parentFragmentManager.beginTransaction()
-            .setCustomAnimations(android.R.anim.fade_in, android.R.anim.fade_out)
-            .replace(R.id.fragmentContainer, CheckoutFragment())
-            .addToBackStack(null)
-            .commit()
+        parentFragmentManager.replaceForward(
+            containerId = R.id.fragmentContainer,
+            fragment = CheckoutFragment(),
+        )
     }
 
     private fun applyPromoCode() {
