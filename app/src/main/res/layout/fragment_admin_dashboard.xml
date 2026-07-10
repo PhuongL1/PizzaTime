@@ -58,7 +58,8 @@
                 android:maxLines="2"
                 android:text="@string/admin_dashboard_subtitle"
                 android:textColor="@color/pt_gold_light"
-                android:textSize="14sp" />
+                android:textSize="14sp"
+                android:textStyle="bold" />
 
             <LinearLayout
                 android:id="@+id/revenueCard"

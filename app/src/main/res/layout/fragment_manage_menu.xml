@@ -30,7 +30,7 @@
             android:layout_height="wrap_content"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
-            android:paddingTop="24dp"
+            android:paddingTop="16dp"
             android:paddingBottom="24dp">
 
             <TextView
@@ -38,33 +38,37 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:fontFamily="serif"
+                android:includeFontPadding="false"
+                android:maxLines="1"
                 android:text="@string/manage_menu_title"
                 android:textColor="@color/pt_white"
-                android:textSize="32sp"
-                android:textStyle="bold" />
+                android:textSize="30sp"
+                android:textStyle="bold"  />
 
             <TextView
                 android:id="@+id/tvManageMenuSubtitle"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_marginTop="6dp"
+                android:lineSpacingExtra="2dp"
+                android:maxLines="2"
                 android:text="@string/manage_menu_subtitle"
                 android:textColor="@color/pt_white_light"
-                android:textSize="15sp"
+                android:textSize="14sp"
                 android:textStyle="bold" />
 
             <EditText
                 android:id="@+id/edtSearchMenu"
                 android:layout_width="match_parent"
                 android:layout_height="48dp"
-                android:layout_marginTop="32dp"
+                android:layout_marginTop="26dp"
                 android:background="@drawable/bg_manage_menu_search"
                 android:clickable="true"
                 android:focusable="true"
                 android:focusableInTouchMode="true"
                 android:hint="@string/manage_menu_search_hint"
                 android:inputType="text"
-                android:paddingHorizontal="18dp"
+                android:paddingHorizontal="20dp"
                 android:singleLine="true"
                 android:textColor="@color/pt_white"
                 android:textColorHint="@color/pt_text_hint_dark_bg"

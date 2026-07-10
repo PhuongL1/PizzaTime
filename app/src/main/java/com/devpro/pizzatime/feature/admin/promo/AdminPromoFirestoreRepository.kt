@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.admin.promo
 
+import android.annotation.SuppressLint
 import android.util.Log
 import com.devpro.pizzatime.shared.promo.toPromoDocumentModel
 import com.google.firebase.firestore.DocumentSnapshot
@@ -11,6 +12,7 @@ import java.util.Locale
 
 object AdminPromoFirestoreRepository {
 
+    @SuppressLint("StaticFieldLeak")
     private val firestore = FirebaseFirestore.getInstance()
 
     fun loadPromos(onResult: (Result<List<AdminPromoUiModel>>) -> Unit) {

@@ -24,6 +24,7 @@
         android:layout_weight="1"
         android:fillViewport="false"
         android:overScrollMode="never"
+        android:paddingBottom="8dp"
         android:scrollbars="none">
 
         <LinearLayout
@@ -33,8 +34,8 @@
             android:background="@drawable/bg_shipper_delivery_glow"
             android:orientation="vertical"
             android:paddingHorizontal="24dp"
-            android:paddingTop="26dp"
-            android:paddingBottom="36dp">
+            android:paddingTop="16dp"
+            android:paddingBottom="24dp">
 
             <LinearLayout
                 android:id="@+id/activeDeliveryHeader"
@@ -48,9 +49,11 @@
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_weight="1"
+                    android:fontFamily="serif"
+                    android:maxLines="1"
                     android:text="@string/shipper_active_delivery"
                     android:textColor="@color/pt_text_primary_dark_bg"
-                    android:textSize="24sp"
+                    android:textSize="30sp"
                     android:textStyle="bold" />
 
                 <TextView
