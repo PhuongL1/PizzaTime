@@ -1,6 +1,7 @@
 package com.devpro.pizzatime.feature.customer.favorites
 
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -45,6 +46,18 @@ object CustomerFavoritesFirestoreRepository {
                 }
                 .onFailure { error -> onResult(Result.failure(error)) }
         }
+    }
+
+    fun loadProduct(
+        productId: String,
+        onResult: (Result<ProductUiModel?>) -> Unit,
+    ) {
+        firestore.collection("products").document(productId)
+            .get()
+            .addOnSuccessListener { document ->
+                onResult(Result.success(document.toProductUiModel()))
+            }
+            .addOnFailureListener { error -> onResult(Result.failure(error)) }
     }
 
     fun addFavorite(
@@ -136,6 +149,26 @@ object CustomerFavoritesFirestoreRepository {
             imageRes = R.drawable.img_pizza_time,
             imageUrl = getString("imageUrl").orEmpty(),
             cardType = CustomerFavoriteCardType.FEATURED,
+            sizeOptions = getStringList("sizeOptions"),
+            crustOptions = getStringList("crustOptions"),
+            toppingOptions = getStringList("toppingOptions"),
+        )
+    }
+
+    private fun DocumentSnapshot.toProductUiModel(): ProductUiModel? {
+        val name = getString("name") ?: return null
+        return ProductUiModel(
+            id = id,
+            name = name,
+            description = getString("description").orEmpty(),
+            basePrice = getDouble("basePrice") ?: 0.0,
+            imageUrl = getString("imageUrl").orEmpty(),
+            rating = 0.0,
+            averageRating = 0.0,
+            ratingCount = 0,
+            available = getBoolean("available") ?: true,
+            categoryId = getString("categoryId").orEmpty(),
+            categoryName = getString("categoryName").orEmpty(),
             sizeOptions = getStringList("sizeOptions"),
             crustOptions = getStringList("crustOptions"),
             toppingOptions = getStringList("toppingOptions"),

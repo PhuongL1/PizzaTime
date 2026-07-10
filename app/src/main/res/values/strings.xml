@@ -954,10 +954,13 @@
     <string name="customer_favorites_pairing_icon">✦</string>
 
     <string name="customer_favorites_add_to_cart_toast">%1$s added to cart</string>
+    <string name="customer_favorites_added_to_cart">Added to cart.</string>
     <string name="customer_favorites_saved_toast">%1$s saved to favorites</string>
     <string name="customer_favorites_removed_toast">%1$s removed from favorites</string>
     <string name="customer_favorites_update_failed">Could not update favorites.</string>
     <string name="customer_favorites_login_required">Sign in to save favorites.</string>
+    <string name="customer_favorites_view_login_required">Sign in to view favorites.</string>
+    <string name="customer_favorites_product_unavailable">Product is no longer available.</string>
     <string name="app_edition_mismatch">This account cannot use this app edition.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 

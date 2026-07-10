@@ -12,13 +12,16 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
+import com.devpro.pizzatime.core.product.ProductOptionDefaults
 import com.devpro.pizzatime.databinding.FragmentCustomerFavoritesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteCompactBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteFeaturedBinding
+import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerTopBar
+import com.devpro.pizzatime.feature.customer.menu.ProductUiModel
 import com.devpro.pizzatime.feature.staff.navigation.openPizzaDetailScreen
 import com.google.firebase.auth.FirebaseAuth
 import java.util.Locale
@@ -71,7 +74,7 @@ class CustomerFavoritesFragment : Fragment() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
             favoritesData = favoritesData.copy(favorites = emptyList())
-            renderFavorites()
+            renderFavorites(getString(R.string.customer_favorites_view_login_required))
             return
         }
 
@@ -80,11 +83,11 @@ class CustomerFavoritesFragment : Fragment() {
             result
                 .onSuccess { favorites ->
                     favoritesData = favoritesData.copy(favorites = favorites)
-                    renderFavorites()
+                    renderFavorites(getString(R.string.no_favorites_yet))
                 }
                 .onFailure {
                     favoritesData = favoritesData.copy(favorites = emptyList())
-                    renderFavorites()
+                    renderFavorites(getString(R.string.no_favorites_yet))
                 }
         }
     }
@@ -94,11 +97,11 @@ class CustomerFavoritesFragment : Fragment() {
         tvSubtitle.text = getString(R.string.customer_menu_subtitle_favorites)
     }
 
-    private fun renderFavorites() = with(binding.favoritesContainer) {
+    private fun renderFavorites(emptyMessage: String) = with(binding.favoritesContainer) {
         removeAllViews()
 
         if (favoritesData.favorites.isEmpty()) {
-            addView(createEmptyStateView(getString(R.string.no_favorites_yet)))
+            addView(createEmptyStateView(emptyMessage))
             return
         }
 
@@ -139,8 +142,8 @@ class CustomerFavoritesFragment : Fragment() {
             showPlaceholder = { itemBinding.tvImagePlaceholder.isVisible = it },
         )
 
-        itemBinding.btnAddToCart.setOnClickListener {
-            showToast(getString(R.string.customer_favorites_add_to_cart_toast, item.name))
+        itemBinding.btnAddToCart.setOnClickListener { buttonView ->
+            handleAddToCart(item, buttonView)
         }
 
         itemBinding.btnHeart.setOnClickListener {
@@ -179,8 +182,8 @@ class CustomerFavoritesFragment : Fragment() {
             showPlaceholder = { itemBinding.tvImagePlaceholder.isVisible = it },
         )
 
-        itemBinding.btnAdd.setOnClickListener {
-            showToast(getString(R.string.customer_favorites_add_to_cart_toast, item.name))
+        itemBinding.btnAdd.setOnClickListener { buttonView ->
+            handleAddToCart(item, buttonView)
         }
 
         itemBinding.btnHeart.setOnClickListener {
@@ -209,7 +212,7 @@ class CustomerFavoritesFragment : Fragment() {
     private fun removeFavorite(item: CustomerFavoriteItemUiModel) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {
-            showToast(getString(R.string.customer_favorites_login_required))
+            showToast(getString(R.string.customer_favorites_view_login_required))
             return
         }
 
@@ -223,6 +226,67 @@ class CustomerFavoritesFragment : Fragment() {
                 .onFailure {
                     showToast(getString(R.string.customer_favorites_update_failed))
                 }
+        }
+    }
+
+    private fun handleAddToCart(
+        item: CustomerFavoriteItemUiModel,
+        buttonView: View,
+    ) {
+        val currentUser = FirebaseAuth.getInstance().currentUser
+        if (currentUser == null) {
+            showToast(getString(R.string.customer_favorites_view_login_required))
+            return
+        }
+
+        buttonView.isEnabled = false
+        resolveProductForCart(item) { resolvedProduct ->
+            if (_binding == null) {
+                buttonView.isEnabled = true
+                return@resolveProductForCart
+            }
+
+            buttonView.isEnabled = true
+            if (resolvedProduct == null) {
+                showToast(getString(R.string.customer_favorites_product_unavailable))
+                return@resolveProductForCart
+            }
+
+            val cartItem = resolvedProduct.toCartItemOrNull()
+            if (cartItem == null) {
+                openPizzaDetail(resolvedProduct)
+                return@resolveProductForCart
+            }
+
+            CartStore.addItem(cartItem)
+            setupTopBar()
+            showToast(getString(R.string.customer_favorites_added_to_cart))
+        }
+    }
+
+    private fun resolveProductForCart(
+        item: CustomerFavoriteItemUiModel,
+        onResolved: (ResolvedFavoriteProduct?) -> Unit,
+    ) {
+        val localProduct = item.toResolvedProductOrNull()
+        if (localProduct != null) {
+            onResolved(localProduct)
+            return
+        }
+
+        val productId = item.id.trim()
+        if (productId.isBlank()) {
+            onResolved(null)
+            return
+        }
+
+        CustomerFavoritesFirestoreRepository.loadProduct(productId) { result ->
+            if (_binding == null) return@loadProduct
+            val resolved = result
+                .getOrNull()
+                ?.takeIf { product -> product.available }
+                ?.toResolvedFavoriteProduct(fallbackImageRes = item.imageRes ?: R.drawable.img_pizza_time)
+            onResolved(resolved)
         }
     }
 
@@ -288,6 +352,24 @@ class CustomerFavoritesFragment : Fragment() {
     }
 
     private fun openPizzaDetail(
+        product: ResolvedFavoriteProduct,
+    ) {
+        openPizzaDetail(
+            productId = product.id,
+            name = product.name,
+            description = product.description,
+            price = formatPrice(product.basePrice),
+            rating = getString(R.string.no_ratings),
+            imageUrl = product.imageUrl,
+            categoryId = product.categoryId,
+            categoryName = product.categoryName,
+            sizeOptions = product.sizeOptions,
+            crustOptions = product.crustOptions,
+            toppingOptions = product.toppingOptions,
+        )
+    }
+
+    private fun openPizzaDetail(
         productId: String,
         name: String,
         description: String,
@@ -318,5 +400,145 @@ class CustomerFavoritesFragment : Fragment() {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    private data class ResolvedFavoriteProduct(
+        val id: String,
+        val name: String,
+        val description: String,
+        val basePrice: Double,
+        val imageRes: Int,
+        val imageUrl: String,
+        val categoryId: String,
+        val categoryName: String,
+        val sizeOptions: List<String>,
+        val crustOptions: List<String>,
+        val toppingOptions: List<String>,
+    ) {
+        fun toCartItemOrNull(): CartItemUiModel? {
+            val category = ProductOptionDefaults.resolveProductCategory(categoryId, categoryName)
+            val selectedSize = when (category) {
+                ProductOptionDefaults.ProductCategory.PIZZA,
+                ProductOptionDefaults.ProductCategory.DRINK,
+                -> {
+                    val sizes = ProductOptionDefaults.sizesOrDefault(
+                        options = sizeOptions,
+                        category = category,
+                    )
+                    sizes.firstOrNull { size -> size.equals(DEFAULT_MEDIUM_SIZE, ignoreCase = true) }
+                        ?: sizes.firstOrNull()
+                        ?: return null
+                }
+
+                ProductOptionDefaults.ProductCategory.COMBO,
+                ProductOptionDefaults.ProductCategory.DESSERT,
+                -> ""
+
+                ProductOptionDefaults.ProductCategory.UNKNOWN,
+                -> if (sizeOptions.isEmpty() && crustOptions.isEmpty() && toppingOptions.isEmpty()) {
+                    ""
+                } else {
+                    return null
+                }
+            }
+
+            val selectedCrust = when (category) {
+                ProductOptionDefaults.ProductCategory.PIZZA -> {
+                    val crusts = ProductOptionDefaults.crustsOrDefault(
+                        options = crustOptions,
+                        category = category,
+                    )
+                    crusts.firstOrNull() ?: return null
+                }
+
+                else -> ""
+            }
+
+            return CartItemUiModel(
+                id = id,
+                name = name,
+                description = description,
+                price = defaultUnitPrice(category, selectedSize),
+                quantity = 1,
+                imageRes = imageRes,
+                selectedSize = selectedSize,
+                selectedCrust = selectedCrust,
+                selectedToppings = emptyList(),
+                imageUrl = imageUrl,
+            )
+        }
+
+        private fun defaultUnitPrice(
+            category: ProductOptionDefaults.ProductCategory,
+            selectedSize: String,
+        ): Double {
+            return when (category) {
+                ProductOptionDefaults.ProductCategory.PIZZA,
+                ProductOptionDefaults.ProductCategory.DRINK,
+                -> basePrice * sizeMultiplier(selectedSize)
+
+                ProductOptionDefaults.ProductCategory.COMBO,
+                ProductOptionDefaults.ProductCategory.DESSERT,
+                ProductOptionDefaults.ProductCategory.UNKNOWN,
+                -> basePrice
+            }
+        }
+
+        private fun sizeMultiplier(size: String): Double {
+            return when (size.trim().lowercase(Locale.US)) {
+                "medium" -> 1.12
+                "large" -> 1.20
+                else -> 1.0
+            }
+        }
+    }
+
+    private fun CustomerFavoriteItemUiModel.toResolvedProductOrNull(): ResolvedFavoriteProduct? {
+        val productId = id.trim()
+        val productName = name.trim()
+        if (productId.isBlank() || productName.isBlank()) {
+            return null
+        }
+
+        val hasCategory = categoryId.isNotBlank() || categoryName.isNotBlank()
+        if (!hasCategory) {
+            return null
+        }
+
+        return ResolvedFavoriteProduct(
+            id = productId,
+            name = productName,
+            description = description,
+            basePrice = price,
+            imageRes = imageRes ?: R.drawable.img_pizza_time,
+            imageUrl = imageUrl,
+            categoryId = categoryId,
+            categoryName = categoryName,
+            sizeOptions = sizeOptions,
+            crustOptions = crustOptions,
+            toppingOptions = toppingOptions,
+        )
+    }
+
+    private fun ProductUiModel.toResolvedFavoriteProduct(
+        fallbackImageRes: Int,
+    ): ResolvedFavoriteProduct {
+        return ResolvedFavoriteProduct(
+            id = id,
+            name = name,
+            description = description,
+            basePrice = basePrice,
+            imageRes = fallbackImageRes,
+            imageUrl = imageUrl,
+            categoryId = categoryId,
+            categoryName = categoryName,
+            sizeOptions = sizeOptions,
+            crustOptions = crustOptions,
+            toppingOptions = toppingOptions,
+        )
+    }
+
+    private companion object {
+        private const val DEFAULT_MEDIUM_SIZE = "Medium"
     }
 }
