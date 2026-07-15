@@ -1,8 +1,9 @@
 package com.devpro.pizzatime.feature.admin.staff
 
-import android.app.AlertDialog
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
+import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -11,13 +12,15 @@ import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.Spinner
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.config.FirebaseFeatureFlags
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentManageStaffBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
@@ -25,6 +28,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ManageStaffFragment : Fragment() {
 
@@ -38,22 +42,8 @@ class ManageStaffFragment : Fragment() {
 
     private val staffAdapter by lazy {
         AdminStaffAdapter(
-            onEditClick = { showComingSoon(getString(R.string.edit_staff_format, it.name)) },
-            onToggleStatusClick = { item ->
-                val newActive = item.status == AdminStaffStatus.INACTIVE
-                AdminStaffFirestoreRepository.toggleActive(item.id, newActive) { result ->
-                    if (!isAdded) return@toggleActive
-                    result
-                        .onSuccess { loadFirestoreStaff() }
-                        .onFailure {
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.admin_staff_toggle_failed,
-                                Toast.LENGTH_SHORT,
-                            ).show()
-                        }
-                }
-            },
+            onEditClick = { showUnavailableAction(getString(R.string.edit_staff_format, it.name)) },
+            onToggleStatusClick = ::confirmToggleStaffStatus,
         )
     }
 
@@ -79,8 +69,12 @@ class ManageStaffFragment : Fragment() {
 
     private fun loadFirestoreStaff() {
         AdminStaffFirestoreRepository.loadStaff { result ->
-            if (!isAdded) return@loadStaff
-            allStaff = result.getOrElse { FakeAdminStaffData.staff }
+            if (_binding == null || !isAdded) return@loadStaff
+            allStaff = result.getOrElse { error ->
+                Log.e(TAG, "Failed to load admin staff", error)
+                showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
+                FakeAdminStaffData.staff
+            }
             renderStaff()
         }
     }
@@ -94,7 +88,7 @@ class ManageStaffFragment : Fragment() {
     private fun setupActions() = with(binding) {
         btnAddStaff.setOnClickListener {
             if (!FirebaseFeatureFlags.CLOUD_FUNCTIONS_ENABLED) {
-                showToast(R.string.admin_staff_create_disabled)
+                showUiMessage(R.string.admin_staff_create_disabled, UiMessageType.WARNING)
                 return@setOnClickListener
             }
 
@@ -140,7 +134,7 @@ class ManageStaffFragment : Fragment() {
             addView(roleSpinner)
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.admin_staff_create_title)
             .setView(form)
             .setNegativeButton(android.R.string.cancel, null)
@@ -150,10 +144,10 @@ class ManageStaffFragment : Fragment() {
                 setOnShowListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         createStaffAccount(
-                            name = nameInput.text.toString().trim(),
-                            email = emailInput.text.toString().trim(),
-                            phone = phoneInput.text.toString().trim(),
-                            password = passwordInput.text.toString(),
+                            nameInput = nameInput,
+                            emailInput = emailInput,
+                            phoneInput = phoneInput,
+                            passwordInput = passwordInput,
                             role = roleSpinner.selectedItem.toString(),
                             onCreated = { dismiss() },
                         )
@@ -175,34 +169,34 @@ class ManageStaffFragment : Fragment() {
     }
 
     private fun createStaffAccount(
-        name: String,
-        email: String,
-        phone: String,
-        password: String,
+        nameInput: EditText,
+        emailInput: EditText,
+        phoneInput: EditText,
+        passwordInput: EditText,
         role: String,
         onCreated: () -> Unit,
     ) {
         if (!FirebaseFeatureFlags.CLOUD_FUNCTIONS_ENABLED) {
-            showToast(R.string.admin_staff_create_disabled)
+            showUiMessage(R.string.admin_staff_create_disabled, UiMessageType.WARNING)
             return
         }
-
-        when {
-            name.isBlank() -> {
-                showToast(R.string.admin_staff_create_name_required)
-                return
-            }
-
-            !email.contains("@") -> {
-                showToast(R.string.admin_staff_create_email_invalid)
-                return
-            }
-
-            password.length < 6 -> {
-                showToast(R.string.admin_staff_create_password_invalid)
-                return
-            }
+        val name = nameInput.text.toString().trim()
+        val email = emailInput.text.toString().trim()
+        val phone = phoneInput.text.toString().trim()
+        val password = passwordInput.text.toString()
+        nameInput.error = if (name.isBlank()) getString(R.string.admin_staff_create_name_required) else null
+        emailInput.error = if (Patterns.EMAIL_ADDRESS.matcher(email).matches()) {
+            null
+        } else {
+            getString(R.string.admin_staff_create_email_invalid)
         }
+        phoneInput.error = if (phone.isBlank()) getString(R.string.admin_staff_create_phone_required) else null
+        passwordInput.error = if (password.length >= MIN_STAFF_PASSWORD_LENGTH) {
+            null
+        } else {
+            getString(R.string.admin_staff_create_password_invalid)
+        }
+        if (listOf(nameInput, emailInput, phoneInput, passwordInput).any { it.error != null }) return
 
         AdminStaffFunctionsRepository.createStaffAccount(
             name = name,
@@ -211,19 +205,43 @@ class ManageStaffFragment : Fragment() {
             password = password,
             role = role,
         ) { result ->
-            if (!isAdded) return@createStaffAccount
+            if (_binding == null || !isAdded) return@createStaffAccount
             result
                 .onSuccess {
-                    showToast(R.string.admin_staff_create_success)
-                    loadFirestoreStaff()
                     onCreated()
+                    showUiMessage(R.string.admin_staff_create_success, UiMessageType.SUCCESS)
+                    loadFirestoreStaff()
                 }
                 .onFailure { error ->
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: getString(R.string.admin_staff_create_failed),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Log.e(TAG, "Failed to create admin staff account role=$role", error)
+                    showUiMessage(R.string.admin_staff_create_failed, UiMessageType.ERROR)
+                }
+        }
+    }
+
+    private fun confirmToggleStaffStatus(item: AdminStaffUiModel) {
+        val newActive = item.status == AdminStaffStatus.INACTIVE
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.admin_staff_status_confirmation_title)
+            .setMessage(getString(R.string.admin_staff_status_confirmation_message, item.name))
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.admin_staff_status_confirmation_action) { _, _ ->
+                updateStaffStatus(item, newActive)
+            }
+            .show()
+    }
+
+    private fun updateStaffStatus(item: AdminStaffUiModel, newActive: Boolean) {
+        AdminStaffFirestoreRepository.toggleActive(item.id, newActive) { result ->
+            if (_binding == null || !isAdded) return@toggleActive
+            result
+                .onSuccess {
+                    showUiMessage(R.string.admin_staff_status_updated, UiMessageType.SUCCESS)
+                    loadFirestoreStaff()
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to update staffId=${item.id} active=$newActive", error)
+                    showUiMessage(R.string.admin_staff_toggle_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -305,16 +323,12 @@ class ManageStaffFragment : Fragment() {
         )
     }
 
-    private fun showComingSoon(action: String) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_action_coming_soon, action),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
-
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    private fun showUnavailableAction(action: String) {
+        showUiMessage(
+            textRes = R.string.staff_action_coming_soon,
+            type = UiMessageType.INFO,
+            args = listOf(action),
+        )
     }
 
     override fun onDestroyView() {
@@ -330,6 +344,8 @@ class ManageStaffFragment : Fragment() {
     }
 
     private companion object {
+        const val TAG = "ManageStaff"
+        const val MIN_STAFF_PASSWORD_LENGTH = 6
         val STAFF_CREATION_ROLES = listOf("STAFF", "KITCHEN", "SHIPPER")
     }
 }

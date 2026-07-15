@@ -147,6 +147,18 @@
                 android:overScrollMode="never"
                 tools:listitem="@layout/item_admin_menu" />
 
+            <TextView
+                android:id="@+id/tvEmptyMenu"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="28dp"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/manage_menu_empty"
+                android:textColor="@color/pt_text_muted"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
         </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>

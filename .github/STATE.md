@@ -25,7 +25,7 @@ review: 1/3
 qa: 1/3
 review: 2/3
 qa: 2/3
-note: "79D1 and 79D2 scoped searches, variant assemblies, unit tests, lint, and diff reviews pass"
+note: "79D1, 79D2, and 79D3 scoped searches, variant assemblies, unit tests, lint, and diff reviews pass"
 
 ### task-20260605-1
 task: "Soạn giáo án Kotlin OOP 1 buổi cho người mới"

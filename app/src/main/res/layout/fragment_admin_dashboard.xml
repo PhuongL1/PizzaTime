@@ -518,6 +518,18 @@
                 android:nestedScrollingEnabled="false"
                 android:overScrollMode="never" />
 
+            <TextView
+                android:id="@+id/tvRecentOrdersEmpty"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="16dp"
+                android:gravity="center"
+                android:padding="24dp"
+                android:text="@string/admin_recent_orders_empty"
+                android:textColor="@color/pt_text_muted"
+                android:textSize="14sp"
+                android:visibility="gone" />
+
             <View
                 android:layout_width="match_parent"
                 android:layout_height="50dp" />

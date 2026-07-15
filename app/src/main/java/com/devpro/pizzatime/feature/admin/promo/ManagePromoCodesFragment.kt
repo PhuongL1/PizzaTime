@@ -6,18 +6,20 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.widget.CheckBox
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
+import androidx.annotation.StringRes
+import androidx.appcompat.app.AlertDialog
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentManagePromoCodesBinding
 import com.devpro.pizzatime.databinding.ItemAdminPromoBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
@@ -27,6 +29,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openAdminDashboard
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
 import com.devpro.pizzatime.feature.staff.navigation.openManageMenu
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDashboard
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Locale
 
 class ManagePromoCodesFragment : Fragment() {
@@ -61,7 +64,7 @@ class ManagePromoCodesFragment : Fragment() {
 
     private fun loadFirestorePromos() {
         AdminPromoFirestoreRepository.loadPromos { result ->
-            if (!isAdded) return@loadPromos
+            if (_binding == null || !isAdded) return@loadPromos
             result
                 .onSuccess { promos ->
                     allPromos = promos
@@ -70,7 +73,7 @@ class ManagePromoCodesFragment : Fragment() {
                 .onFailure { error ->
                     allPromos = emptyList()
                     Log.e(TAG, "Admin promo load failed", error)
-                    showToast(R.string.promo_load_failed)
+                    showUiMessage(R.string.promo_load_failed, UiMessageType.ERROR)
                 }
             renderPromos()
         }
@@ -119,7 +122,7 @@ class ManagePromoCodesFragment : Fragment() {
             addView(minOrderInput)
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.promo_create_dialog_title)
             .setView(form)
             .setNegativeButton(android.R.string.cancel, null)
@@ -129,12 +132,12 @@ class ManagePromoCodesFragment : Fragment() {
                 setOnShowListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         savePromoCreate(
-                            rawCode = codeInput.text.toString(),
-                            title = titleInput.text.toString().trim(),
+                            codeInput = codeInput,
+                            titleInput = titleInput,
                             description = descriptionInput.text.toString().trim(),
-                            discountType = discountTypeInput.text.toString().trim().uppercase(Locale.US),
-                            discountValueText = discountValueInput.text.toString().trim(),
-                            minOrderAmountText = minOrderInput.text.toString().trim(),
+                            discountTypeInput = discountTypeInput,
+                            discountValueInput = discountValueInput,
+                            minOrderInput = minOrderInput,
                             onSaved = { dismiss() },
                         )
                     }
@@ -185,7 +188,7 @@ class ManagePromoCodesFragment : Fragment() {
             addView(activeInput)
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(getString(R.string.promo_edit_dialog_title, promo.code))
             .setView(form)
             .setNegativeButton(android.R.string.cancel, null)
@@ -196,11 +199,11 @@ class ManagePromoCodesFragment : Fragment() {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         savePromoEdit(
                             promoId = promo.id,
-                            title = titleInput.text.toString().trim(),
+                            titleInput = titleInput,
                             description = descriptionInput.text.toString().trim(),
-                            discountType = discountTypeInput.text.toString().trim().uppercase(Locale.US),
-                            discountValueText = discountValueInput.text.toString().trim(),
-                            minOrderAmountText = minOrderInput.text.toString().trim(),
+                            discountTypeInput = discountTypeInput,
+                            discountValueInput = discountValueInput,
+                            minOrderInput = minOrderInput,
                             active = activeInput.isChecked,
                             onSaved = { dismiss() },
                         )
@@ -223,120 +226,123 @@ class ManagePromoCodesFragment : Fragment() {
         }
     }
 
+    private fun requiredError(value: String, @StringRes messageRes: Int): String? {
+        return if (value.isBlank()) getString(messageRes) else null
+    }
+
     private fun savePromoEdit(
         promoId: String,
-        title: String,
+        titleInput: EditText,
         description: String,
-        discountType: String,
-        discountValueText: String,
-        minOrderAmountText: String,
+        discountTypeInput: EditText,
+        discountValueInput: EditText,
+        minOrderInput: EditText,
         active: Boolean,
         onSaved: () -> Unit,
     ) {
-        val discountValue = discountValueText.toDoubleOrNull()
-        val minOrderAmount = minOrderAmountText.toDoubleOrNull()
-
-        when {
-            title.isBlank() -> {
-                showToast(R.string.promo_edit_title_required)
-                return
-            }
-
-            discountType != "PERCENT" && discountType != "FIXED" -> {
-                showToast(R.string.promo_edit_discount_type_invalid)
-                return
-            }
-
-            discountValue == null || discountValue <= 0.0 -> {
-                showToast(R.string.promo_edit_discount_value_required)
-                return
-            }
-
-            minOrderAmount == null || minOrderAmount < 0.0 -> {
-                showToast(R.string.promo_edit_min_order_invalid)
-                return
-            }
+        val title = titleInput.text.toString().trim()
+        val discountType = discountTypeInput.text.toString().trim().uppercase(Locale.US)
+        val discountValue = discountValueInput.text.toString().trim().toDoubleOrNull()
+        val minOrderAmount = minOrderInput.text.toString().trim().toDoubleOrNull()
+        titleInput.error = requiredError(title, R.string.promo_edit_title_required)
+        discountTypeInput.error = if (discountType == "PERCENT" || discountType == "FIXED") {
+            null
+        } else {
+            getString(R.string.promo_edit_discount_type_invalid)
         }
+        discountValueInput.error = if (discountValue != null && discountValue > 0.0) {
+            null
+        } else {
+            getString(R.string.promo_edit_discount_value_required)
+        }
+        minOrderInput.error = if (minOrderAmount != null && minOrderAmount >= 0.0) {
+            null
+        } else {
+            getString(R.string.promo_edit_min_order_invalid)
+        }
+        if (listOf(titleInput, discountTypeInput, discountValueInput, minOrderInput).any { it.error != null }) return
 
+        val validatedDiscountValue = discountValue ?: return
+        val validatedMinOrderAmount = minOrderAmount ?: return
         AdminPromoFirestoreRepository.updatePromo(
             promoId = promoId,
             title = title,
             description = description,
             discountType = discountType,
-            discountValue = discountValue,
-            minOrderAmount = minOrderAmount,
+            discountValue = validatedDiscountValue,
+            minOrderAmount = validatedMinOrderAmount,
             active = active,
         ) { result ->
-            if (!isAdded) return@updatePromo
+            if (_binding == null || !isAdded) return@updatePromo
             result
                 .onSuccess {
-                    showToast(R.string.promo_edit_saved)
                     onSaved()
+                    showUiMessage(R.string.promo_edit_saved, UiMessageType.SUCCESS)
                     loadFirestorePromos()
                 }
-                .onFailure {
-                    showToast(R.string.promo_edit_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to update promoId=$promoId", error)
+                    showUiMessage(R.string.promo_edit_failed, UiMessageType.ERROR)
                 }
         }
     }
 
     private fun savePromoCreate(
-        rawCode: String,
-        title: String,
+        codeInput: EditText,
+        titleInput: EditText,
         description: String,
-        discountType: String,
-        discountValueText: String,
-        minOrderAmountText: String,
+        discountTypeInput: EditText,
+        discountValueInput: EditText,
+        minOrderInput: EditText,
         onSaved: () -> Unit,
     ) {
-        val code = rawCode.trim().uppercase(Locale.US)
-        val discountValue = discountValueText.toDoubleOrNull()
-        val minOrderAmount = minOrderAmountText.toDoubleOrNull()
-
-        when {
-            code.isBlank() -> {
-                showToast(R.string.promo_create_code_required)
-                return
-            }
-
-            title.isBlank() -> {
-                showToast(R.string.promo_edit_title_required)
-                return
-            }
-
-            discountType != "PERCENT" && discountType != "FIXED" -> {
-                showToast(R.string.promo_edit_discount_type_invalid)
-                return
-            }
-
-            discountValue == null || discountValue <= 0.0 -> {
-                showToast(R.string.promo_edit_discount_value_required)
-                return
-            }
-
-            minOrderAmount == null || minOrderAmount < 0.0 -> {
-                showToast(R.string.promo_edit_min_order_invalid)
-                return
-            }
+        val code = codeInput.text.toString().trim().uppercase(Locale.US)
+        val title = titleInput.text.toString().trim()
+        val discountType = discountTypeInput.text.toString().trim().uppercase(Locale.US)
+        val discountValue = discountValueInput.text.toString().trim().toDoubleOrNull()
+        val minOrderAmount = minOrderInput.text.toString().trim().toDoubleOrNull()
+        codeInput.error = requiredError(code, R.string.promo_create_code_required)
+        titleInput.error = requiredError(title, R.string.promo_edit_title_required)
+        discountTypeInput.error = if (discountType == "PERCENT" || discountType == "FIXED") {
+            null
+        } else {
+            getString(R.string.promo_edit_discount_type_invalid)
         }
+        discountValueInput.error = if (discountValue != null && discountValue > 0.0) {
+            null
+        } else {
+            getString(R.string.promo_edit_discount_value_required)
+        }
+        minOrderInput.error = if (minOrderAmount != null && minOrderAmount >= 0.0) {
+            null
+        } else {
+            getString(R.string.promo_edit_min_order_invalid)
+        }
+        if (
+            listOf(codeInput, titleInput, discountTypeInput, discountValueInput, minOrderInput)
+                .any { it.error != null }
+        ) return
 
+        val validatedDiscountValue = discountValue ?: return
+        val validatedMinOrderAmount = minOrderAmount ?: return
         AdminPromoFirestoreRepository.createPromo(
             code = code,
             title = title,
             description = description,
             discountType = discountType,
-            discountValue = discountValue,
-            minOrderAmount = minOrderAmount,
+            discountValue = validatedDiscountValue,
+            minOrderAmount = validatedMinOrderAmount,
         ) { result ->
-            if (!isAdded) return@createPromo
+            if (_binding == null || !isAdded) return@createPromo
             result
                 .onSuccess {
-                    showToast(R.string.promo_create_saved)
                     onSaved()
+                    showUiMessage(R.string.promo_create_saved, UiMessageType.SUCCESS)
                     loadFirestorePromos()
                 }
-                .onFailure {
-                    showToast(R.string.promo_create_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to create promo code=$code", error)
+                    showUiMessage(R.string.promo_create_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -465,8 +471,16 @@ class ManagePromoCodesFragment : Fragment() {
         }
         tvReactivate.setOnClickListener {
             AdminPromoFirestoreRepository.setActive(promo.id, true) { result ->
-                if (!isAdded) return@setActive
-                if (result.isSuccess) loadFirestorePromos()
+                if (_binding == null || !isAdded) return@setActive
+                result
+                    .onSuccess {
+                        showUiMessage(R.string.promo_reactivated, UiMessageType.SUCCESS)
+                        loadFirestorePromos()
+                    }
+                    .onFailure { error ->
+                        Log.e(TAG, "Failed to reactivate promoId=${promo.id}", error)
+                        showUiMessage(R.string.promo_edit_failed, UiMessageType.ERROR)
+                    }
             }
         }
     }
@@ -562,21 +576,21 @@ class ManagePromoCodesFragment : Fragment() {
     }
 
     private fun confirmDeletePromo(promo: AdminPromoUiModel) {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.promo_delete_title)
             .setMessage(R.string.promo_delete_message)
             .setNegativeButton(R.string.promo_delete_cancel, null)
             .setPositiveButton(R.string.promo_delete_confirm) { _, _ ->
                 AdminPromoFirestoreRepository.deletePromo(promo.id) { result ->
-                    if (!isAdded) return@deletePromo
+                    if (_binding == null || !isAdded) return@deletePromo
                     result
                         .onSuccess {
-                            showToast(R.string.promo_deleted)
+                            showUiMessage(R.string.promo_deleted, UiMessageType.SUCCESS)
                             loadFirestorePromos()
                         }
                         .onFailure { error ->
                             Log.e(TAG, "Could not delete promo id=${promo.id}", error)
-                            showToast(R.string.promo_delete_failed)
+                            showUiMessage(R.string.promo_delete_failed, UiMessageType.ERROR)
                         }
                 }
             }
@@ -602,13 +616,10 @@ class ManagePromoCodesFragment : Fragment() {
         val chooser = Intent.createChooser(shareIntent, getString(R.string.share))
         try {
             startActivity(chooser)
-        } catch (_: ActivityNotFoundException) {
-            showToast(R.string.promo_share_unavailable)
+        } catch (error: ActivityNotFoundException) {
+            Log.e(TAG, "No app can share promoId=${promo.id}", error)
+            showUiMessage(R.string.promo_share_unavailable, UiMessageType.ERROR)
         }
-    }
-
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {

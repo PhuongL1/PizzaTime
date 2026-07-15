@@ -4,11 +4,13 @@ import android.os.Bundle
 import android.util.Log
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentManageMenuBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
@@ -70,9 +72,10 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                 .onSuccess { products ->
                     allProducts = products.distinctBy { item -> item.id }
                 }
-                .onFailure {
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load admin products", error)
                     allProducts = emptyList()
-                    showToast(R.string.manage_menu_edit_product_failed)
+                    showUiMessage(R.string.manage_menu_edit_product_failed, UiMessageType.ERROR)
                 }
             renderMenuItems()
         }
@@ -93,9 +96,11 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                         }
                     }
                     renderMenuItems()
+                    showUiMessage(R.string.manage_menu_availability_updated, UiMessageType.SUCCESS)
                 }
-                .onFailure {
-                    showToast(R.string.manage_menu_edit_product_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to update product availability id=${item.id}", error)
+                    showUiMessage(R.string.manage_menu_edit_product_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -155,6 +160,8 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
             }
 
         menuAdapter.submitList(filteredItems)
+        binding.rvMenuItems.isVisible = filteredItems.isNotEmpty()
+        binding.tvEmptyMenu.isVisible = filteredItems.isEmpty()
         updateCategoryChipState()
     }
 
@@ -208,10 +215,6 @@ class ManageMenuFragment : Fragment(R.layout.fragment_manage_menu) {
                 }
             },
         )
-    }
-
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
     }
 
     override fun onDestroyView() {
