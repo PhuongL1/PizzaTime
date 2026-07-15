@@ -3,6 +3,8 @@ package com.devpro.pizzatime.core.notification
 import android.content.Context
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.google.firebase.firestore.DocumentSnapshot
 
@@ -45,6 +47,13 @@ object NotificationEventFactory {
         return historyEvents(document).maxOfOrNull { event -> event.createdAtMillis } ?: 0L
     }
 
+    fun latestHandoffAtMillis(document: DocumentSnapshot): Long {
+        return maxOf(
+            notificationEpochMillis(document.get(OrderPaymentHandoffParser.FIELD_SHIPPER_ARRIVED_AT)),
+            notificationEpochMillis(document.get(OrderPaymentHandoffParser.FIELD_CUSTOMER_RECEIVED_AT)),
+        )
+    }
+
     fun historyEvents(document: DocumentSnapshot): List<OrderHistoryEvent> {
         val rawHistory = document.get("statusHistory") as? List<*>
         if (rawHistory.isNullOrEmpty()) {
@@ -83,6 +92,87 @@ object NotificationEventFactory {
                         nonBlank.take(NotificationDefaults.MAX_REASON_LENGTH - 1).trimEnd() + "\u2026"
                     }
                 }
+        }
+    }
+
+    fun currentHandoffStatus(document: DocumentSnapshot): String {
+        return OrderPaymentHandoffParser.parseDeliveryHandoffStatus(
+            method = OrderPaymentHandoffParser.parsePaymentMethod(
+                document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+            ),
+            value = document.getString(OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS),
+        ).name
+    }
+
+    fun createHandoffNotifications(
+        context: Context,
+        scope: NotificationScope,
+        document: DocumentSnapshot,
+        previousState: OrderNotificationState?,
+    ): List<AppNotification> {
+        val orderId = document.id
+        val orderCode = OrderCodeGenerator.displayOrderCode(
+            orderCode = document.getString("orderCode"),
+            orderId = orderId,
+        )
+        val currentHandoff = currentHandoffStatus(document)
+        val previousHandoff = previousState?.handoffStatus.orEmpty()
+        val previousEventMillis = previousState?.latestHandoffAtMillis ?: 0L
+
+        val shipperArrivedAtMillis = notificationEpochMillis(
+            document.get(OrderPaymentHandoffParser.FIELD_SHIPPER_ARRIVED_AT),
+        )
+        val customerReceivedAtMillis = notificationEpochMillis(
+            document.get(OrderPaymentHandoffParser.FIELD_CUSTOMER_RECEIVED_AT),
+        )
+
+        return buildList {
+            if (
+                scope.role == UserRole.CUSTOMER &&
+                currentHandoff == DeliveryHandoffStatus.AWAITING_CUSTOMER.name &&
+                previousHandoff != DeliveryHandoffStatus.AWAITING_CUSTOMER.name &&
+                shipperArrivedAtMillis > previousEventMillis
+            ) {
+                add(
+                    AppNotification(
+                        id = canonicalHandoffNotificationDedupeKey(orderId, "arrived", shipperArrivedAtMillis),
+                        dedupeKey = canonicalHandoffNotificationDedupeKey(orderId, "arrived", shipperArrivedAtMillis),
+                        recipientRole = scope.role,
+                        recipientUserId = scope.userId,
+                        type = NotificationType.CUSTOMER_ORDER_ARRIVED,
+                        title = context.getString(R.string.notification_customer_arrived_title),
+                        body = context.getString(R.string.notification_customer_arrived_body, orderCode),
+                        orderId = orderId,
+                        reviewId = null,
+                        createdAtMillis = shipperArrivedAtMillis,
+                        isRead = false,
+                        deepLinkType = NotificationDeepLink.CUSTOMER_ORDER_DETAIL,
+                    ),
+                )
+            }
+            if (
+                scope.role == UserRole.SHIPPER &&
+                currentHandoff == DeliveryHandoffStatus.CUSTOMER_CONFIRMED.name &&
+                previousHandoff != DeliveryHandoffStatus.CUSTOMER_CONFIRMED.name &&
+                customerReceivedAtMillis > previousEventMillis
+            ) {
+                add(
+                    AppNotification(
+                        id = canonicalHandoffNotificationDedupeKey(orderId, "customer-confirmed", customerReceivedAtMillis),
+                        dedupeKey = canonicalHandoffNotificationDedupeKey(orderId, "customer-confirmed", customerReceivedAtMillis),
+                        recipientRole = scope.role,
+                        recipientUserId = scope.userId,
+                        type = NotificationType.SHIPPER_CUSTOMER_CONFIRMED_RECEIPT,
+                        title = context.getString(R.string.notification_shipper_customer_confirmed_title),
+                        body = context.getString(R.string.notification_shipper_customer_confirmed_body, orderCode),
+                        orderId = orderId,
+                        reviewId = null,
+                        createdAtMillis = customerReceivedAtMillis,
+                        isRead = false,
+                        deepLinkType = NotificationDeepLink.SHIPPER_ORDER_DETAIL,
+                    ),
+                )
+            }
         }
     }
 

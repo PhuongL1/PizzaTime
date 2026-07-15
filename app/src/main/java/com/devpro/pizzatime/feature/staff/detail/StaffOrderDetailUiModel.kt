@@ -1,6 +1,9 @@
 package com.devpro.pizzatime.feature.staff.detail
 
 import androidx.annotation.DrawableRes
+import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
+import com.devpro.pizzatime.feature.order.PaymentMethod
+import com.devpro.pizzatime.feature.order.PaymentStatus
 import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderStatus
 
 data class StaffOrderDetailUiModel(
@@ -14,6 +17,9 @@ data class StaffOrderDetailUiModel(
     val estimatedDeliveryTime: String,
     val paymentMethod: String,
     val paymentStatus: String,
+    val paymentMethodValue: PaymentMethod = PaymentMethod.COD,
+    val paymentStatusValue: PaymentStatus = PaymentStatus.NOT_REQUIRED,
+    val deliveryHandoffStatusValue: DeliveryHandoffStatus = DeliveryHandoffStatus.NOT_REQUIRED,
     val cashCollected: Boolean = false,
     val collectedByShipperId: String = "",
     val collectedAmount: Double = 0.0,
@@ -21,6 +27,7 @@ data class StaffOrderDetailUiModel(
     val deliveryNote: String,
     val items: List<StaffOrderDetailItemUiModel>,
     val timeline: StaffOrderDetailTimelineUiModel,
+    val canConfirmOrder: Boolean = true,
     val storeName: String = "",
     val pickupAddress: String = "",
     val storePhone: String = "",

@@ -55,7 +55,7 @@ class ShipperDeliveryAdapter(
             btnStartDelivery.isVisible = canManage
             btnStartDelivery.text = when (order.status) {
                 ShipperDeliveryStatus.ACTIVE ->
-                    root.context.getString(R.string.shipper_detail_delivered_cash_collected)
+                    root.context.getString(R.string.shipper_detail_complete_delivery)
                 ShipperDeliveryStatus.DELIVERED ->
                     root.context.getString(R.string.staff_action_view_details)
                 ShipperDeliveryStatus.ASSIGNED ->

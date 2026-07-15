@@ -74,6 +74,22 @@ class NotificationIdentityAndWorkTest {
     }
 
     @Test
+    fun handoffDedupeKey_isStableAndScopedToTransitionTimestamp() {
+        assertEquals(
+            "handoff:order-a:arrived:1000",
+            canonicalHandoffNotificationDedupeKey("order-a", "arrived", 1000L),
+        )
+        assertEquals(
+            "handoff:order-a:customer-confirmed:2000",
+            canonicalHandoffNotificationDedupeKey("order-a", "customer-confirmed", 2000L),
+        )
+        assertNotEquals(
+            canonicalHandoffNotificationDedupeKey("order-a", "arrived", 1000L),
+            canonicalHandoffNotificationDedupeKey("order-a", "arrived", 2000L),
+        )
+    }
+
+    @Test
     fun eventTimestamps_normalizeSecondsMillisDatesAndNumericStrings() {
         assertEquals(1_700_000_000_000L, notificationEpochMillis(1_700_000_000L))
         assertEquals(1_700_000_000_000L, notificationEpochMillis(1_700_000_000_000L))

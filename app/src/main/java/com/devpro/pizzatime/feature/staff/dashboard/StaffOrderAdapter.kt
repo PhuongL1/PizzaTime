@@ -2,7 +2,6 @@ package com.devpro.pizzatime.feature.staff.dashboard
 
 import android.view.LayoutInflater
 import android.view.ViewGroup
-import androidx.core.graphics.toColorInt
 import androidx.core.view.isVisible
 import androidx.recyclerview.widget.DiffUtil
 import androidx.recyclerview.widget.ListAdapter
@@ -79,17 +78,27 @@ class StaffOrderAdapter(
 
             btnPrimaryAction.isVisible = true
             val isPending = item.status == StaffOrderStatus.PENDING
+            val canConfirmOrder = item.canConfirmOrder
 
             btnViewDetails.isVisible = isPending
 
             if (isPending) {
                 btnPrimaryAction.setText(R.string.staff_action_confirm_order)
-                btnPrimaryAction.setBackgroundResource(R.drawable.bg_button_primary_gold)
-                btnPrimaryAction.setTextColor("#3A210D".toColorInt())
+                btnPrimaryAction.setBackgroundResource(
+                    if (canConfirmOrder) R.drawable.bg_button_primary_gold
+                    else R.drawable.bg_shipper_detail_disabled_button,
+                )
+                btnPrimaryAction.setTextColor(
+                    root.context.getColor(
+                        if (canConfirmOrder) R.color.pt_text_dark else R.color.pt_text_secondary_dark_bg,
+                    ),
+                )
+                btnPrimaryAction.isEnabled = canConfirmOrder
             } else {
                 btnPrimaryAction.setText(R.string.staff_action_view_details)
                 btnPrimaryAction.setBackgroundResource(R.drawable.bg_button_outline_gold)
-                btnPrimaryAction.setTextColor("#CF843F".toColorInt())
+                btnPrimaryAction.setTextColor(root.context.getColor(R.color.pt_copper))
+                btnPrimaryAction.isEnabled = true
             }
 
             btnPrimaryAction.setOnClickListener {

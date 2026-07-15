@@ -88,9 +88,7 @@ service cloud.firestore {
         && request.resource.data.orderCodeKey == orderId
         && request.resource.data.orderCode == "#" + orderId
         && request.resource.data.status == "PENDING"
-        && request.resource.data.paymentMethod == "CASH_ON_DELIVERY"
-        && request.resource.data.paymentStatus == "UNPAID"
-        && request.resource.data.cashCollected == false
+        && validClientOrderPaymentInitialization()
         && request.resource.data.deliveryAddress is string
         && request.resource.data.deliveryAddress.size() > 0
         && request.resource.data.deliveryLocation is latlng
@@ -115,6 +113,7 @@ service cloud.firestore {
           "paymentMethod",
           "paymentStatus",
           "cashCollected",
+          "deliveryHandoffStatus",
           "deliveryAddress",
           "deliveryLocation",
           "distanceKm",
@@ -135,6 +134,36 @@ service cloud.firestore {
           "orderCodeKey",
           "orderCode"
         ]);
+    }
+
+    function validClientOrderPaymentInitialization() {
+      return request.resource.data.cashCollected == false
+        && !request.resource.data.keys().hasAny([
+          "paymentProvider",
+          "paymentAttemptId",
+          "paymentReference",
+          "paidAt",
+          "providerTransactionId",
+          "shipperArrivedAt",
+          "customerReceivedAt",
+          "customerReceiptConfirmedBy",
+          "deliveryCompletedAt",
+          "deliveredAt",
+          "collectedByShipperId",
+          "collectedAmount"
+        ])
+        && (
+          (
+            request.resource.data.paymentMethod == "COD"
+            && request.resource.data.paymentStatus == "NOT_REQUIRED"
+            && request.resource.data.deliveryHandoffStatus == "NOT_REQUIRED"
+          )
+          || (
+            request.resource.data.paymentMethod == "VNPAY"
+            && request.resource.data.paymentStatus == "PENDING"
+            && request.resource.data.deliveryHandoffStatus == "LOCKED"
+          )
+        );
     }
 
     function canGetOrder(orderId) {
@@ -265,9 +294,6 @@ service cloud.firestore {
         "updatedAt",
         "statusHistory",
         "shipperId",
-        "paymentStatus",
-        "paymentMethod",
-        "paidAt",
         "deliveredAt",
         "collectedByShipperId",
         "collectedAmount",
@@ -277,9 +303,6 @@ service cloud.firestore {
 
     function shipperPaymentCollectionFieldsValid() {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
-        "paymentStatus",
-        "paymentMethod",
-        "paidAt",
         "deliveredAt",
         "collectedByShipperId",
         "collectedAmount",
@@ -287,9 +310,7 @@ service cloud.firestore {
       ])
         || (
           statusTransition("DELIVERING", "DELIVERED")
-          && request.resource.data.paymentStatus == "PAID"
-          && request.resource.data.paymentMethod == "CASH_ON_DELIVERY"
-          && request.resource.data.paidAt == request.time
+          && isCodOrder(resource.data)
           && request.resource.data.deliveredAt == request.time
           && request.resource.data.collectedByShipperId == request.auth.uid
           && request.resource.data.collectedAmount is number
@@ -348,7 +369,8 @@ service cloud.firestore {
     }
 
     function staffStatusTransition() {
-      return statusTransition("PENDING", "CONFIRMED");
+      return statusTransition("PENDING", "CONFIRMED")
+        && (!isVnpayOrder(resource.data) || resource.data.paymentStatus == "PAID");
     }
 
     function customerCancelTransition() {
@@ -376,6 +398,87 @@ service cloud.firestore {
         || statusTransition("READY_FOR_DELIVERY", "DELIVERING")
         || statusTransition("ASSIGNED_TO_SHIPPER", "DELIVERING")
         || statusTransition("DELIVERING", "DELIVERED");
+    }
+
+    function isCodOrder(data) {
+      return data.get("paymentMethod", "COD") == "COD"
+        || data.get("paymentMethod", "COD") == "CASH_ON_DELIVERY"
+        || data.get("paymentMethod", "COD") == "CASH";
+    }
+
+    function isVnpayOrder(data) {
+      return data.get("paymentMethod", "COD") == "VNPAY";
+    }
+
+    function paymentFieldsProtected() {
+      return !request.resource.data.diff(resource.data).affectedKeys().hasAny([
+        "paymentMethod",
+        "paymentStatus",
+        "paymentProvider",
+        "paymentAttemptId",
+        "paymentReference",
+        "paidAt",
+        "providerTransactionId"
+      ]);
+    }
+
+    function shipperArrivalTransition() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        "deliveryHandoffStatus",
+        "shipperArrivedAt",
+        "updatedAt"
+      ])
+        && isShipper()
+        && resource.data.shipperId == request.auth.uid
+        && isVnpayOrder(resource.data)
+        && resource.data.paymentStatus == "PAID"
+        && resource.data.status == "DELIVERING"
+        && resource.data.get("deliveryHandoffStatus", "LOCKED") == "LOCKED"
+        && request.resource.data.deliveryHandoffStatus == "AWAITING_CUSTOMER"
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.shipperArrivedAt == request.time;
+    }
+
+    function customerReceiptTransition() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        "deliveryHandoffStatus",
+        "customerReceivedAt",
+        "customerReceiptConfirmedBy",
+        "updatedAt"
+      ])
+        && isCustomer()
+        && resource.data.customerId == request.auth.uid
+        && isVnpayOrder(resource.data)
+        && resource.data.paymentStatus == "PAID"
+        && resource.data.status == "DELIVERING"
+        && resource.data.get("deliveryHandoffStatus", "LOCKED") == "AWAITING_CUSTOMER"
+        && request.resource.data.deliveryHandoffStatus == "CUSTOMER_CONFIRMED"
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.customerReceivedAt == request.time
+        && request.resource.data.customerReceiptConfirmedBy == request.auth.uid;
+    }
+
+    function shipperPrepaidCompletionTransition() {
+      return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+        "status",
+        "updatedAt",
+        "statusHistory",
+        "deliveryHandoffStatus",
+        "deliveryCompletedAt",
+        "deliveredAt"
+      ])
+        && isShipper()
+        && resource.data.shipperId == request.auth.uid
+        && isVnpayOrder(resource.data)
+        && resource.data.paymentStatus == "PAID"
+        && resource.data.status == "DELIVERING"
+        && resource.data.get("deliveryHandoffStatus", "LOCKED") == "CUSTOMER_CONFIRMED"
+        && request.resource.data.status == "DELIVERED"
+        && request.resource.data.deliveryHandoffStatus == "COMPLETED"
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.deliveryCompletedAt == request.time
+        && request.resource.data.deliveredAt == request.time
+        && validStatusHistoryField();
     }
 
     function shipperOwnsOrClaimsOrder() {
@@ -459,10 +562,12 @@ service cloud.firestore {
         || (isCustomer() && resource.data.customerId == request.auth.uid);
       allow update: if isAdmin()
         || (isCustomer() && orderStatusOnlyUpdate() && validStatusHistoryField() && customerCancelTransition())
+        || (customerReceiptTransition() && paymentFieldsProtected())
         || (
           isStaff()
           && orderStatusOnlyUpdate()
           && validStatusHistoryField()
+          && paymentFieldsProtected()
           && (staffStatusTransition() || staffCancelTransition())
         )
         || (
@@ -470,6 +575,7 @@ service cloud.firestore {
           && kitchenStatusUpdate()
           && validStatusHistoryField()
           && kitchenProgressFieldsValid()
+          && paymentFieldsProtected()
           && kitchenStatusTransition()
         )
         || (
@@ -478,8 +584,12 @@ service cloud.firestore {
           && shipperOwnsOrClaimsOrder()
           && shipperPaymentCollectionFieldsValid()
           && validStatusHistoryField()
+          && paymentFieldsProtected()
+          && (!isVnpayOrder(resource.data) || resource.data.paymentStatus == "PAID")
           && shipperStatusTransition()
-        );
+        )
+        || (shipperArrivalTransition() && paymentFieldsProtected())
+        || (shipperPrepaidCompletionTransition() && paymentFieldsProtected());
       allow delete: if isAdmin();
 
       match /tracking/current {

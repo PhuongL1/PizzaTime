@@ -1,5 +1,6 @@
 package com.devpro.pizzatime.feature.shipper
 
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryStatus
@@ -100,6 +101,25 @@ object ShipperOrderFirestoreRepository {
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
     }
 
+    fun listenOrderDetail(
+        orderId: String,
+        onResult: (Result<Pair<ShipperDeliveryDetailUiModel, String>>) -> Unit,
+    ): ListenerRegistration {
+        return firestore.collection("orders").document(orderId)
+            .addSnapshotListener { doc, error ->
+                if (error != null) {
+                    onResult(Result.failure(error))
+                    return@addSnapshotListener
+                }
+                if (doc == null || !doc.exists()) {
+                    onResult(Result.failure(NoSuchElementException("Order $orderId not found")))
+                    return@addSnapshotListener
+                }
+                val status = doc.getString("status") ?: "READY"
+                onResult(Result.success(doc.toShipperDetailUiModel() to status))
+            }
+    }
+
     fun updateOrderStatus(
         orderId: String,
         newStatus: String,
@@ -120,22 +140,42 @@ object ShipperOrderFirestoreRepository {
         )
     }
 
+    fun markArrived(
+        orderId: String,
+        shipperId: String?,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val currentShipperId = shipperId
+        if (currentShipperId.isNullOrBlank()) {
+            onResult(Result.failure(Exception(OrderTransitionRepository.STALE_ORDER_MESSAGE)))
+            return
+        }
+        OrderTransitionRepository.markShipperArrived(
+            orderId = orderId,
+            shipperId = currentShipperId,
+            onResult = onResult,
+        )
+    }
+
     private fun DocumentSnapshot.toShipperDeliveryUiModel(): ShipperDeliveryUiModel {
         val customerEmail = getString("customerEmail") ?: ""
         val customerName = getString("customerName")
             ?.takeIf { it.isNotBlank() && it != customerEmail }
             ?: customerEmail.substringBefore("@").ifBlank { "Customer" }
         val statusStr = getString("status") ?: "READY"
-        val paymentMethod = getString("paymentMethod").toPaymentMethodLabel()
+        val paymentSnapshot = paymentSnapshot()
         val amount = if (statusStr == "DELIVERED") {
             getDouble("deliveryFee") ?: 0.0
         } else {
             getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         }
         val paymentLabel = if (statusStr == "DELIVERED") {
-            buildDeliveredPaymentLabel()
+            buildDeliveredPaymentLabel(paymentSnapshot.paymentMethod)
         } else {
-            paymentMethod.uppercase(Locale.US)
+            when (paymentSnapshot.paymentMethod) {
+                com.devpro.pizzatime.feature.order.PaymentMethod.VNPAY -> "VNPAY"
+                else -> "COD"
+            }
         }
 
         return ShipperDeliveryUiModel(
@@ -165,6 +205,7 @@ object ShipperOrderFirestoreRepository {
         val deliveryFee = getDouble("deliveryFee") ?: 0.0
         val rawItems = get("items") as? List<*>
         val deliveryCoordinate = OrderDeliveryDestinationResolver.resolve(data.orEmpty())
+        val paymentSnapshot = paymentSnapshot()
 
         val deliveryAddress = getString("deliveryAddress").orEmpty().trim()
         return ShipperDeliveryDetailUiModel(
@@ -183,12 +224,14 @@ object ShipperOrderFirestoreRepository {
             deliveryFee = String.format(Locale.US, "$%.2f", deliveryFee),
             courierNote = getString("note") ?: "",
             paymentAmount = String.format(Locale.US, "$%.2f", total),
-            paymentMethod = getString("paymentMethod").toPaymentMethodLabel(),
-            paymentStatus = paymentStatusLabel(
-                stored = getString("paymentStatus"),
-                status = getString("status").orEmpty(),
-            ),
+            paymentMethod = "",
+            paymentStatus = "",
+            paymentMethodValue = paymentSnapshot.paymentMethod,
+            paymentStatusValue = paymentSnapshot.paymentStatus,
+            deliveryHandoffStatusValue = paymentSnapshot.deliveryHandoffStatus,
             items = rawItems?.mapNotNull { it.toPaymentItem() } ?: emptyList(),
+            orderStatus = getString("status").orEmpty(),
+            shipperId = getString("shipperId").orEmpty(),
         )
     }
 
@@ -210,23 +253,6 @@ object ShipperOrderFirestoreRepository {
             orderCode = getString("orderCode"),
             orderId = id,
         )
-    }
-
-    private fun String?.toPaymentMethodLabel(): String {
-        return when (this?.uppercase(Locale.US)) {
-            "CASH_ON_DELIVERY", "CASH" -> "Cash on Delivery"
-            else -> this?.takeIf { it.isNotBlank() } ?: "Cash on Delivery"
-        }
-    }
-
-    private fun paymentStatusLabel(stored: String?, status: String): String {
-        val normalized = stored?.uppercase(Locale.US)
-        return when {
-            normalized == "PAID" -> "Paid"
-            normalized == "UNPAID" -> "Unpaid"
-            status == "DELIVERED" -> "Paid"
-            else -> "Unpaid"
-        }
     }
 
     private fun List<DocumentSnapshot>.toDashboard(shipperId: String): ShipperDashboardUiModel {
@@ -283,11 +309,25 @@ object ShipperOrderFirestoreRepository {
         return "Delivered ${deliveredAt.toDisplayDateTime()}"
     }
 
-    private fun DocumentSnapshot.buildDeliveredPaymentLabel(): String {
-        val paymentStatus = getString("paymentStatus").orEmpty().ifBlank { "UNPAID" }
+    private fun DocumentSnapshot.buildDeliveredPaymentLabel(
+        paymentMethod: com.devpro.pizzatime.feature.order.PaymentMethod,
+    ): String {
         val cashLabel = if (getBoolean("cashCollected") == true) "Cash collected" else "Cash pending"
-        return "${paymentStatus.uppercase(Locale.US)} • $cashLabel"
+        return if (paymentMethod == com.devpro.pizzatime.feature.order.PaymentMethod.VNPAY) {
+            "VNPAY"
+        } else {
+            "COD • $cashLabel"
+        }
     }
+
+    private fun DocumentSnapshot.paymentSnapshot() = OrderPaymentHandoffParser.parse(
+        orderStatus = getString("status"),
+        paymentMethodValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+        paymentStatusValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+        handoffStatusValue = getString(OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS),
+        customerId = getString("customerId"),
+        shipperId = getString("shipperId"),
+    )
 
     private fun Timestamp.toDisplayDateTime(): String {
         return SimpleDateFormat("MMM dd, hh:mm a", Locale.US).format(Date(seconds * 1000))

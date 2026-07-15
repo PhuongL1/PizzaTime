@@ -4,6 +4,17 @@ _updated: 2026-07-15_
 ## Active
 <!-- max 3 tasks. Agent overwrites this entire file each update. -->
 
+### task-20260702-81a
+task: "Implement payment and prepaid delivery handoff foundation"
+type: feat
+phase: DONE
+plan: "Audit current order/payment/rules/notification flow, add canonical payment and handoff domain with one central policy, enforce transitions through repository transactions and Rules, then verify with rules tests, six-flavor tests/builds, and one Task 81A commit"
+approach: "Keep Checkout safely COD-only for now, map legacy orders conservatively, prevent any client PAID write, require customer receipt confirmation only for paid VNPAY deliveries, and reuse the existing notification inbox/deep-link pipeline"
+files: ".github/audits/task-20260702-81a-payment-handoff-audit.md, order domain/policy/transition repositories, customer/staff/shipper order detail UI, notification contract/factory/tests, firestore.rules, firebase-rules-tests, strings/resources"
+review: 3/3
+qa: 3/3
+note: "Branch feature/81-vnpay-handoff; rules tests passed, firestore.rules deployed to pizzatime-de04c, six-flavor unit tests passed, six debug assemblies passed, full Gradle build passed, device QA pending because adb shows no attached target"
+
 ### task-20260602-1
 task: "Preserve fluid when changing grid size / dye resolution"
 type: fix

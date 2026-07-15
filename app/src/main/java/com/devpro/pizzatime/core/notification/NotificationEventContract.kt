@@ -87,6 +87,14 @@ internal fun canonicalOrderNotificationDedupeKey(
     }
 }
 
+internal fun canonicalHandoffNotificationDedupeKey(
+    orderId: String,
+    eventType: String,
+    eventMillis: Long,
+): String {
+    return "handoff:$orderId:$eventType:$eventMillis"
+}
+
 internal fun canonicalReviewNotificationDedupeKey(reviewId: String): String {
     return "review:$reviewId"
 }

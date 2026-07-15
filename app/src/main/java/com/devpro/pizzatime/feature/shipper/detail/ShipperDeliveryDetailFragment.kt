@@ -26,6 +26,10 @@ import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDetailBinding
 import com.devpro.pizzatime.databinding.ItemShipperPaymentRowBinding
+import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPolicy
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPresentation
+import com.devpro.pizzatime.feature.order.PaymentMethod
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
@@ -56,6 +60,7 @@ import com.devpro.pizzatime.shared.location.OneShotDeviceLocationResult
 import com.devpro.pizzatime.shared.location.OneShotDeviceLocationSource
 import com.devpro.pizzatime.shared.location.OsmdroidMapController
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.io.Closeable
 import java.text.DateFormat
@@ -86,6 +91,8 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     private var pendingTrackingStartOrderId: String? = null
     private var trackingStartInFlight = false
     private var trackingStateSubscription: Closeable? = null
+    private var orderDetailListener: ListenerRegistration? = null
+    private var currentDetail: ShipperDeliveryDetailUiModel? = null
     private var trackingRuntimeState = DeliveryTrackingRuntimeState.Inactive
     private val deliveryTrackingRepository by lazy(LazyThreadSafetyMode.NONE) {
         DeliveryTrackingFirestoreRepository()
@@ -142,13 +149,15 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             return
         }
 
-        ShipperOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
-            if (_binding == null || !isAdded) return@loadOrderDetail
+        orderDetailListener?.remove()
+        orderDetailListener = ShipperOrderFirestoreRepository.listenOrderDetail(orderId) { result ->
+            if (_binding == null || !isAdded) return@listenOrderDetail
             result
                 .onSuccess { (detail, status) ->
                     firestoreStatus = status
                     loadedOrderId = detail.orderId
                     hasLoadedDetail = true
+                    currentDetail = detail
                     bindDetail(detail)
                     setupActions(detail)
                     renderTrackingStatus()
@@ -186,10 +195,20 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         tvDeliveryFee.text = detail.deliveryFee.ifBlank { getString(R.string.common_not_provided) }
         tvCourierNote.text = getString(R.string.shipper_detail_note_quote, detail.courierNote)
         tvPaymentAmount.text = detail.paymentAmount
-        tvPaymentMethod.text = detail.paymentMethod
-        tvPaymentStatus.text = detail.paymentStatus.ifBlank { getString(R.string.payment_status_unpaid) }
+        tvPaymentMethod.text = getString(
+            OrderPaymentHandoffPresentation.paymentMethodLabel(detail.paymentMethodValue),
+        )
+        tvPaymentStatus.text = getString(
+            OrderPaymentHandoffPresentation.paymentStatusLabel(
+                method = detail.paymentMethodValue,
+                status = detail.paymentStatusValue,
+            ),
+        )
+        tvDeliveryHandoffStatus.text = getString(
+            OrderPaymentHandoffPresentation.handoffStatusLabel(detail.deliveryHandoffStatusValue),
+        )
         tvReadOnlyIndicator.isVisible = !canManageShipperScreen()
-        renderActionButton(firestoreStatus)
+        renderActionButtons(detail)
 
         bindPaymentItems(detail.items)
         renderDeliveryMap()
@@ -244,6 +263,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             openDeliveryNavigation(detail)
         }
 
+        btnArrivalStatus.setOnClickListener { handleArrivalAction(detail) }
         btnConfirmDelivery.setOnClickListener { handleDeliveryAction(detail) }
         btnResumeTracking.setOnClickListener {
             requestTrackingStart(detail.orderId, requestPermissionIfNeeded = true)
@@ -258,9 +278,39 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             "READY_TO_DELIVER",
                 -> updateFirestoreStatus(detail.orderId, detail.displayOrderCode, "DELIVERING")
 
-            "DELIVERING" -> showCompleteDeliveryDialog(detail)
+            "DELIVERING" -> {
+                if (detail.paymentMethodValue == PaymentMethod.VNPAY) {
+                    if (detail.deliveryHandoffStatusValue == DeliveryHandoffStatus.CUSTOMER_CONFIRMED) {
+                        showCompleteDeliveryDialog(detail)
+                    }
+                } else {
+                    showCompleteDeliveryDialog(detail)
+                }
+            }
 
             else -> showUiMessage(R.string.feedback_action_failed, UiMessageType.WARNING)
+        }
+    }
+
+    private fun handleArrivalAction(detail: ShipperDeliveryDetailUiModel) {
+        if (isUpdatingStatus || !canManageShipperScreen()) {
+            return
+        }
+        val shipperId = FirebaseAuth.getInstance().currentUser?.uid
+        isUpdatingStatus = true
+        renderActionButtons(detail)
+        ShipperOrderFirestoreRepository.markArrived(detail.orderId, shipperId) { result ->
+            if (_binding == null || !isAdded) return@markArrived
+            isUpdatingStatus = false
+            renderActionButtons(currentDetail ?: detail)
+            result
+                .onSuccess {
+                    showUiMessage(R.string.shipper_detail_arrived_success, UiMessageType.SUCCESS)
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to mark shipper arrived", error)
+                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
+                }
         }
     }
 
@@ -268,14 +318,63 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         return when (status) {
             "READY", "ASSIGNED_TO_SHIPPER", "READY_FOR_DELIVERY", "READY_TO_DELIVER" ->
                 R.string.shipper_detail_start_delivery
-            "DELIVERING" -> R.string.shipper_detail_delivered_cash_collected
+            "DELIVERING" -> R.string.shipper_detail_complete_delivery
             "DELIVERED" -> R.string.shipper_detail_order_completed
             "CANCELLED" -> R.string.shipper_detail_order_cancelled
             else -> R.string.shipper_detail_confirm_delivery
         }
     }
 
-    private fun renderActionButton(status: String?) = with(binding.btnConfirmDelivery) {
+    private fun renderActionButtons(detail: ShipperDeliveryDetailUiModel) {
+        val actingUid = FirebaseAuth.getInstance().currentUser?.uid
+        val paymentSnapshot = com.devpro.pizzatime.feature.order.OrderPaymentHandoffSnapshot(
+            orderStatus = detail.orderStatus,
+            paymentMethod = detail.paymentMethodValue,
+            paymentStatus = detail.paymentStatusValue,
+            deliveryHandoffStatus = detail.deliveryHandoffStatusValue,
+            customerId = "",
+            shipperId = detail.shipperId,
+        )
+        val canManage = canManageShipperScreen()
+        binding.btnArrivalStatus.isVisible = false
+        renderCompletionButton(detail, paymentSnapshot, actingUid, canManage)
+
+        if (!canManage || detail.paymentMethodValue != PaymentMethod.VNPAY) {
+            return
+        }
+        if (!OrderPaymentHandoffPolicy.shouldShowShipperArrivalAction(paymentSnapshot, actingUid)) {
+            return
+        }
+        binding.btnArrivalStatus.isVisible = true
+        when (detail.deliveryHandoffStatusValue) {
+            DeliveryHandoffStatus.LOCKED -> configureActionView(
+                view = binding.btnArrivalStatus,
+                text = getString(R.string.shipper_detail_ive_arrived),
+                enabled = !isUpdatingStatus,
+            )
+            DeliveryHandoffStatus.AWAITING_CUSTOMER -> configureActionView(
+                view = binding.btnArrivalStatus,
+                text = getString(R.string.shipper_detail_waiting_for_customer_confirmation),
+                enabled = false,
+            )
+            DeliveryHandoffStatus.CUSTOMER_CONFIRMED,
+            DeliveryHandoffStatus.COMPLETED,
+            DeliveryHandoffStatus.NOT_REQUIRED,
+            DeliveryHandoffStatus.UNKNOWN,
+                -> configureActionView(
+                    view = binding.btnArrivalStatus,
+                    text = getString(R.string.shipper_detail_ive_arrived),
+                    enabled = false,
+                )
+        }
+    }
+
+    private fun renderCompletionButton(
+        detail: ShipperDeliveryDetailUiModel,
+        paymentSnapshot: com.devpro.pizzatime.feature.order.OrderPaymentHandoffSnapshot,
+        actingUid: String?,
+        canManage: Boolean,
+    ) = with(binding.btnConfirmDelivery) {
         if (!canManageShipperScreen()) {
             isVisible = false
             isEnabled = false
@@ -283,29 +382,75 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             return@with
         }
 
-        text = getString(nextActionLabel(status))
-        isEnabled = status in setOf(
-            "READY",
-            "ASSIGNED_TO_SHIPPER",
-            "READY_FOR_DELIVERY",
-            "READY_TO_DELIVER",
-            "DELIVERING",
-        ) && !isUpdatingStatus
-        isVisible = status != "DELIVERED" && status != "CANCELLED"
-        if (status == "DELIVERED" || status == "CANCELLED") {
-            isVisible = true
+        if (!canManage) {
+            isVisible = false
             isEnabled = false
+            return@with
+        }
+        isVisible = true
+        when {
+            detail.orderStatus == "DELIVERED" || detail.deliveryHandoffStatusValue == DeliveryHandoffStatus.COMPLETED ->
+                configureActionView(this, getString(R.string.shipper_detail_delivery_completed), false)
+
+            detail.orderStatus == "CANCELLED" ->
+                configureActionView(this, getString(R.string.shipper_detail_order_cancelled), false)
+
+            detail.orderStatus in setOf("READY", "ASSIGNED_TO_SHIPPER", "READY_FOR_DELIVERY", "READY_TO_DELIVER") ->
+                configureActionView(
+                    this,
+                    getString(R.string.shipper_detail_start_delivery),
+                    !isUpdatingStatus,
+                )
+
+            detail.paymentMethodValue == PaymentMethod.VNPAY && detail.orderStatus == "DELIVERING" ->
+                configureActionView(
+                    this,
+                    getString(R.string.shipper_detail_complete_delivery),
+                    OrderPaymentHandoffPolicy.canShipperCompleteDelivery(paymentSnapshot, actingUid) && !isUpdatingStatus,
+                )
+
+            detail.orderStatus == "DELIVERING" ->
+                configureActionView(
+                    this,
+                    getString(R.string.shipper_detail_complete_delivery),
+                    !isUpdatingStatus,
+                )
+
+            else -> configureActionView(this, getString(nextActionLabel(firestoreStatus)), false)
         }
     }
 
+    private fun configureActionView(
+        view: android.widget.TextView,
+        text: String,
+        enabled: Boolean,
+    ) {
+        view.text = text
+        view.isEnabled = enabled
+        view.setBackgroundResource(
+            if (enabled) R.drawable.bg_button_primary_gold else R.drawable.bg_shipper_detail_disabled_button,
+        )
+        view.setTextColor(
+            requireContext().getColor(
+                if (enabled) R.color.pt_text_dark else R.color.pt_text_secondary_dark_bg,
+            ),
+        )
+    }
+
     private fun showCompleteDeliveryDialog(detail: ShipperDeliveryDetailUiModel) {
+        val messageRes = if (detail.paymentMethodValue == PaymentMethod.VNPAY) {
+            R.string.shipper_complete_prepaid_delivery_message
+        } else {
+            R.string.shipper_complete_delivery_message_with_amount
+        }
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.shipper_complete_delivery_title)
             .setMessage(
-                getString(
-                    R.string.shipper_complete_delivery_message_with_amount,
-                    detail.paymentAmount,
-                ),
+                if (detail.paymentMethodValue == PaymentMethod.VNPAY) {
+                    getString(messageRes)
+                } else {
+                    getString(messageRes, detail.paymentAmount)
+                },
             )
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.shipper_complete_delivery_confirm) { _, _ ->
@@ -335,7 +480,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 .onSuccess {
                     isUpdatingStatus = false
                     firestoreStatus = nextStatus
-                    renderActionButton(nextStatus)
+                    renderActionButtons(currentDetail ?: detailFromState(orderId, displayOrderCode))
                     renderTrackingStatus()
                     when (nextStatus) {
                         "DELIVERING" -> requestTrackingStart(
@@ -353,8 +498,17 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 .onFailure { error ->
                     Log.e(TAG, "Failed to update shipper order to $nextStatus", error)
                     isUpdatingStatus = false
-                    renderActionButton(firestoreStatus)
-                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
+                    renderActionButtons(currentDetail ?: detailFromState(orderId, displayOrderCode))
+                    showUiMessage(
+                        when (error.message) {
+                            com.devpro.pizzatime.feature.order.OrderTransitionRepository.PAYMENT_NOT_CONFIRMED_MESSAGE ->
+                                R.string.payment_not_confirmed_yet
+                            com.devpro.pizzatime.feature.order.OrderTransitionRepository.CUSTOMER_CONFIRMATION_REQUIRED_MESSAGE ->
+                                R.string.shipper_detail_waiting_for_customer_confirmation
+                            else -> R.string.feedback_action_failed
+                        },
+                        UiMessageType.ERROR,
+                    )
             }
         }
     }
@@ -875,6 +1029,8 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     override fun onDestroyView() {
+        orderDetailListener?.remove()
+        orderDetailListener = null
         trackingStateSubscription?.close()
         trackingStateSubscription = null
         deviceLocationSource?.cancel()
@@ -919,5 +1075,21 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 }
             }
         }
+    }
+
+    private fun detailFromState(
+        orderId: String,
+        displayOrderCode: String,
+    ): ShipperDeliveryDetailUiModel {
+        return currentDetail ?: ShipperDeliveryDetailUiModel(
+            orderId = orderId,
+            displayOrderCode = displayOrderCode,
+            customerName = "",
+            address = "",
+            courierNote = "",
+            paymentAmount = "",
+            paymentMethod = "",
+            items = emptyList(),
+        )
     }
 }

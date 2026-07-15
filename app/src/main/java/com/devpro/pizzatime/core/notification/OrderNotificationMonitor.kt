@@ -140,6 +140,8 @@ object OrderNotificationMonitor {
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                 updatedAtMillis = notificationEpochMillis(document.get("updatedAt")),
                 latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+                handoffStatus = NotificationEventFactory.currentHandoffStatus(document),
+                latestHandoffAtMillis = NotificationEventFactory.latestHandoffAtMillis(document),
             )
         }
         NotificationStateStore.putOrderStates(scope, states)
@@ -169,6 +171,15 @@ object OrderNotificationMonitor {
             Log.d(TAG, "Event detected role=${scope.role.name} type=${notification.type.name}")
             NotificationDispatcher.dispatch(appContext ?: return, notification, TAG)
         }
+        NotificationEventFactory.createHandoffNotifications(
+            context = appContext ?: return,
+            scope = scope,
+            document = document,
+            previousState = previousState,
+        ).forEach { notification ->
+            Log.d(TAG, "Handoff event detected role=${scope.role.name} type=${notification.type.name}")
+            NotificationDispatcher.dispatch(appContext ?: return, notification, TAG)
+        }
 
         val updatedAt = notificationEpochMillis(document.get("updatedAt"))
         NotificationStateStore.putOrderState(
@@ -178,6 +189,8 @@ object OrderNotificationMonitor {
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                 updatedAtMillis = updatedAt,
                 latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+                handoffStatus = NotificationEventFactory.currentHandoffStatus(document),
+                latestHandoffAtMillis = NotificationEventFactory.latestHandoffAtMillis(document),
             ),
         )
         NotificationStateStore.setLastOrdersSyncAt(

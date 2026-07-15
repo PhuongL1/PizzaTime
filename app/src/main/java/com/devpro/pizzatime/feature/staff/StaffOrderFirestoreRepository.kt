@@ -8,6 +8,8 @@ import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailItemUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailTimelineUiModel
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailUiModel
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPolicy
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
@@ -20,6 +22,8 @@ import java.util.Locale
 import java.util.concurrent.TimeUnit
 
 object StaffOrderFirestoreRepository {
+
+    const val PAYMENT_NOT_CONFIRMED_MESSAGE = OrderTransitionRepository.PAYMENT_NOT_CONFIRMED_MESSAGE
 
     private val firestore = FirebaseFirestore.getInstance()
 
@@ -107,6 +111,7 @@ object StaffOrderFirestoreRepository {
         val createdAt = getTimestamp("createdAt")
         val orderType = getString("orderType") ?: "DELIVERY"
         val rawItems = get("items") as? List<*>
+        val paymentSnapshot = paymentSnapshot()
 
         return StaffOrderUiModel(
             orderId = id,
@@ -117,6 +122,7 @@ object StaffOrderFirestoreRepository {
             orderSummary = buildOrderSummary(rawItems),
             price = String.format(Locale.US, "$%.2f", total),
             status = mapStatus(statusStr),
+            canConfirmOrder = OrderPaymentHandoffPolicy.canStaffConfirmOrder(paymentSnapshot),
         )
     }
 
@@ -127,6 +133,7 @@ object StaffOrderFirestoreRepository {
         val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val createdAt = getTimestamp("createdAt")
         val rawItems = get("items") as? List<*>
+        val paymentSnapshot = paymentSnapshot()
 
         return StaffOrderDetailUiModel(
             orderId = id,
@@ -142,11 +149,11 @@ object StaffOrderFirestoreRepository {
             customerPhone = getString("customerPhone").orNotProvided(),
             deliveryAddress = getString("deliveryAddress").orNotProvided(),
             estimatedDeliveryTime = "",
-            paymentMethod = getString("paymentMethod").toPaymentMethodLabel(),
-            paymentStatus = paymentStatusLabel(
-                stored = getString("paymentStatus"),
-                status = statusStr,
-            ),
+            paymentMethod = "",
+            paymentStatus = "",
+            paymentMethodValue = paymentSnapshot.paymentMethod,
+            paymentStatusValue = paymentSnapshot.paymentStatus,
+            deliveryHandoffStatusValue = paymentSnapshot.deliveryHandoffStatus,
             cashCollected = getBoolean("cashCollected") == true,
             collectedByShipperId = getString("collectedByShipperId").orEmpty(),
             collectedAmount = getDouble("collectedAmount") ?: 0.0,
@@ -159,6 +166,7 @@ object StaffOrderFirestoreRepository {
                 preparingTime = null,
                 readyTime = null,
             ),
+            canConfirmOrder = OrderPaymentHandoffPolicy.canStaffConfirmOrder(paymentSnapshot),
         )
     }
 
@@ -235,21 +243,29 @@ object StaffOrderFirestoreRepository {
         )
     }
 
-    private fun String?.toPaymentMethodLabel(): String {
-        return when (this?.uppercase(Locale.US)) {
-            "CASH_ON_DELIVERY", "CASH" -> "Cash on Delivery"
-            else -> this?.takeIf { it.isNotBlank() } ?: "Cash on Delivery"
-        }
-    }
+    private fun DocumentSnapshot.paymentSnapshot() = OrderPaymentHandoffParser.parse(
+        orderStatus = getString("status"),
+        paymentMethodValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+        paymentStatusValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+        handoffStatusValue = getString(OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS),
+        customerId = getString("customerId"),
+        shipperId = getString("shipperId"),
+    )
 
-    private fun paymentStatusLabel(stored: String?, status: String): String {
-        val normalized = stored?.uppercase(Locale.US)
-        return when {
-            normalized == "PAID" -> "Paid"
-            normalized == "UNPAID" -> "Unpaid"
-            status == "DELIVERED" -> "Paid"
-            else -> "Unpaid"
-        }
+    fun loadPaymentAwareEligibility(
+        orderId: String,
+        onResult: (Result<Boolean>) -> Unit,
+    ) {
+        firestore.collection("orders").document(orderId)
+            .get()
+            .addOnSuccessListener { doc ->
+                if (!doc.exists()) {
+                    onResult(Result.failure(NoSuchElementException("Order not found")))
+                    return@addOnSuccessListener
+                }
+                onResult(Result.success(OrderPaymentHandoffPolicy.canStaffConfirmOrder(doc.paymentSnapshot())))
+            }
+            .addOnFailureListener { error -> onResult(Result.failure(error)) }
     }
 
     private const val STATUS_CANCELLED = "CANCELLED"

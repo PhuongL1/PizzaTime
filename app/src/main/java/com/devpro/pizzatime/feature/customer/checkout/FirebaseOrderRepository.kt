@@ -3,6 +3,7 @@ package com.devpro.pizzatime.feature.customer.checkout
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
 import com.devpro.pizzatime.shared.location.DeliveryCoordinate
 import com.devpro.pizzatime.shared.location.OrderDeliveryDestinationResolver
 import com.google.firebase.Timestamp
@@ -64,9 +65,6 @@ object FirebaseOrderRepository {
             "storePhone" to storeSettings.storePhone,
             "status" to "PENDING",
             "orderType" to "DELIVERY",
-            "paymentMethod" to "CASH_ON_DELIVERY",
-            "paymentStatus" to "UNPAID",
-            "cashCollected" to false,
             "distanceKm" to distanceKm,
             "itemsSubtotal" to itemsSubtotal,
             "subtotal" to itemsSubtotal,
@@ -89,6 +87,7 @@ object FirebaseOrderRepository {
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp(),
         )
+        baseOrder.putAll(OrderPaymentHandoffParser.codCreateFields())
         baseOrder.putAll(
             OrderDeliveryDestinationResolver.canonicalFields(
                 address = deliveryAddress,

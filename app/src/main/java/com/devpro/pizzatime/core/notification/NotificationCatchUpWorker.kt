@@ -83,6 +83,14 @@ class NotificationCatchUpWorker(
             ).forEach { notification ->
                 NotificationDispatcher.dispatch(applicationContext, notification, TAG)
             }
+            NotificationEventFactory.createHandoffNotifications(
+                context = applicationContext,
+                scope = scope,
+                document = document,
+                previousState = previousState,
+            ).forEach { notification ->
+                NotificationDispatcher.dispatch(applicationContext, notification, TAG)
+            }
 
             NotificationStateStore.putOrderState(
                 scope = scope,
@@ -91,6 +99,8 @@ class NotificationCatchUpWorker(
                     status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                     updatedAtMillis = updatedAt,
                     latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+                    handoffStatus = NotificationEventFactory.currentHandoffStatus(document),
+                    latestHandoffAtMillis = NotificationEventFactory.latestHandoffAtMillis(document),
                 ),
             )
         }
@@ -140,6 +150,8 @@ class NotificationCatchUpWorker(
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                 updatedAtMillis = updatedAt,
                 latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+                handoffStatus = NotificationEventFactory.currentHandoffStatus(document),
+                latestHandoffAtMillis = NotificationEventFactory.latestHandoffAtMillis(document),
             )
         }
         NotificationStateStore.putOrderStates(scope, states)

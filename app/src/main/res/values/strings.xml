@@ -1221,9 +1221,26 @@
     <string name="staff_order_detail_distance_missing">Straight-line distance: Not provided · Delivery fee: Not provided</string>
     <string name="staff_order_detail_payment_summary_uncollected">%1$s • Amount due %2$s</string>
     <string name="staff_order_detail_payment_summary_collected">%1$s • Collected %2$s by %3$s</string>
+    <string name="common_cancel">Cancel</string>
+    <string name="common_confirm">Confirm</string>
     <string name="payment_method_cash_on_delivery">Cash on Delivery</string>
+    <string name="payment_method_vnpay">VNPay</string>
+    <string name="payment_method_unavailable">Payment unavailable</string>
     <string name="payment_status_unpaid">Unpaid</string>
+    <string name="payment_status_not_required">Not required</string>
+    <string name="payment_status_pending">Awaiting Payment</string>
     <string name="payment_status_paid">Paid</string>
+    <string name="payment_status_failed">Payment Failed</string>
+    <string name="payment_status_expired">Payment Expired</string>
+    <string name="payment_status_refunded">Refunded</string>
+    <string name="payment_status_unavailable">Payment unavailable</string>
+    <string name="delivery_handoff_not_required">Not required</string>
+    <string name="delivery_handoff_in_progress">Delivery in Progress</string>
+    <string name="delivery_handoff_waiting_for_customer">Waiting for Customer Confirmation</string>
+    <string name="delivery_handoff_customer_confirmed">Customer Confirmed Receipt</string>
+    <string name="delivery_handoff_completed">Delivery Completed</string>
+    <string name="delivery_handoff_unavailable">Handoff unavailable</string>
+    <string name="payment_not_confirmed_yet">Payment has not been confirmed yet.</string>
     <string name="map_picker_store_title">Pick Pickup Location</string>
     <string name="map_picker_delivery_title">Pick Delivery Location</string>
     <string name="map_picker_address_hint">Address</string>
@@ -1242,6 +1259,11 @@
     <string name="location_coordinates_missing">Location not selected</string>
     <string name="location_not_available">Location is not available.</string>
     <string name="shipper_detail_start_delivery">Start Delivery</string>
+    <string name="shipper_detail_complete_delivery">Complete Delivery</string>
+    <string name="shipper_detail_delivery_completed">Delivery Completed</string>
+    <string name="shipper_detail_ive_arrived">I\'ve Arrived</string>
+    <string name="shipper_detail_waiting_for_customer_confirmation">Waiting for Customer Confirmation</string>
+    <string name="shipper_detail_arrived_success">Customer receipt confirmation is now enabled.</string>
     <string name="shipper_detail_delivered_cash_collected">Delivered &amp; Cash Collected</string>
     <string name="shipper_detail_order_completed">Order completed.</string>
     <string name="shipper_detail_order_cancelled">Order cancelled.</string>
@@ -1265,7 +1287,8 @@
     <string name="shipper_detail_navigation_label">Delivery destination</string>
     <string name="shipper_complete_delivery_title">Complete delivery?</string>
     <string name="shipper_complete_delivery_message_with_amount">Confirm that this order has been delivered and cash payment has been collected from the customer.\n\nAmount to collect: %1$s</string>
-    <string name="shipper_complete_delivery_confirm">Complete Order</string>
+    <string name="shipper_complete_prepaid_delivery_message">Confirm that this prepaid order has been delivered after the customer confirmed receipt.</string>
+    <string name="shipper_complete_delivery_confirm">Complete Delivery</string>
     <string name="notification_permission_rationale">Allow notifications to receive order updates.</string>
     <string name="notification_order_unavailable">This order is no longer available.</string>
     <string name="notification_destination_unavailable">This notification is not available for this account.</string>
@@ -1290,6 +1313,8 @@
     <string name="delivery_tracking_resume">Resume tracking</string>
     <string name="delivery_tracking_resume_failed">Tracking could not be started for this delivery.</string>
     <string name="notification_status_assigned_to_shipper">assigned to shipper</string>
+    <string name="notification_customer_arrived_title">Your order has arrived</string>
+    <string name="notification_customer_arrived_body">Please confirm that you received order %1$s.</string>
     <string name="notification_customer_confirmed_title">Order confirmed</string>
     <string name="notification_customer_confirmed_body">Your order %1$s has been confirmed.</string>
     <string name="notification_customer_preparing_title">Order being prepared</string>
@@ -1311,6 +1336,8 @@
     <string name="notification_kitchen_confirmed_body">Order %1$s is ready to prepare.</string>
     <string name="notification_shipper_ready_title">Order ready for delivery</string>
     <string name="notification_shipper_ready_body">Order %1$s is ready for pickup.</string>
+    <string name="notification_shipper_customer_confirmed_title">Customer confirmed receipt</string>
+    <string name="notification_shipper_customer_confirmed_body">You can now complete delivery for order %1$s.</string>
     <string name="notification_admin_delivered_title">Order delivered</string>
     <string name="notification_admin_delivered_body">Order %1$s was delivered successfully.</string>
     <string name="notification_admin_cancelled_title">Order cancelled</string>
@@ -1321,6 +1348,12 @@
     <string name="notification_admin_product_review_title">New product review</string>
     <string name="notification_admin_product_review_body">A customer reviewed %1$s.</string>
     <string name="notification_admin_product_review_body_generic">A customer submitted a product review.</string>
+    <string name="customer_order_detail_receipt_status">Receipt status</string>
+    <string name="customer_order_detail_confirm_order_received">Confirm Order Received</string>
+    <string name="customer_order_detail_order_received">Order Received</string>
+    <string name="customer_order_detail_confirm_receipt_title">Confirm Receipt</string>
+    <string name="customer_order_detail_confirm_receipt_message">Please confirm that you have received your order. This action cannot be undone.</string>
+    <string name="customer_order_detail_receipt_confirmed">Order receipt confirmed.</string>
 
     <!-- dialog select shipper  -->
     <string name="assign_shipper_active_deliveries">%1$d active</string>

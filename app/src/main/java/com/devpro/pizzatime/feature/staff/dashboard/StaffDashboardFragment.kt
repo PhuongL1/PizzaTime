@@ -93,7 +93,14 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                 }
                 .onFailure { error ->
                     Log.e(TAG, "Failed to confirm staff order", error)
-                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
+                    showUiMessage(
+                        if (error.message == StaffOrderFirestoreRepository.PAYMENT_NOT_CONFIRMED_MESSAGE) {
+                            R.string.payment_not_confirmed_yet
+                        } else {
+                            R.string.feedback_action_failed
+                        },
+                        UiMessageType.ERROR,
+                    )
                 }
         }
     }

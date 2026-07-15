@@ -14,6 +14,7 @@ import {
   getDoc,
   serverTimestamp,
   setDoc,
+  updateDoc,
 } from "firebase/firestore";
 
 const PROJECT_ID = "demo-pizzatime-rules";
@@ -22,22 +23,140 @@ const OTHER_CUSTOMER_ID = "customer-other";
 const ASSIGNED_SHIPPER_ID = "shipper-assigned";
 const OTHER_SHIPPER_ID = "shipper-other";
 const STAFF_ID = "staff-user";
-const DELIVERING_ORDER_ID = "order-delivering";
-const PENDING_ORDER_ID = "order-pending";
-const DELIVERED_ORDER_ID = "order-delivered";
+const KITCHEN_ID = "kitchen-user";
+const ORDER_COD_PENDING = "co-1001";
+const ORDER_VNPAY_PENDING = "vp-1001";
+const ORDER_VNPAY_PAID = "vp-1002";
+const ORDER_VNPAY_DELIVERING_LOCKED = "vp-1003";
+const ORDER_VNPAY_AWAITING = "vp-1004";
+const ORDER_VNPAY_CONFIRMED = "vp-1005";
+const ORDER_COD_DELIVERING = "co-1002";
+const ORDER_DELIVERED = "co-1003";
+const LEGACY_COD_ORDER = "le-1001";
 
 let testEnvironment;
 
-function trackingPath(orderId = DELIVERING_ORDER_ID) {
-  return `orders/${orderId}/tracking/current`;
+function userContext(userId) {
+  return testEnvironment.authenticatedContext(userId).firestore();
 }
 
-function trackingDocumentFor(userId, orderId = DELIVERING_ORDER_ID) {
-  const firestore = testEnvironment.authenticatedContext(userId).firestore();
-  return doc(firestore, trackingPath(orderId));
+function orderDoc(userId, orderId) {
+  return doc(userContext(userId), `orders/${orderId}`);
 }
 
-function validTrackingPayload(overrides = {}) {
+function trackingDoc(userId, orderId = ORDER_VNPAY_DELIVERING_LOCKED) {
+  return doc(userContext(userId), `orders/${orderId}/tracking/current`);
+}
+
+function history(status, actorRole, actorId) {
+  return [
+    {
+      status,
+      actorRole,
+      actorId,
+      note: `${status} event`,
+      createdAt: Timestamp.now(),
+    },
+  ];
+}
+
+function baseCreateOrder(orderId, overrides = {}) {
+  return {
+    customerId: OWNER_CUSTOMER_ID,
+    customerEmail: "owner@example.com",
+    customerName: "Owner Customer",
+    customerPhone: "0123456789",
+    storeName: "PizzaTime",
+    pickupAddress: "1 Pizza Street",
+    pickupLat: 10.762622,
+    pickupLng: 106.660172,
+    storePhone: "0987654321",
+    status: "PENDING",
+    orderType: "DELIVERY",
+    paymentMethod: "COD",
+    paymentStatus: "NOT_REQUIRED",
+    cashCollected: false,
+    deliveryHandoffStatus: "NOT_REQUIRED",
+    deliveryAddress: "123 Delivery Street",
+    deliveryLocation: new GeoPoint(10.7769, 106.7009),
+    distanceKm: 2.5,
+    itemsSubtotal: 20,
+    subtotal: 20,
+    deliveryFee: 2.5,
+    discountAmount: 0,
+    discount: 0,
+    promoCode: "",
+    finalTotal: 22.5,
+    total: 22.5,
+    note: "",
+    items: [
+      {
+        productId: "pizza-1",
+        name: "Margherita",
+        quantity: 1,
+        unitPrice: 20,
+        totalPrice: 20,
+      },
+    ],
+    statusHistory: history("PENDING", "CUSTOMER", OWNER_CUSTOMER_ID),
+    createdAt: serverTimestamp(),
+    updatedAt: serverTimestamp(),
+    orderId,
+    orderCodeKey: orderId,
+    orderCode: `#${orderId}`,
+    ...overrides,
+  };
+}
+
+function seededOrder(overrides = {}) {
+  return {
+    customerId: OWNER_CUSTOMER_ID,
+    customerEmail: "owner@example.com",
+    customerName: "Owner Customer",
+    customerPhone: "0123456789",
+    storeName: "PizzaTime",
+    pickupAddress: "1 Pizza Street",
+    pickupLat: 10.762622,
+    pickupLng: 106.660172,
+    storePhone: "0987654321",
+    status: "PENDING",
+    orderType: "DELIVERY",
+    paymentMethod: "COD",
+    paymentStatus: "NOT_REQUIRED",
+    cashCollected: false,
+    deliveryHandoffStatus: "NOT_REQUIRED",
+    deliveryAddress: "123 Delivery Street",
+    deliveryLocation: new GeoPoint(10.7769, 106.7009),
+    distanceKm: 2.5,
+    itemsSubtotal: 20,
+    subtotal: 20,
+    deliveryFee: 2.5,
+    discountAmount: 0,
+    discount: 0,
+    promoCode: "",
+    finalTotal: 22.5,
+    total: 22.5,
+    note: "",
+    items: [
+      {
+        productId: "pizza-1",
+        name: "Margherita",
+        quantity: 1,
+        unitPrice: 20,
+        totalPrice: 20,
+      },
+    ],
+    statusHistory: history("PENDING", "CUSTOMER", OWNER_CUSTOMER_ID),
+    createdAt: Timestamp.now(),
+    updatedAt: Timestamp.now(),
+    orderId: ORDER_COD_PENDING,
+    orderCodeKey: ORDER_COD_PENDING,
+    orderCode: `#${ORDER_COD_PENDING}`,
+    ...overrides,
+  };
+}
+
+function trackingPayload(overrides = {}) {
   return {
     shipperId: ASSIGNED_SHIPPER_ID,
     location: new GeoPoint(10.7769, 106.7009),
@@ -61,6 +180,7 @@ async function seedFixtureData() {
       [ASSIGNED_SHIPPER_ID, "SHIPPER"],
       [OTHER_SHIPPER_ID, "SHIPPER"],
       [STAFF_ID, "STAFF"],
+      [KITCHEN_ID, "KITCHEN"],
     ];
 
     for (const [userId, role] of users) {
@@ -71,29 +191,107 @@ async function seedFixtureData() {
       });
     }
 
-    await setDoc(doc(firestore, `orders/${DELIVERING_ORDER_ID}`), {
+    await setDoc(doc(firestore, `orders/${LEGACY_COD_ORDER}`), {
       customerId: OWNER_CUSTOMER_ID,
-      shipperId: ASSIGNED_SHIPPER_ID,
-      status: "DELIVERING",
-    });
-    await setDoc(doc(firestore, `orders/${PENDING_ORDER_ID}`), {
-      customerId: OWNER_CUSTOMER_ID,
-      shipperId: ASSIGNED_SHIPPER_ID,
       status: "PENDING",
+      orderId: LEGACY_COD_ORDER,
+      orderCodeKey: LEGACY_COD_ORDER,
+      orderCode: `#${LEGACY_COD_ORDER}`,
     });
-    await setDoc(doc(firestore, `orders/${DELIVERED_ORDER_ID}`), {
-      customerId: OWNER_CUSTOMER_ID,
+    await setDoc(doc(firestore, `orders/${ORDER_COD_PENDING}`), seededOrder({
+      orderId: ORDER_COD_PENDING,
+      orderCodeKey: ORDER_COD_PENDING,
+      orderCode: `#${ORDER_COD_PENDING}`,
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_VNPAY_PENDING}`), seededOrder({
+      orderId: ORDER_VNPAY_PENDING,
+      orderCodeKey: ORDER_VNPAY_PENDING,
+      orderCode: `#${ORDER_VNPAY_PENDING}`,
+      paymentMethod: "VNPAY",
+      paymentStatus: "PENDING",
+      deliveryHandoffStatus: "LOCKED",
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_VNPAY_PAID}`), seededOrder({
+      orderId: ORDER_VNPAY_PAID,
+      orderCodeKey: ORDER_VNPAY_PAID,
+      orderCode: `#${ORDER_VNPAY_PAID}`,
+      paymentMethod: "VNPAY",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "LOCKED",
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_VNPAY_DELIVERING_LOCKED}`), seededOrder({
+      orderId: ORDER_VNPAY_DELIVERING_LOCKED,
+      orderCodeKey: ORDER_VNPAY_DELIVERING_LOCKED,
+      orderCode: `#${ORDER_VNPAY_DELIVERING_LOCKED}`,
+      status: "DELIVERING",
       shipperId: ASSIGNED_SHIPPER_ID,
+      paymentMethod: "VNPAY",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "LOCKED",
+      statusHistory: history("DELIVERING", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_VNPAY_AWAITING}`), seededOrder({
+      orderId: ORDER_VNPAY_AWAITING,
+      orderCodeKey: ORDER_VNPAY_AWAITING,
+      orderCode: `#${ORDER_VNPAY_AWAITING}`,
+      status: "DELIVERING",
+      shipperId: ASSIGNED_SHIPPER_ID,
+      paymentMethod: "VNPAY",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: Timestamp.now(),
+      statusHistory: history("DELIVERING", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_VNPAY_CONFIRMED}`), seededOrder({
+      orderId: ORDER_VNPAY_CONFIRMED,
+      orderCodeKey: ORDER_VNPAY_CONFIRMED,
+      orderCode: `#${ORDER_VNPAY_CONFIRMED}`,
+      status: "DELIVERING",
+      shipperId: ASSIGNED_SHIPPER_ID,
+      paymentMethod: "VNPAY",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      shipperArrivedAt: Timestamp.now(),
+      customerReceivedAt: Timestamp.now(),
+      customerReceiptConfirmedBy: OWNER_CUSTOMER_ID,
+      statusHistory: history("DELIVERING", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_COD_DELIVERING}`), seededOrder({
+      orderId: ORDER_COD_DELIVERING,
+      orderCodeKey: ORDER_COD_DELIVERING,
+      orderCode: `#${ORDER_COD_DELIVERING}`,
+      status: "DELIVERING",
+      shipperId: ASSIGNED_SHIPPER_ID,
+      statusHistory: history("DELIVERING", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_DELIVERED}`), seededOrder({
+      orderId: ORDER_DELIVERED,
+      orderCodeKey: ORDER_DELIVERED,
+      orderCode: `#${ORDER_DELIVERED}`,
       status: "DELIVERED",
-    });
-    await setDoc(doc(firestore, trackingPath()), {
-      ...validTrackingPayload(),
+      shipperId: ASSIGNED_SHIPPER_ID,
+      cashCollected: true,
+      deliveredAt: Timestamp.now(),
+      collectedByShipperId: ASSIGNED_SHIPPER_ID,
+      collectedAmount: 22.5,
+      statusHistory: history("DELIVERED", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_VNPAY_DELIVERING_LOCKED}/tracking/current`), {
+      ...trackingPayload(),
       updatedAt: Timestamp.now(),
     });
   });
 }
 
-describe("orders/{orderId}/tracking/current Firestore rules", () => {
+async function assertOrderCreateSucceeds(orderId, payload) {
+  await assertSucceeds(setDoc(orderDoc(OWNER_CUSTOMER_ID, orderId), payload));
+}
+
+async function assertOrderCreateFails(orderId, payload) {
+  await assertFails(setDoc(orderDoc(OWNER_CUSTOMER_ID, orderId), payload));
+}
+
+describe("PizzaTime Firestore rules for payment handoff and tracking", () => {
   before(async () => {
     const rules = readFileSync(new URL("../../firestore.rules", import.meta.url), "utf8");
     testEnvironment = await initializeTestEnvironment({
@@ -115,185 +313,355 @@ describe("orders/{orderId}/tracking/current Firestore rules", () => {
     await testEnvironment.cleanup();
   });
 
-  test("owning Customer can read current tracking", async () => {
-    await assertSucceeds(getDoc(trackingDocumentFor(OWNER_CUSTOMER_ID)));
+  test("legacy COD order remains readable", async () => {
+    await assertSucceeds(getDoc(orderDoc(OWNER_CUSTOMER_ID, LEGACY_COD_ORDER)));
   });
 
-  test("another Customer cannot read current tracking", async () => {
-    await assertFails(getDoc(trackingDocumentFor(OTHER_CUSTOMER_ID)));
+  test("Customer can create valid COD initialization", async () => {
+    await assertOrderCreateSucceeds("co-2001", baseCreateOrder("co-2001"));
   });
 
-  test("assigned Shipper can read current tracking", async () => {
-    await assertSucceeds(getDoc(trackingDocumentFor(ASSIGNED_SHIPPER_ID)));
+  test("Customer cannot create COD order as PAID", async () => {
+    await assertOrderCreateFails("co-2002", baseCreateOrder("co-2002", {
+      paymentStatus: "PAID",
+    }));
   });
 
-  test("another Shipper cannot read current tracking", async () => {
-    await assertFails(getDoc(trackingDocumentFor(OTHER_SHIPPER_ID)));
+  test("Customer can create future VNPAY order only as PENDING plus LOCKED", async () => {
+    await assertOrderCreateSucceeds("vp-2001", baseCreateOrder("vp-2001", {
+      paymentMethod: "VNPAY",
+      paymentStatus: "PENDING",
+      deliveryHandoffStatus: "LOCKED",
+    }));
   });
 
-  test("Staff cannot read current tracking", async () => {
-    await assertFails(getDoc(trackingDocumentFor(STAFF_ID)));
+  test("Customer cannot create VNPAY order already PAID", async () => {
+    await assertOrderCreateFails("vp-2002", baseCreateOrder("vp-2002", {
+      paymentMethod: "VNPAY",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "LOCKED",
+    }));
   });
 
-  test("unauthenticated user cannot read current tracking", async () => {
-    const firestore = testEnvironment.unauthenticatedContext().firestore();
-    await assertFails(getDoc(doc(firestore, trackingPath())));
+  test("Customer cannot initialize CUSTOMER_CONFIRMED", async () => {
+    await assertOrderCreateFails("vp-2003", baseCreateOrder("vp-2003", {
+      paymentMethod: "VNPAY",
+      paymentStatus: "PENDING",
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+    }));
   });
 
-  test("assigned Shipper can write while the parent order is DELIVERING", async () => {
-    await assertSucceeds(
-      setDoc(trackingDocumentFor(ASSIGNED_SHIPPER_ID), validTrackingPayload()),
-    );
+  test("Customer cannot initialize DELIVERED", async () => {
+    await assertOrderCreateFails("vp-2004", baseCreateOrder("vp-2004", {
+      status: "DELIVERED",
+    }));
   });
 
-  test("optional bearing and speed may be omitted", async () => {
-    const payload = validTrackingPayload();
-    delete payload.bearingDegrees;
-    delete payload.speedMetersPerSecond;
-    await assertSucceeds(setDoc(trackingDocumentFor(ASSIGNED_SHIPPER_ID), payload));
+  test("Customer cannot change PENDING to PAID", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_PENDING), {
+      paymentStatus: "PAID",
+    }));
   });
 
-  test("assigned Shipper cannot write before DELIVERING", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID, PENDING_ORDER_ID),
-        validTrackingPayload(),
-      ),
-    );
+  test("Staff cannot change PENDING to PAID", async () => {
+    await assertFails(updateDoc(orderDoc(STAFF_ID, ORDER_VNPAY_PENDING), {
+      paymentStatus: "PAID",
+    }));
   });
 
-  test("assigned Shipper cannot write after DELIVERED", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID, DELIVERED_ORDER_ID),
-        validTrackingPayload(),
-      ),
-    );
+  test("Shipper cannot change PENDING to PAID", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_PENDING), {
+      paymentStatus: "PAID",
+    }));
   });
 
-  test("Customer cannot write current tracking", async () => {
-    await assertFails(
-      setDoc(trackingDocumentFor(OWNER_CUSTOMER_ID), validTrackingPayload()),
-    );
+  test("Customer cannot change provider transaction fields", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_PENDING), {
+      paymentReference: "provider-ref",
+    }));
   });
 
-  test("Staff cannot write current tracking", async () => {
-    await assertFails(setDoc(trackingDocumentFor(STAFF_ID), validTrackingPayload()));
+  test("Client cannot alter paidAt", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_PENDING), {
+      paidAt: serverTimestamp(),
+    }));
   });
 
-  test("another Shipper cannot write current tracking", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(OTHER_SHIPPER_ID),
-        validTrackingPayload({ shipperId: OTHER_SHIPPER_ID }),
-      ),
-    );
+  test("Staff can confirm valid COD order according to existing rules", async () => {
+    await assertSucceeds(updateDoc(orderDoc(STAFF_ID, ORDER_COD_PENDING), {
+      status: "CONFIRMED",
+      updatedAt: serverTimestamp(),
+      statusHistory: [
+        ...history("PENDING", "CUSTOMER", OWNER_CUSTOMER_ID),
+        {
+          status: "CONFIRMED",
+          actorRole: "STAFF",
+          actorId: STAFF_ID,
+          note: "Order confirmed",
+          createdAt: Timestamp.now(),
+        },
+      ],
+    }));
   });
 
-  test("extra tracking field is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ customerPhone: "not-allowed" }),
-      ),
-    );
+  test("Staff cannot confirm unpaid VNPAY order", async () => {
+    await assertFails(updateDoc(orderDoc(STAFF_ID, ORDER_VNPAY_PENDING), {
+      status: "CONFIRMED",
+      updatedAt: serverTimestamp(),
+      statusHistory: history("CONFIRMED", "STAFF", STAFF_ID),
+    }));
   });
 
-  test("mismatched shipperId is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ shipperId: OTHER_SHIPPER_ID }),
-      ),
-    );
+  test("Staff can confirm paid VNPAY order", async () => {
+    await assertSucceeds(updateDoc(orderDoc(STAFF_ID, ORDER_VNPAY_PAID), {
+      status: "CONFIRMED",
+      updatedAt: serverTimestamp(),
+      statusHistory: history("CONFIRMED", "STAFF", STAFF_ID),
+    }));
   });
 
-  test("invalid location type is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ location: "10.7769,106.7009" }),
-      ),
-    );
+  test("Assigned Shipper can mark LOCKED to AWAITING_CUSTOMER while DELIVERING", async () => {
+    await assertSucceeds(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_DELIVERING_LOCKED), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("out-of-bounds accuracy is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ accuracyMeters: 100.1 }),
-      ),
-    );
+  test("Other Shipper denied arrival", async () => {
+    await assertFails(updateDoc(orderDoc(OTHER_SHIPPER_ID, ORDER_VNPAY_DELIVERING_LOCKED), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("stale recordedAt timestamp is denied", async () => {
-    const elevenMinutesAgo = Timestamp.fromMillis(Date.now() - 11 * 60 * 1000);
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ recordedAt: elevenMinutesAgo }),
-      ),
-    );
+  test("Customer denied arrival", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_DELIVERING_LOCKED), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("future recordedAt timestamp is denied", async () => {
-    const twoMinutesFromNow = Timestamp.fromMillis(Date.now() + 2 * 60 * 1000);
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ recordedAt: twoMinutesFromNow }),
-      ),
-    );
+  test("Assigned Shipper denied arrival before DELIVERING", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_PAID), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("out-of-bounds optional bearing is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ bearingDegrees: 360 }),
-      ),
-    );
+  test("Assigned Shipper denied arrival when unpaid", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_PENDING), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("out-of-bounds optional speed is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ speedMetersPerSecond: 100.1 }),
-      ),
-    );
+  test("Extra field change denied during arrival", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_DELIVERING_LOCKED), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      note: "extra",
+    }));
   });
 
-  test("client timestamp in updatedAt is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ updatedAt: Timestamp.now() }),
-      ),
-    );
+  test("Owning Customer can mark AWAITING_CUSTOMER to CUSTOMER_CONFIRMED", async () => {
+    await assertSucceeds(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_AWAITING), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OWNER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("unexpected schema version is denied", async () => {
-    await assertFails(
-      setDoc(
-        trackingDocumentFor(ASSIGNED_SHIPPER_ID),
-        validTrackingPayload({ schemaVersion: 2 }),
-      ),
-    );
+  test("Other Customer denied receipt confirmation", async () => {
+    await assertFails(updateDoc(orderDoc(OTHER_CUSTOMER_ID, ORDER_VNPAY_AWAITING), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OTHER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("tracking document delete is denied", async () => {
-    await assertFails(deleteDoc(trackingDocumentFor(ASSIGNED_SHIPPER_ID)));
+  test("Shipper denied receipt confirmation", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_AWAITING), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OWNER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+    }));
   });
 
-  test("a tracking history document is denied", async () => {
-    const firestore = testEnvironment.authenticatedContext(ASSIGNED_SHIPPER_ID).firestore();
-    await assertFails(
-      setDoc(
-        doc(firestore, `orders/${DELIVERING_ORDER_ID}/tracking/history-1`),
-        validTrackingPayload(),
-      ),
-    );
+  test("Customer denied when handoff is LOCKED", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_DELIVERING_LOCKED), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OWNER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test("Customer denied after CANCELLED", async () => {
+    await testEnvironment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), `orders/${ORDER_VNPAY_AWAITING}`), seededOrder({
+        orderId: ORDER_VNPAY_AWAITING,
+        orderCodeKey: ORDER_VNPAY_AWAITING,
+        orderCode: `#${ORDER_VNPAY_AWAITING}`,
+        status: "CANCELLED",
+        shipperId: ASSIGNED_SHIPPER_ID,
+        paymentMethod: "VNPAY",
+        paymentStatus: "PAID",
+        deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      }));
+    });
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_AWAITING), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OWNER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test("Mismatched confirmedBy denied", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_AWAITING), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OTHER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+    }));
+  });
+
+  test("Extra field change denied during customer confirmation", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_AWAITING), {
+      deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      customerReceivedAt: serverTimestamp(),
+      customerReceiptConfirmedBy: OWNER_CUSTOMER_ID,
+      updatedAt: serverTimestamp(),
+      note: "extra",
+    }));
+  });
+
+  test("Assigned Shipper can atomically complete after CUSTOMER_CONFIRMED", async () => {
+    await assertSucceeds(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_CONFIRMED), {
+      status: "DELIVERED",
+      deliveryHandoffStatus: "COMPLETED",
+      deliveryCompletedAt: serverTimestamp(),
+      deliveredAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      statusHistory: [
+        ...history("DELIVERING", "SHIPPER", ASSIGNED_SHIPPER_ID),
+        {
+          status: "DELIVERED",
+          actorRole: "SHIPPER",
+          actorId: ASSIGNED_SHIPPER_ID,
+          note: "Completed",
+          createdAt: Timestamp.now(),
+        },
+      ],
+    }));
+  });
+
+  test("Assigned Shipper cannot complete while LOCKED", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_DELIVERING_LOCKED), {
+      status: "DELIVERED",
+      deliveryHandoffStatus: "COMPLETED",
+      deliveryCompletedAt: serverTimestamp(),
+      deliveredAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      statusHistory: history("DELIVERED", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+  });
+
+  test("Assigned Shipper cannot complete while AWAITING_CUSTOMER", async () => {
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_AWAITING), {
+      status: "DELIVERED",
+      deliveryHandoffStatus: "COMPLETED",
+      deliveryCompletedAt: serverTimestamp(),
+      deliveredAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      statusHistory: history("DELIVERED", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+  });
+
+  test("Other Shipper denied prepaid completion", async () => {
+    await assertFails(updateDoc(orderDoc(OTHER_SHIPPER_ID, ORDER_VNPAY_CONFIRMED), {
+      status: "DELIVERED",
+      deliveryHandoffStatus: "COMPLETED",
+      deliveryCompletedAt: serverTimestamp(),
+      deliveredAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      statusHistory: history("DELIVERED", "SHIPPER", OTHER_SHIPPER_ID),
+    }));
+  });
+
+  test("Customer cannot set DELIVERED", async () => {
+    await assertFails(updateDoc(orderDoc(OWNER_CUSTOMER_ID, ORDER_VNPAY_CONFIRMED), {
+      status: "DELIVERED",
+      deliveryHandoffStatus: "COMPLETED",
+      deliveryCompletedAt: serverTimestamp(),
+      deliveredAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      statusHistory: history("DELIVERED", "CUSTOMER", OWNER_CUSTOMER_ID),
+    }));
+  });
+
+  test("COD completion remains compatible", async () => {
+    await assertSucceeds(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_COD_DELIVERING), {
+      status: "DELIVERED",
+      deliveredAt: serverTimestamp(),
+      collectedByShipperId: ASSIGNED_SHIPPER_ID,
+      collectedAmount: 22.5,
+      cashCollected: true,
+      updatedAt: serverTimestamp(),
+      statusHistory: history("DELIVERED", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+  });
+
+  test("Completion after CANCELLED denied", async () => {
+    await testEnvironment.withSecurityRulesDisabled(async (context) => {
+      await setDoc(doc(context.firestore(), `orders/${ORDER_VNPAY_CONFIRMED}`), seededOrder({
+        orderId: ORDER_VNPAY_CONFIRMED,
+        orderCodeKey: ORDER_VNPAY_CONFIRMED,
+        orderCode: `#${ORDER_VNPAY_CONFIRMED}`,
+        status: "CANCELLED",
+        shipperId: ASSIGNED_SHIPPER_ID,
+        paymentMethod: "VNPAY",
+        paymentStatus: "PAID",
+        deliveryHandoffStatus: "CUSTOMER_CONFIRMED",
+      }));
+    });
+    await assertFails(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_VNPAY_CONFIRMED), {
+      status: "DELIVERED",
+      deliveryHandoffStatus: "COMPLETED",
+      deliveryCompletedAt: serverTimestamp(),
+      deliveredAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
+      statusHistory: history("DELIVERED", "SHIPPER", ASSIGNED_SHIPPER_ID),
+    }));
+  });
+
+  test("Existing assigned-Shipper tracking writes while DELIVERING still pass", async () => {
+    await assertSucceeds(setDoc(trackingDoc(ASSIGNED_SHIPPER_ID), trackingPayload()));
+  });
+
+  test("Tracking write after DELIVERED still fails", async () => {
+    await assertFails(setDoc(trackingDoc(ASSIGNED_SHIPPER_ID, ORDER_DELIVERED), trackingPayload()));
+  });
+
+  test("Owning-Customer tracking read still passes", async () => {
+    await assertSucceeds(getDoc(trackingDoc(OWNER_CUSTOMER_ID)));
+  });
+
+  test("Other-Customer tracking read still fails", async () => {
+    await assertFails(getDoc(trackingDoc(OTHER_CUSTOMER_ID)));
+  });
+
+  test("Tracking delete is denied", async () => {
+    await assertFails(deleteDoc(trackingDoc(ASSIGNED_SHIPPER_ID)));
   });
 
   test("fixture remains isolated from production Firebase", () => {

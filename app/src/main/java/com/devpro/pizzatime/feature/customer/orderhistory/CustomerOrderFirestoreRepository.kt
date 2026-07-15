@@ -6,12 +6,16 @@ import com.devpro.pizzatime.feature.customer.orderdetail.CustomerBillUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderItemUiModel
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderStatusHistoryUiModel
+import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPolicy
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
+import com.google.firebase.firestore.ListenerRegistration
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,11 +58,32 @@ object CustomerOrderFirestoreRepository {
                     onResult(Result.failure(NoSuchElementException("Customer order unavailable")))
                     return@addOnSuccessListener
                 }
-                enrichOrderDetailImages(doc.toOrderDetail()) { detail ->
+                enrichOrderDetailImages(doc.toOrderDetail(customerId)) { detail ->
                     onResult(Result.success(detail))
                 }
             }
             .addOnFailureListener { e -> onResult(Result.failure(e)) }
+    }
+
+    fun listenOrderDetail(
+        orderId: String,
+        customerId: String,
+        onResult: (Result<CustomerOrderDetailUiModel>) -> Unit,
+    ): ListenerRegistration {
+        return firestore.collection("orders").document(orderId)
+            .addSnapshotListener { doc, error ->
+                if (error != null) {
+                    onResult(Result.failure(error))
+                    return@addSnapshotListener
+                }
+                if (doc == null || !doc.exists() || doc.getString("customerId") != customerId) {
+                    onResult(Result.failure(NoSuchElementException("Customer order unavailable")))
+                    return@addSnapshotListener
+                }
+                enrichOrderDetailImages(doc.toOrderDetail(customerId)) { detail ->
+                    onResult(Result.success(detail))
+                }
+            }
     }
 
     fun cancelOrder(
@@ -75,6 +100,22 @@ object CustomerOrderFirestoreRepository {
             orderId = orderId,
             customerId = uid,
             reason = null,
+            onResult = onResult,
+        )
+    }
+
+    fun confirmOrderReceived(
+        orderId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val uid = FirebaseAuth.getInstance().currentUser?.uid
+        if (uid.isNullOrBlank()) {
+            onResult(Result.failure(Exception("Authenticated customer required")))
+            return
+        }
+        OrderTransitionRepository.confirmOrderReceived(
+            orderId = orderId,
+            customerId = uid,
             onResult = onResult,
         )
     }
@@ -100,7 +141,7 @@ object CustomerOrderFirestoreRepository {
         )
     }
 
-    private fun DocumentSnapshot.toOrderDetail(): CustomerOrderDetailUiModel {
+    private fun DocumentSnapshot.toOrderDetail(customerId: String): CustomerOrderDetailUiModel {
         val statusStr = getString("status") ?: "PENDING"
         val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val subtotal = getDouble("itemsSubtotal") ?: getDouble("subtotal") ?: 0.0
@@ -111,6 +152,7 @@ object CustomerOrderFirestoreRepository {
         val rawStatusHistory = get("statusHistory") as? List<*>
         val items = rawItems?.mapNotNull { it.toOrderItem() } ?: emptyList()
         val heroItem = items.maxByOrNull { it.price }
+        val paymentSnapshot = paymentSnapshot()
 
         return CustomerOrderDetailUiModel(
             orderId = id,
@@ -140,13 +182,22 @@ object CustomerOrderFirestoreRepository {
             pickupAddress = getString("pickupAddress").orNotProvided(),
             storePhone = getString("storePhone").orNotProvided(),
             distanceKm = getDouble("distanceKm"),
-            paymentMethod = getString("paymentMethod").toPaymentMethodLabel(),
-            paymentStatus = paymentStatusLabel(
-                stored = getString("paymentStatus"),
-                status = statusStr,
-            ),
+            paymentMethod = "",
+            paymentStatus = "",
+            paymentMethodValue = paymentSnapshot.paymentMethod,
+            paymentStatusValue = paymentSnapshot.paymentStatus,
+            deliveryHandoffStatusValue = paymentSnapshot.deliveryHandoffStatus,
             statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
             canCancel = statusStr == STATUS_PENDING,
+            canConfirmReceipt = OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(paymentSnapshot, customerId),
+            shouldShowReceiptAction = OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(
+                paymentSnapshot,
+                customerId,
+            ),
+            isReceiptConfirmed = paymentSnapshot.deliveryHandoffStatus in setOf(
+                DeliveryHandoffStatus.CUSTOMER_CONFIRMED,
+                DeliveryHandoffStatus.COMPLETED,
+            ) || statusStr == "DELIVERED",
         )
     }
 
@@ -367,22 +418,14 @@ object CustomerOrderFirestoreRepository {
         )
     }
 
-    private fun String?.toPaymentMethodLabel(): String {
-        return when (this?.uppercase(Locale.US)) {
-            "CASH_ON_DELIVERY", "CASH" -> "Cash on Delivery"
-            else -> this?.takeIf { it.isNotBlank() } ?: "Cash on Delivery"
-        }
-    }
-
-    private fun paymentStatusLabel(stored: String?, status: String): String {
-        val normalized = stored?.uppercase(Locale.US)
-        return when {
-            normalized == "PAID" -> "Paid"
-            normalized == "UNPAID" -> "Unpaid"
-            status == "DELIVERED" -> "Paid"
-            else -> "Unpaid"
-        }
-    }
+    private fun DocumentSnapshot.paymentSnapshot() = OrderPaymentHandoffParser.parse(
+        orderStatus = getString("status"),
+        paymentMethodValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+        paymentStatusValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+        handoffStatusValue = getString(OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS),
+        customerId = getString("customerId"),
+        shipperId = getString("shipperId"),
+    )
 
     private data class OrderStatusHistoryEntry(
         val status: String,

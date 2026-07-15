@@ -9,6 +9,7 @@ data class StaffOrderUiModel(
     val orderSummary: String,
     val price: String,
     val status: StaffOrderStatus,
+    val canConfirmOrder: Boolean = true,
 )
 
 enum class StaffFulfillmentType {

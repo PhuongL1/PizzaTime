@@ -1,6 +1,9 @@
 package com.devpro.pizzatime.feature.customer.orderdetail
 
 import androidx.annotation.DrawableRes
+import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
+import com.devpro.pizzatime.feature.order.PaymentMethod
+import com.devpro.pizzatime.feature.order.PaymentStatus
 
 data class CustomerOrderDetailUiModel(
     val orderId: String,
@@ -21,8 +24,14 @@ data class CustomerOrderDetailUiModel(
     val distanceKm: Double? = null,
     val paymentMethod: String = "",
     val paymentStatus: String = "",
+    val paymentMethodValue: PaymentMethod = PaymentMethod.COD,
+    val paymentStatusValue: PaymentStatus = PaymentStatus.NOT_REQUIRED,
+    val deliveryHandoffStatusValue: DeliveryHandoffStatus = DeliveryHandoffStatus.NOT_REQUIRED,
     val statusHistory: List<CustomerOrderStatusHistoryUiModel> = emptyList(),
     val canCancel: Boolean = false,
+    val canConfirmReceipt: Boolean = false,
+    val shouldShowReceiptAction: Boolean = false,
+    val isReceiptConfirmed: Boolean = false,
 )
 
 data class CustomerOrderItemUiModel(

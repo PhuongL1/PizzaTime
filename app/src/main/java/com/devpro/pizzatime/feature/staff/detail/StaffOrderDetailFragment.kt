@@ -10,6 +10,7 @@ import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
 import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentStaffOrderDetailBinding
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPresentation
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderStatus
 import com.devpro.pizzatime.feature.staff.navigation.canManageStaffScreen
@@ -129,18 +130,26 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     }
 
     private fun bindPayment(order: StaffOrderDetailUiModel) = with(binding) {
-        tvPaymentMethod.text = order.paymentMethod
+        tvPaymentMethod.text = getString(
+            OrderPaymentHandoffPresentation.paymentMethodLabel(order.paymentMethodValue),
+        )
+        val paymentStatusLabel = getString(
+            OrderPaymentHandoffPresentation.paymentStatusLabel(
+                method = order.paymentMethodValue,
+                status = order.paymentStatusValue,
+            ),
+        )
         tvPaymentSummary.text = if (order.cashCollected) {
             getString(
                 R.string.staff_order_detail_payment_summary_collected,
-                order.paymentStatus,
+                paymentStatusLabel,
                 formatPrice(order.collectedAmount),
                 order.collectedByShipperId.ifBlank { getString(R.string.common_not_provided) },
             )
         } else {
             getString(
                 R.string.staff_order_detail_payment_summary_uncollected,
-                order.paymentStatus,
+                paymentStatusLabel,
                 formatPrice(order.paymentTotal),
             )
         }

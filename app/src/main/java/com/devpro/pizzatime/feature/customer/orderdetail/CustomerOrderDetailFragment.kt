@@ -26,8 +26,10 @@ import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopB
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
 import com.devpro.pizzatime.feature.customer.rating.CustomerProductReviewFirestoreRepository
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPresentation
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.auth.FirebaseAuth
+import com.google.firebase.firestore.ListenerRegistration
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Locale
 
@@ -44,8 +46,10 @@ class CustomerOrderDetailFragment : Fragment() {
     private var existingRatings: Map<String, Int> = emptyMap()
     private var isRealOrderLoaded = false
     private var isCancellingOrder = false
+    private var isConfirmingReceipt = false
     private var isLoadingRatings = false
     private var isSubmittingRatings = false
+    private var orderDetailListener: ListenerRegistration? = null
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -116,6 +120,25 @@ class CustomerOrderDetailFragment : Fragment() {
                         parentFragmentManager.popBackStack()
                     }
             }
+            orderDetailListener?.remove()
+            orderDetailListener = CustomerOrderFirestoreRepository.listenOrderDetail(orderId, customerId) { result ->
+                if (_binding == null || !isAdded) return@listenOrderDetail
+                result
+                    .onSuccess { detail ->
+                        isRealOrderLoaded = true
+                        currentOrderDetail = detail
+                        bindOrderDetail(detail)
+                    }
+                    .onFailure { error ->
+                        if (error is NoSuchElementException) {
+                            AppUiMessageBus.publish(
+                                textRes = R.string.notification_order_unavailable,
+                                type = UiMessageType.ERROR,
+                            )
+                            parentFragmentManager.popBackStack()
+                        }
+                    }
+            }
         } else {
             val detail = FakeCustomerOrderDetailData.getOrderDetail(orderId.ifBlank { DEFAULT_ORDER_ID })
             isRealOrderLoaded = false
@@ -152,6 +175,7 @@ class CustomerOrderDetailFragment : Fragment() {
         }
 
         btnCancelOrder.isVisible = detail.canCancel && isFirestoreOrderId(detail.orderId)
+        bindReceiptAction(detail)
     }
 
     private fun detailImage(detail: CustomerOrderDetailUiModel) = with(binding) {
@@ -203,11 +227,45 @@ class CustomerOrderDetailFragment : Fragment() {
         tvDeliveryDistanceValue.text = detail.distanceKm?.let { formatDistance(it) }
             ?: getString(R.string.common_not_provided)
         tvTaxesValue.text = formatPrice(bill.taxes)
-        tvPaymentMethodValue.text = detail.paymentMethod.ifBlank { getString(R.string.payment_method_cash_on_delivery) }
-        tvPaymentStatusValue.text = detail.paymentStatus.ifBlank { getString(R.string.payment_status_unpaid) }
+        tvPaymentMethodValue.text = getString(
+            OrderPaymentHandoffPresentation.paymentMethodLabel(detail.paymentMethodValue),
+        )
+        tvPaymentStatusValue.text = getString(
+            OrderPaymentHandoffPresentation.paymentStatusLabel(
+                method = detail.paymentMethodValue,
+                status = detail.paymentStatusValue,
+            ),
+        )
+        tvReceiptStatusValue.text = getString(
+            OrderPaymentHandoffPresentation.handoffStatusLabel(detail.deliveryHandoffStatusValue),
+        )
         tvDiscountLabel.text = bill.discountLabel
         tvDiscountValue.text = formatSignedPrice(bill.discount)
         tvTotalAmount.text = formatPrice(bill.total)
+    }
+
+    private fun bindReceiptAction(detail: CustomerOrderDetailUiModel) = with(binding.btnConfirmReceipt) {
+        isVisible = detail.shouldShowReceiptAction
+        if (!detail.shouldShowReceiptAction) {
+            isEnabled = false
+            return@with
+        }
+
+        val isConfirmed = detail.isReceiptConfirmed
+        text = getString(
+            if (isConfirmed) R.string.customer_order_detail_order_received
+            else R.string.customer_order_detail_confirm_order_received,
+        )
+        isEnabled = detail.canConfirmReceipt && !isConfirmingReceipt && !isConfirmed
+        setBackgroundResource(
+            if (isEnabled) R.drawable.bg_customer_order_detail_reorder_button
+            else R.drawable.bg_shipper_detail_disabled_button,
+        )
+        setTextColor(
+            requireContext().getColor(
+                if (isEnabled) R.color.pt_background else R.color.pt_text_secondary_dark_bg,
+            ),
+        )
     }
 
     private fun bindAddress(detail: CustomerOrderDetailUiModel) = with(binding) {
@@ -248,6 +306,10 @@ class CustomerOrderDetailFragment : Fragment() {
 
         btnCancelOrder.setOnClickListener {
             showCancelOrderDialog()
+        }
+
+        btnConfirmReceipt.setOnClickListener {
+            showConfirmReceiptDialog()
         }
     }
 
@@ -482,6 +544,42 @@ class CustomerOrderDetailFragment : Fragment() {
             .show()
     }
 
+    private fun showConfirmReceiptDialog() {
+        val detail = currentOrderDetail ?: return
+        if (!detail.canConfirmReceipt || isConfirmingReceipt) {
+            return
+        }
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.customer_order_detail_confirm_receipt_title)
+            .setMessage(R.string.customer_order_detail_confirm_receipt_message)
+            .setNegativeButton(R.string.common_cancel, null)
+            .setPositiveButton(R.string.common_confirm) { _, _ ->
+                confirmReceipt(detail.orderId)
+            }
+            .show()
+    }
+
+    private fun confirmReceipt(orderId: String) {
+        if (isConfirmingReceipt) {
+            return
+        }
+        isConfirmingReceipt = true
+        bindReceiptAction(currentOrderDetail ?: return)
+        CustomerOrderFirestoreRepository.confirmOrderReceived(orderId) { result ->
+            if (_binding == null || !isAdded) return@confirmOrderReceived
+            isConfirmingReceipt = false
+            bindReceiptAction(currentOrderDetail ?: return@confirmOrderReceived)
+            result
+                .onSuccess {
+                    showUiMessage(R.string.customer_order_detail_receipt_confirmed, UiMessageType.SUCCESS)
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to confirm order receipt", error)
+                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
+                }
+        }
+    }
+
     private fun cancelOrder() {
         if (isCancellingOrder) {
             return
@@ -623,6 +721,8 @@ class CustomerOrderDetailFragment : Fragment() {
     }
 
     override fun onDestroyView() {
+        orderDetailListener?.remove()
+        orderDetailListener = null
         _binding = null
         super.onDestroyView()
     }

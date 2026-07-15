@@ -600,6 +600,17 @@
                             android:textStyle="bold"
                             tools:text="UNPAID" />
 
+                        <TextView
+                            android:id="@+id/tvDeliveryHandoffStatus"
+                            android:layout_width="wrap_content"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:letterSpacing="0.08"
+                            android:textColor="@color/pt_text_secondary"
+                            android:textSize="13sp"
+                            android:textStyle="bold"
+                            tools:text="Delivery in Progress" />
+
                     </LinearLayout>
 
                 </LinearLayout>
@@ -635,10 +646,23 @@
                 android:visibility="gone" />
 
             <TextView
+                android:id="@+id/btnArrivalStatus"
+                android:layout_width="match_parent"
+                android:layout_height="56dp"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_shipper_detail_disabled_button"
+                android:gravity="center"
+                android:text="@string/shipper_detail_ive_arrived"
+                android:textColor="@color/pt_text_secondary_dark_bg"
+                android:textSize="16sp"
+                android:textStyle="bold"
+                android:visibility="gone" />
+
+            <TextView
                 android:id="@+id/btnConfirmDelivery"
                 android:layout_width="match_parent"
                 android:layout_height="56dp"
-                android:layout_marginTop="42dp"
+                android:layout_marginTop="18dp"
                 android:background="@drawable/bg_button_primary_gold"
                 android:gravity="center"
                 android:text="@string/shipper_detail_confirm_delivery"

@@ -8,6 +8,8 @@ import com.google.firebase.firestore.FirebaseFirestore
 object OrderTransitionRepository {
 
     const val STALE_ORDER_MESSAGE = "Order has already been updated. Please refresh."
+    const val PAYMENT_NOT_CONFIRMED_MESSAGE = "Payment has not been confirmed yet."
+    const val CUSTOMER_CONFIRMATION_REQUIRED_MESSAGE = "Customer confirmation is required before completing delivery."
 
     private const val STATUS_PENDING = "PENDING"
     private const val STATUS_CONFIRMED = "CONFIRMED"
@@ -45,15 +47,42 @@ object OrderTransitionRepository {
         staffId: String,
         onResult: (Result<Unit>) -> Unit,
     ) {
-        updateStatus(
-            orderId = orderId,
-            newStatus = STATUS_CONFIRMED,
-            allowedCurrentStatuses = setOf(STATUS_PENDING),
-            actorRole = "STAFF",
-            actorId = staffId,
-            note = "Order confirmed",
-            onResult = onResult,
-        )
+        val orderRef = firestore.collection("orders").document(orderId)
+        firestore.runTransaction { transaction ->
+            val order = transaction.get(orderRef)
+            if (!order.exists()) {
+                throw staleOrderException()
+            }
+
+            val paymentSnapshot = order.paymentSnapshot()
+            if (!OrderPaymentHandoffPolicy.canStaffConfirmOrder(paymentSnapshot)) {
+                throw if (paymentSnapshot.paymentMethod == PaymentMethod.VNPAY &&
+                    paymentSnapshot.paymentStatus != PaymentStatus.PAID
+                ) {
+                    paymentNotConfirmedException()
+                } else {
+                    staleOrderException()
+                }
+            }
+
+            transaction.update(
+                orderRef,
+                mapOf(
+                    "status" to STATUS_CONFIRMED,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = STATUS_CONFIRMED,
+                            actorRole = "STAFF",
+                            actorId = staffId,
+                            note = "Order confirmed",
+                        ),
+                    ),
+                ),
+            )
+        }
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
     }
 
     fun cancelByStaff(
@@ -155,9 +184,132 @@ object OrderTransitionRepository {
         when (newStatus) {
             STATUS_ASSIGNED_TO_SHIPPER -> acceptByShipper(orderId, shipperId, onResult)
             STATUS_DELIVERING -> startDelivery(orderId, shipperId, onResult)
-            STATUS_DELIVERED -> completeCashDelivery(orderId, shipperId, onResult)
+            STATUS_DELIVERED -> completeDelivery(orderId, shipperId, onResult)
             else -> onResult(Result.failure(staleOrderException()))
         }
+    }
+
+    fun markShipperArrived(
+        orderId: String,
+        shipperId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val orderRef = firestore.collection("orders").document(orderId)
+        firestore.runTransaction { transaction ->
+            val order = transaction.get(orderRef)
+            if (!order.exists()) {
+                throw staleOrderException()
+            }
+            val paymentSnapshot = order.paymentSnapshot()
+            if (paymentSnapshot.deliveryHandoffStatus == DeliveryHandoffStatus.AWAITING_CUSTOMER) {
+                return@runTransaction
+            }
+            if (!OrderPaymentHandoffPolicy.canShipperMarkArrived(paymentSnapshot, shipperId)) {
+                throw staleOrderException()
+            }
+            transaction.update(
+                orderRef,
+                mapOf(
+                    OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS to
+                        DeliveryHandoffStatus.AWAITING_CUSTOMER.name,
+                    OrderPaymentHandoffParser.FIELD_SHIPPER_ARRIVED_AT to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+        }
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
+    }
+
+    fun confirmOrderReceived(
+        orderId: String,
+        customerId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val orderRef = firestore.collection("orders").document(orderId)
+        firestore.runTransaction { transaction ->
+            val order = transaction.get(orderRef)
+            if (!order.exists()) {
+                throw staleOrderException()
+            }
+            val paymentSnapshot = order.paymentSnapshot()
+            if (
+                paymentSnapshot.deliveryHandoffStatus == DeliveryHandoffStatus.CUSTOMER_CONFIRMED ||
+                paymentSnapshot.deliveryHandoffStatus == DeliveryHandoffStatus.COMPLETED
+            ) {
+                return@runTransaction
+            }
+            if (!OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(paymentSnapshot, customerId)) {
+                throw staleOrderException()
+            }
+            transaction.update(
+                orderRef,
+                mapOf(
+                    OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS to
+                        DeliveryHandoffStatus.CUSTOMER_CONFIRMED.name,
+                    OrderPaymentHandoffParser.FIELD_CUSTOMER_RECEIVED_AT to FieldValue.serverTimestamp(),
+                    OrderPaymentHandoffParser.FIELD_CUSTOMER_RECEIPT_CONFIRMED_BY to customerId,
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                ),
+            )
+        }
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
+    }
+
+    fun completePrepaidDelivery(
+        orderId: String,
+        shipperId: String,
+        onResult: (Result<Unit>) -> Unit,
+    ) {
+        val orderRef = firestore.collection("orders").document(orderId)
+        firestore.runTransaction { transaction ->
+            val order = transaction.get(orderRef)
+            if (!order.exists()) {
+                throw staleOrderException()
+            }
+            val paymentSnapshot = order.paymentSnapshot()
+            if (
+                paymentSnapshot.deliveryHandoffStatus == DeliveryHandoffStatus.COMPLETED &&
+                paymentSnapshot.orderStatus == STATUS_DELIVERED
+            ) {
+                return@runTransaction
+            }
+            if (!OrderPaymentHandoffPolicy.canShipperCompleteDelivery(paymentSnapshot, shipperId)) {
+                throw if (
+                    paymentSnapshot.paymentMethod == PaymentMethod.VNPAY &&
+                    paymentSnapshot.paymentStatus == PaymentStatus.PAID &&
+                    paymentSnapshot.orderStatus == STATUS_DELIVERING &&
+                    paymentSnapshot.deliveryHandoffStatus != DeliveryHandoffStatus.CUSTOMER_CONFIRMED
+                ) {
+                    customerConfirmationRequiredException()
+                } else {
+                    staleOrderException()
+                }
+            }
+
+            transaction.update(
+                orderRef,
+                mapOf(
+                    "status" to STATUS_DELIVERED,
+                    OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS to
+                        DeliveryHandoffStatus.COMPLETED.name,
+                    OrderPaymentHandoffParser.FIELD_DELIVERY_COMPLETED_AT to FieldValue.serverTimestamp(),
+                    "deliveredAt" to FieldValue.serverTimestamp(),
+                    "updatedAt" to FieldValue.serverTimestamp(),
+                    "statusHistory" to FieldValue.arrayUnion(
+                        buildHistoryItem(
+                            status = STATUS_DELIVERED,
+                            actorRole = "SHIPPER",
+                            actorId = shipperId,
+                            note = "Shipper completed prepaid delivery after customer confirmation",
+                        ),
+                    ),
+                ),
+            )
+        }
+            .addOnSuccessListener { onResult(Result.success(Unit)) }
+            .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
     }
 
     private fun updateStatus(
@@ -218,6 +370,14 @@ object OrderTransitionRepository {
             if (currentStatus !in setOf(STATUS_READY, STATUS_LEGACY_READY) || currentShipperId.isNotBlank()) {
                 throw staleOrderException()
             }
+            val paymentSnapshot = order.paymentSnapshot()
+            if (!OrderPaymentHandoffPolicy.canShipperStartDelivery(paymentSnapshot, shipperId)) {
+                throw if (paymentSnapshot.paymentMethod == PaymentMethod.VNPAY) {
+                    paymentNotConfirmedException()
+                } else {
+                    staleOrderException()
+                }
+            }
 
             transaction.update(
                 orderRef,
@@ -261,6 +421,14 @@ object OrderTransitionRepository {
             if (!canStartFromReady && !canStartFromAssigned) {
                 throw staleOrderException()
             }
+            val paymentSnapshot = order.paymentSnapshot()
+            if (!OrderPaymentHandoffPolicy.canShipperStartDelivery(paymentSnapshot, shipperId)) {
+                throw if (paymentSnapshot.paymentMethod == PaymentMethod.VNPAY) {
+                    paymentNotConfirmedException()
+                } else {
+                    staleOrderException()
+                }
+            }
 
             transaction.update(
                 orderRef,
@@ -283,7 +451,7 @@ object OrderTransitionRepository {
             .addOnFailureListener { error -> onResult(Result.failure(error.asCleanFailure())) }
     }
 
-    private fun completeCashDelivery(
+    private fun completeDelivery(
         orderId: String,
         shipperId: String,
         onResult: (Result<Unit>) -> Unit,
@@ -304,15 +472,52 @@ object OrderTransitionRepository {
             ) {
                 throw staleOrderException()
             }
+            val paymentSnapshot = order.paymentSnapshot()
+            when (paymentSnapshot.paymentMethod) {
+                PaymentMethod.VNPAY -> {
+                    if (paymentSnapshot.deliveryHandoffStatus == DeliveryHandoffStatus.COMPLETED &&
+                        paymentSnapshot.orderStatus == STATUS_DELIVERED
+                    ) {
+                        return@runTransaction
+                    }
+                    if (!OrderPaymentHandoffPolicy.canShipperCompleteDelivery(paymentSnapshot, shipperId)) {
+                        throw if (paymentSnapshot.paymentStatus != PaymentStatus.PAID) {
+                            paymentNotConfirmedException()
+                        } else {
+                            customerConfirmationRequiredException()
+                        }
+                    }
+                    transaction.update(
+                        orderRef,
+                        mapOf(
+                            "status" to STATUS_DELIVERED,
+                            OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS to
+                                DeliveryHandoffStatus.COMPLETED.name,
+                            OrderPaymentHandoffParser.FIELD_DELIVERY_COMPLETED_AT to FieldValue.serverTimestamp(),
+                            "deliveredAt" to FieldValue.serverTimestamp(),
+                            "updatedAt" to FieldValue.serverTimestamp(),
+                            "statusHistory" to FieldValue.arrayUnion(
+                                buildHistoryItem(
+                                    status = STATUS_DELIVERED,
+                                    actorRole = "SHIPPER",
+                                    actorId = shipperId,
+                                    note = "Shipper completed prepaid delivery after customer confirmation",
+                                ),
+                            ),
+                        ),
+                    )
+                    return@runTransaction
+                }
+
+                PaymentMethod.UNKNOWN -> throw staleOrderException()
+                PaymentMethod.COD -> Unit
+            }
 
             val total = order.getDouble("finalTotal") ?: order.getDouble("total") ?: 0.0
             transaction.update(
                 orderRef,
                 mapOf(
                     "status" to STATUS_DELIVERED,
-                    "paymentMethod" to "CASH_ON_DELIVERY",
-                    "paymentStatus" to "PAID",
-                    "paidAt" to FieldValue.serverTimestamp(),
                     "deliveredAt" to FieldValue.serverTimestamp(),
                     "collectedByShipperId" to shipperId,
                     "collectedAmount" to total,
@@ -323,7 +528,7 @@ object OrderTransitionRepository {
                             status = STATUS_DELIVERED,
                             actorRole = "SHIPPER",
                             actorId = shipperId,
-                            note = "Shipper delivered order and collected cash payment",
+                            note = "Shipper completed cash-on-delivery order",
                         ),
                     ),
                 ),
@@ -339,6 +544,14 @@ object OrderTransitionRepository {
 
     private fun staleOrderException(): OrderTransitionException {
         return OrderTransitionException(STALE_ORDER_MESSAGE)
+    }
+
+    private fun paymentNotConfirmedException(): OrderTransitionException {
+        return OrderTransitionException(PAYMENT_NOT_CONFIRMED_MESSAGE)
+    }
+
+    private fun customerConfirmationRequiredException(): OrderTransitionException {
+        return OrderTransitionException(CUSTOMER_CONFIRMATION_REQUIRED_MESSAGE)
     }
 
     private fun buildHistoryItem(
@@ -361,6 +574,17 @@ object OrderTransitionRepository {
         val kitchenStage: String,
         val progressPercent: Int,
     )
+
+    private fun com.google.firebase.firestore.DocumentSnapshot.paymentSnapshot(): OrderPaymentHandoffSnapshot {
+        return OrderPaymentHandoffParser.parse(
+            orderStatus = getString("status"),
+            paymentMethodValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+            paymentStatusValue = getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+            handoffStatusValue = getString(OrderPaymentHandoffParser.FIELD_DELIVERY_HANDOFF_STATUS),
+            customerId = getString("customerId"),
+            shipperId = getString("shipperId"),
+        )
+    }
 
     private fun cancellationFields(
         cancelledBy: String,

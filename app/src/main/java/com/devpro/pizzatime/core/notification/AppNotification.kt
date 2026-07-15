@@ -23,11 +23,13 @@ enum class NotificationType {
     CUSTOMER_ORDER_PREPARING,
     CUSTOMER_ORDER_READY,
     CUSTOMER_DELIVERY_STARTED,
+    CUSTOMER_ORDER_ARRIVED,
     CUSTOMER_ORDER_DELIVERED,
     CUSTOMER_ORDER_CANCELLED,
     STAFF_NEW_ORDER,
     KITCHEN_CONFIRMED_ORDER,
     SHIPPER_READY_ORDER,
+    SHIPPER_CUSTOMER_CONFIRMED_RECEIPT,
     ADMIN_ORDER_DELIVERED,
     ADMIN_ORDER_CANCELLED,
     ADMIN_ORDER_REVIEW,
@@ -65,6 +67,8 @@ data class OrderNotificationState(
     val status: String,
     val updatedAtMillis: Long,
     val latestHistoryAtMillis: Long,
+    val handoffStatus: String = "",
+    val latestHandoffAtMillis: Long = 0L,
 )
 
 object NotificationDeepLinkContract {
