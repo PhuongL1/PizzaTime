@@ -962,6 +962,10 @@
     <string name="customer_favorites_view_login_required">Sign in to view favorites.</string>
     <string name="customer_favorites_product_unavailable">Product is no longer available.</string>
     <string name="feedback_action_failed">Could not complete this action.</string>
+    <string name="feedback_orders_load_failed">Could not load orders.</string>
+    <string name="staff_logout_confirmation">Sign out of this staff account?</string>
+    <string name="kitchen_empty_orders">No orders in this queue.</string>
+    <string name="phone_not_available">Phone calling is not available.</string>
     <string name="auth_google_signup_unavailable">Google sign-up is not available yet.</string>
     <string name="auth_facebook_signup_unavailable">Facebook sign-up is not available yet.</string>
     <string name="auth_register_success">Account created successfully.</string>

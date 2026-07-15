@@ -154,7 +154,14 @@ fun Fragment.bindCurrentProfileAvatar(
     }
 
     CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
-        if (!isAdded) return@loadProfile
+        if (
+            view == null ||
+            !isAdded ||
+            !initialsView.isAttachedToWindow ||
+            !imageView.isAttachedToWindow
+        ) {
+            return@loadProfile
+        }
         result
             .onSuccess { profile ->
                 renderProfileAvatar(

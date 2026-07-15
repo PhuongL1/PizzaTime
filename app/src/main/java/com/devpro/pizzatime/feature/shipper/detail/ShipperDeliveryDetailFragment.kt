@@ -1,17 +1,19 @@
 package com.devpro.pizzatime.feature.shipper.detail
 
-import android.app.AlertDialog
 import android.content.ActivityNotFoundException
 import android.content.Intent
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDetailBinding
 import com.devpro.pizzatime.databinding.ItemShipperPaymentRowBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
@@ -32,6 +34,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openStaffDashboard
 import com.devpro.pizzatime.shared.location.isValidLatitude
 import com.devpro.pizzatime.shared.location.isValidLongitude
 import com.google.firebase.auth.FirebaseAuth
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 
 class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_delivery_detail) {
 
@@ -58,19 +61,19 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     private fun loadOrder(orderId: String) {
         if (isFirestoreOrderId(orderId)) {
             ShipperOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
-                if (!isAdded) return@loadOrderDetail
+                if (_binding == null || !isAdded) return@loadOrderDetail
                 result
                     .onSuccess { (detail, status) ->
                         firestoreStatus = status
                         bindDetail(detail)
                         setupActions(detail)
                     }
-                    .onFailure {
-                        Toast.makeText(
-                            requireContext(),
+                    .onFailure { error ->
+                        Log.e(TAG, "Failed to load shipper orderId=$orderId", error)
+                        AppUiMessageBus.publish(
                             R.string.notification_order_unavailable,
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                            UiMessageType.ERROR,
+                        )
                         parentFragmentManager.popBackStack()
                     }
             }
@@ -146,11 +149,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         }
 
         btnCallCustomer.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.shipper_detail_calling_customer, detail.customerName),
-                Toast.LENGTH_SHORT,
-            ).show()
+            openPhoneDialer(detail.customerPhone)
         }
 
         btnOpenPickupMap.setOnClickListener {
@@ -182,7 +181,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
 
             "DELIVERING" -> showCompleteDeliveryDialog(detail)
 
-            else -> Unit
+            else -> showUiMessage(R.string.feedback_action_failed, UiMessageType.WARNING)
         }
     }
 
@@ -221,7 +220,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     private fun showCompleteDeliveryDialog(detail: ShipperDeliveryDetailUiModel) {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.shipper_complete_delivery_title)
             .setMessage(
                 getString(
@@ -252,33 +251,30 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         isUpdatingStatus = true
         binding.btnConfirmDelivery.isEnabled = false
         ShipperOrderFirestoreRepository.updateOrderStatus(orderId, nextStatus, shipperId) { result ->
-            if (!isAdded) return@updateOrderStatus
+            if (_binding == null || !isAdded) return@updateOrderStatus
             result
                 .onSuccess {
                     isUpdatingStatus = false
                     firestoreStatus = nextStatus
                     renderActionButton(nextStatus)
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.shipper_detail_delivery_confirmed, displayOrderCode),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(
+                        textRes = R.string.shipper_detail_delivery_confirmed,
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(displayOrderCode),
+                    )
                 }
                 .onFailure { error ->
+                    Log.e(TAG, "Failed to update shipper orderId=$orderId to $nextStatus", error)
                     isUpdatingStatus = false
                     renderActionButton(firestoreStatus)
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: "Failed to update order.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
                 }
         }
     }
 
     private fun openExternalMap(lat: Double?, lng: Double?, label: String) {
         if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
-            Toast.makeText(requireContext(), R.string.location_not_available, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.location_not_available, UiMessageType.ERROR)
             return
         }
         val safeLat = lat ?: return
@@ -289,7 +285,22 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         try {
             startActivity(intent)
         } catch (error: ActivityNotFoundException) {
-            Toast.makeText(requireContext(), R.string.location_not_available, Toast.LENGTH_SHORT).show()
+            Log.e(TAG, "No map application can handle the delivery location", error)
+            showUiMessage(R.string.location_not_available, UiMessageType.ERROR)
+        }
+    }
+
+    private fun openPhoneDialer(phone: String) {
+        if (phone.isBlank()) {
+            showUiMessage(R.string.phone_not_available, UiMessageType.ERROR)
+            return
+        }
+        val intent = Intent(Intent.ACTION_DIAL, Uri.parse("tel:${Uri.encode(phone)}"))
+        try {
+            startActivity(intent)
+        } catch (error: ActivityNotFoundException) {
+            Log.e(TAG, "No phone application can handle the customer number", error)
+            showUiMessage(R.string.phone_not_available, UiMessageType.ERROR)
         }
     }
 
@@ -349,14 +360,6 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         binding.detailAvatarFrame.setOnClickListener(null)
     }
 
-    private fun showComingSoon(titleRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_coming_soon_message, getString(titleRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
-
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
@@ -364,6 +367,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
 
     companion object {
         private const val ARG_ORDER_ID = "orderId"
+        private const val TAG = "ShipperDeliveryDetail"
         private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")
 
         fun newInstance(orderId: String): ShipperDeliveryDetailFragment {

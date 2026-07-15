@@ -61,6 +61,18 @@
         android:paddingHorizontal="24dp"
         android:paddingBottom="24dp" />
 
+    <TextView
+        android:id="@+id/tvEmptyOrders"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:gravity="center"
+        android:padding="24dp"
+        android:text="@string/kitchen_empty_orders"
+        android:textColor="@color/pt_text_muted"
+        android:textSize="14sp"
+        android:visibility="gone" />
+
     <include
         android:id="@+id/staffBottomNav"
         layout="@layout/layout_staff_bottom_nav"

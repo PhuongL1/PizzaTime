@@ -1,11 +1,14 @@
 package com.devpro.pizzatime.feature.staff.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentStaffOrderDetailBinding
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.dashboard.StaffOrderStatus
@@ -40,17 +43,17 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     private fun loadOrder(orderId: String) {
         if (isFirestoreOrderId(orderId)) {
             StaffOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
-                if (!isAdded) return@loadOrderDetail
+                if (_binding == null || !isAdded) return@loadOrderDetail
                 result
                     .onSuccess { order ->
                         bindAndSetup(order)
                     }
-                    .onFailure {
-                        Toast.makeText(
-                            requireContext(),
+                    .onFailure { error ->
+                        Log.e(TAG, "Failed to load staff orderId=$orderId", error)
+                        AppUiMessageBus.publish(
                             R.string.notification_order_unavailable,
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                            UiMessageType.ERROR,
+                        )
                         parentFragmentManager.popBackStack()
                     }
             }
@@ -204,19 +207,11 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         }
 
         btnCallCustomer.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_order_detail_call_customer_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.staff_order_detail_call_customer_toast, UiMessageType.INFO)
         }
 
         btnDelay10.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_order_detail_delay_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.staff_order_detail_delay_toast, UiMessageType.INFO)
         }
 
         btnAssignShipper.setOnClickListener {
@@ -282,7 +277,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         isCancellingOrder = true
         btnCancelOrder.isEnabled = false
         StaffOrderFirestoreRepository.cancelOrder(orderId, reason) { result ->
-            if (!isAdded) return@cancelOrder
+            if (_binding == null || !isAdded) return@cancelOrder
             result
                 .onSuccess {
                     isCancellingOrder = false
@@ -291,23 +286,23 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
                     btnAssignShipper.isVisible = false
                     btnDelay10.isVisible = false
 
-                    val message = if (reason.isBlank()) {
-                        getString(R.string.staff_order_detail_cancelled_toast, orderId)
+                    val messageRes = if (reason.isBlank()) {
+                        R.string.staff_order_detail_cancelled_toast
                     } else {
-                        getString(R.string.staff_order_detail_cancelled_with_reason_toast, orderId, reason)
+                        R.string.staff_order_detail_cancelled_with_reason_toast
                     }
-
-                    Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+                    AppUiMessageBus.publish(
+                        textRes = messageRes,
+                        type = UiMessageType.SUCCESS,
+                        args = if (reason.isBlank()) listOf(orderId) else listOf(orderId, reason),
+                    )
                     parentFragmentManager.popBackStack()
                 }
                 .onFailure { error ->
+                    Log.e(TAG, "Failed to cancel staff orderId=$orderId", error)
                     isCancellingOrder = false
                     btnCancelOrder.isEnabled = true
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: getString(R.string.staff_order_detail_cancel_failed),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(R.string.staff_order_detail_cancel_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -316,11 +311,11 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         btnAssignShipper.isVisible = false
         btnDelay10.isVisible = false
 
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_order_detail_assigned_to_shipper_toast, orderId, shipperName),
-            Toast.LENGTH_SHORT,
-        ).show()
+        showUiMessage(
+            textRes = R.string.staff_order_detail_assigned_to_shipper_toast,
+            type = UiMessageType.SUCCESS,
+            args = listOf(orderId, shipperName),
+        )
     }
 
     private fun mapStatusText(status: StaffOrderStatus): String {
@@ -349,6 +344,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
     companion object {
         const val ARG_ORDER_ID = "orderId"
 
+        private const val TAG = "StaffOrderDetail"
         private const val CANCEL_ORDER_DIALOG_TAG = "CancelOrderConfirmationDialog"
         private const val ASSIGN_SHIPPER_DIALOG_TAG = "AssignShipperDialog"
         private const val ORDER_STATUS_CANCELLED = "CANCELLED"

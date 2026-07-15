@@ -1,14 +1,16 @@
 package com.devpro.pizzatime.feature.shipper.dashboard
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentShipperDeliveryDashboardBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
@@ -55,6 +57,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         deliveryEarnings = 0.0,
     )
     private var showingHistory = false
+    private var hasShownOrdersLoadError = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -95,11 +98,7 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
             }
 
             btnCallCustomer.setOnClickListener {
-                Toast.makeText(
-                    requireContext(),
-                    R.string.shipper_message_call_customer,
-                    Toast.LENGTH_SHORT,
-                ).show()
+                showUiMessage(R.string.shipper_message_call_customer, UiMessageType.INFO)
             }
         } else {
             btnNavigate.setOnClickListener(null)
@@ -117,11 +116,20 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         ordersListener?.remove()
         val shipperId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
         ordersListener = ShipperOrderFirestoreRepository.listenDashboard(shipperId) { result ->
-            if (!isAdded) return@listenDashboard
-            result.onSuccess { dashboard ->
-                latestDashboard = dashboard
-                renderDashboard(dashboard)
-            }
+            if (_binding == null || !isAdded) return@listenDashboard
+            result
+                .onSuccess { dashboard ->
+                    hasShownOrdersLoadError = false
+                    latestDashboard = dashboard
+                    renderDashboard(dashboard)
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to listen for shipper dashboard", error)
+                    if (!hasShownOrdersLoadError) {
+                        hasShownOrdersLoadError = true
+                        showUiMessage(R.string.feedback_orders_load_failed, UiMessageType.ERROR)
+                    }
+                }
         }
     }
 
@@ -224,14 +232,6 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         openShipperDeliveryDetail(order.orderId)
     }
 
-    private fun showComingSoon(titleRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_coming_soon_message, getString(titleRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
-
     private fun formatMoney(value: Double): String {
         return String.format(java.util.Locale.US, "$%.2f", value)
     }
@@ -241,5 +241,9 @@ class ShipperDeliveryDashboardFragment : Fragment(R.layout.fragment_shipper_deli
         ordersListener = null
         _binding = null
         super.onDestroyView()
+    }
+
+    private companion object {
+        const val TAG = "ShipperDashboard"
     }
 }

@@ -1,13 +1,15 @@
 package com.devpro.pizzatime.feature.staff.dashboard
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentStaffDashboardBinding
 import com.devpro.pizzatime.feature.staff.StaffOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
@@ -33,6 +35,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     private var selectedStatus = StaffOrderStatus.PENDING
     private var firestoreOrders: List<StaffOrderUiModel>? = null
     private var ordersListener: ListenerRegistration? = null
+    private var hasShownOrdersLoadError = false
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
@@ -71,7 +74,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
             orderId = order.orderId,
             newStatus = "CONFIRMED",
         ) { result ->
-            if (!isAdded) return@updateOrderStatus
+            if (_binding == null || !isAdded) return@updateOrderStatus
             result
                 .onSuccess {
                     firestoreOrders = firestoreOrders?.map { current ->
@@ -81,25 +84,18 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                             current
                         }
                     }
-                    showConfirmedToast(order.displayOrderCode)
+                    showUiMessage(
+                        textRes = R.string.staff_order_confirmed_message,
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(order.displayOrderCode),
+                    )
                     renderOrders()
                 }
                 .onFailure { error ->
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: "Failed to confirm order.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Log.e(TAG, "Failed to confirm staff orderId=${order.orderId}", error)
+                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
                 }
         }
-    }
-
-    private fun showConfirmedToast(orderId: String) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_order_confirmed_message, orderId),
-            Toast.LENGTH_SHORT,
-        ).show()
     }
 
     private fun setupStatusChips() = with(binding) {
@@ -172,11 +168,20 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
     private fun listenFirestoreOrders() {
         ordersListener?.remove()
         ordersListener = StaffOrderFirestoreRepository.listenOrders { result ->
-            if (!isAdded) return@listenOrders
-            result.onSuccess { orders ->
-                firestoreOrders = orders
-                renderOrders()
-            }
+            if (_binding == null || !isAdded) return@listenOrders
+            result
+                .onSuccess { orders ->
+                    hasShownOrdersLoadError = false
+                    firestoreOrders = orders
+                    renderOrders()
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to listen for staff orders", error)
+                    if (!hasShownOrdersLoadError) {
+                        hasShownOrdersLoadError = true
+                        showUiMessage(R.string.feedback_orders_load_failed, UiMessageType.ERROR)
+                    }
+                }
         }
     }
 
@@ -199,14 +204,6 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         )
     }
 
-    private fun showComingSoon(titleRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_coming_soon_message, getString(titleRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
-
     override fun onDestroyView() {
         ordersListener?.remove()
         ordersListener = null
@@ -214,4 +211,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
         super.onDestroyView()
     }
 
+    private companion object {
+        const val TAG = "StaffDashboard"
+    }
 }

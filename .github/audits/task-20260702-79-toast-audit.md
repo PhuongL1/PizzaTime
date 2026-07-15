@@ -45,7 +45,7 @@ Authentication/customer/shared subtotal: 74 direct calls in 21 files.
 | `feature/staff/dashboard/StaffDashboardFragment.kt` | 3: queue/action/load feedback | success, error, empty state | Snackbar; existing empty state | screen bottom nav | yes |
 | `feature/staff/orderdetail/StaffOrderDetailFragment.kt` | 6: transition/assignment/cancel failures and results | success, warning, error | Snackbar, Material confirmation | screen bottom nav | yes |
 | `feature/staff/navigation/StaffFlowNavigator.kt` | 5: unavailable/unauthorized destinations | unavailable navigation | app UI message bus | activity/current nav | no |
-| `feature/staff/assignment/AssignShipperDialogFragment.kt` | 1: selection/assignment feedback | validation, success/error | inline error; parent feedback | parent screen nav | yes |
+| `shared/dialog/AssignShipperDialogFragment.kt` | 1: selection/assignment feedback | validation, success/error | inline error; parent feedback | parent screen nav | yes |
 
 Staff subtotal: 15 direct calls in 4 files.
 
