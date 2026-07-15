@@ -3,11 +3,15 @@ package com.devpro.pizzatime.feature.customer.menubottomsheet
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
-import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.notification.NotificationInboxStore
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.notification.renderUnreadNotificationCount
 import com.devpro.pizzatime.databinding.BottomSheetCustomerMenuBinding
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerNotifications
@@ -17,7 +21,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openSupportFaq
 import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.android.material.bottomsheet.BottomSheetDialog
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment
-import java.io.Closeable
+import kotlinx.coroutines.launch
 
 class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_sheet_customer_menu) {
 
@@ -26,8 +30,6 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
         get() = checkNotNull(_binding) {
             "BottomSheetCustomerMenuBinding is only valid between onViewCreated and onDestroyView."
         }
-    private var inboxObserver: Closeable? = null
-
     override fun onCreateDialog(savedInstanceState: Bundle?): Dialog {
         return BottomSheetDialog(requireContext(), R.style.ThemeOverlayPizzaTimeBottomSheet)
     }
@@ -79,39 +81,27 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
     }
 
     private fun showComingSoon(label: String) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.customer_menu_selected_toast, label),
-            Toast.LENGTH_SHORT,
-        ).show()
+        AppUiMessageBus.publish(
+            textRes = R.string.customer_menu_selected_message,
+            type = UiMessageType.INFO,
+            args = listOf(label),
+        )
         dismiss()
     }
 
     override fun onDestroyView() {
-        inboxObserver?.close()
-        inboxObserver = null
         _binding = null
         super.onDestroyView()
     }
 
     private fun observeUnreadCount() {
-        binding.tvNotificationsBadge.isVisible = false
-        inboxObserver?.close()
-        inboxObserver = NotificationInboxStore.observeNotifications {
-            if (_binding == null) {
-                return@observeNotifications
+        binding.tvNotificationsBadge.renderUnreadNotificationCount(0)
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                NotificationInboxStore.unreadCount.collect { unreadCount ->
+                    _binding?.tvNotificationsBadge?.renderUnreadNotificationCount(unreadCount)
+                }
             }
-            renderUnreadCount(NotificationInboxStore.unreadCount())
-        }
-        NotificationInboxStore.loadForCurrentAccount()
-    }
-
-    private fun renderUnreadCount(unreadCount: Int) = with(binding.tvNotificationsBadge) {
-        isVisible = unreadCount > 0
-        text = if (unreadCount > 99) {
-            "99+"
-        } else {
-            unreadCount.toString()
         }
     }
 

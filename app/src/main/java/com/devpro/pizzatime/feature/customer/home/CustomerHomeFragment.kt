@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.customer.home
 
 import android.content.Context
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
@@ -9,7 +10,6 @@ import android.view.inputmethod.EditorInfo
 import android.view.inputmethod.InputMethodManager
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.widget.addTextChangedListener
 import androidx.fragment.app.Fragment
@@ -17,6 +17,8 @@ import com.bumptech.glide.Glide
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.GuestSession
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerHomeBinding
 import com.devpro.pizzatime.databinding.ItemBestSellerPizzaBinding
 import com.devpro.pizzatime.databinding.ItemChefSelectionPizzaBinding
@@ -160,11 +162,11 @@ class CustomerHomeFragment : Fragment() {
         }
 
         promoCard.setOnClickListener {
-            openFeaturedProductOrToast()
+            openFeaturedProductOrMessage()
         }
 
         btnPromoAction.setOnClickListener {
-            openFeaturedProductOrToast()
+            openFeaturedProductOrMessage()
         }
 
         bindCustomerBottomNav(
@@ -342,14 +344,10 @@ class CustomerHomeFragment : Fragment() {
         }
     }
 
-    private fun openFeaturedProductOrToast() {
+    private fun openFeaturedProductOrMessage() {
         val product = featuredProduct
         if (product == null) {
-            Toast.makeText(
-                requireContext(),
-                R.string.home_no_featured_product,
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.home_no_featured_product, UiMessageType.INFO)
             return
         }
         openProductDetail(product)
@@ -612,20 +610,12 @@ class CustomerHomeFragment : Fragment() {
     ) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            Toast.makeText(
-                requireContext(),
-                R.string.customer_favorites_login_required,
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.customer_favorites_login_required, UiMessageType.WARNING)
             onComplete(item.id in favoriteProductIds)
             return
         }
         if (item.id.isBlank()) {
-            Toast.makeText(
-                requireContext(),
-                R.string.customer_favorites_update_failed,
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.customer_favorites_update_failed, UiMessageType.ERROR)
             onComplete(item.id in favoriteProductIds)
             return
         }
@@ -642,22 +632,19 @@ class CustomerHomeFragment : Fragment() {
                     }
                     onComplete(!isFavorite)
                     renderFilteredProducts()
-                    Toast.makeText(
-                        requireContext(),
-                        if (isFavorite) {
-                            getString(R.string.customer_favorites_removed_toast, item.name)
+                    showUiMessage(
+                        textRes = if (isFavorite) {
+                            R.string.customer_favorites_removed_message
                         } else {
-                            getString(R.string.customer_favorites_saved_toast, item.name)
+                            R.string.customer_favorites_saved_message
                         },
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(item.name),
+                    )
                 }
-                .onFailure {
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.customer_favorites_update_failed,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to update favorite productId=${item.id}", error)
+                    showUiMessage(R.string.customer_favorites_update_failed, UiMessageType.ERROR)
                     onComplete(isFavorite)
                 }
         }
@@ -685,6 +672,7 @@ class CustomerHomeFragment : Fragment() {
     }
 
     private companion object {
+        private const val TAG = "CustomerHome"
         const val DEFAULT_AVATAR_INITIALS = "PT"
         const val BEST_SELLER_LIMIT = 3
         const val QUICK_INFO_MAX_LENGTH = 58

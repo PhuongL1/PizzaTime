@@ -1,11 +1,14 @@
 package com.devpro.pizzatime.feature.admin.dashboard
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentAdminDashboardBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
@@ -31,11 +34,11 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
     private val recentOrderAdapter = AdminRecentOrderAdapter(
         onOrderClick = { order ->
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.admin_recent_order_clicked, order.displayOrderCode),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(
+                textRes = R.string.admin_recent_order_clicked,
+                type = UiMessageType.INFO,
+                args = listOf(order.displayOrderCode),
+            )
         },
     )
 
@@ -54,8 +57,13 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
 
     private fun loadFirestoreData() {
         AdminDashboardFirestoreRepository.loadDashboard { result ->
-            if (!isAdded) return@loadDashboard
-            result.onSuccess { data -> bindDashboard(data) }
+            if (_binding == null || !isAdded) return@loadDashboard
+            result
+                .onSuccess(::bindDashboard)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load admin dashboard", error)
+                    showUiMessage(R.string.admin_dashboard_load_failed, UiMessageType.ERROR)
+                }
         }
     }
 
@@ -67,7 +75,10 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         tvCompletedCount.text = data.completedCount
         tvSatisfactionLabel.text = data.satisfactionLabel
 
-        recentOrderAdapter.submitList(data.recentOrders.take(RECENT_ORDER_LIMIT))
+        val recentOrders = data.recentOrders.take(RECENT_ORDER_LIMIT)
+        recentOrderAdapter.submitList(recentOrders)
+        rvRecentOrders.isVisible = recentOrders.isNotEmpty()
+        tvRecentOrdersEmpty.isVisible = recentOrders.isEmpty()
     }
 
     private fun setupQuickActions() = with(binding) {
@@ -121,14 +132,6 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
         bindAdminTopBar(root = binding.staffTopBar.root)
     }
 
-    private fun showComingSoon(titleRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.staff_coming_soon_message, getString(titleRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
-    }
-
     private fun emptyDashboard(): AdminDashboardUiModel {
         return AdminDashboardUiModel(
             totalRevenue = "$0.00",
@@ -147,6 +150,7 @@ class AdminDashboardFragment : Fragment(R.layout.fragment_admin_dashboard) {
     }
 
     companion object {
+        private const val TAG = "AdminDashboard"
         private const val RECENT_ORDER_LIMIT = 3
     }
 }

@@ -6,10 +6,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffTopBar
 import com.devpro.pizzatime.feature.staff.navigation.bindStaffBottomNav
@@ -32,6 +34,7 @@ class KitchenBoardFragment : Fragment() {
     private var allOrders: List<KitchenOrderUiModel> = emptyList()
     private var selectedFilter: KitchenFilter = KitchenFilter.WAITING
     private var ordersListener: ListenerRegistration? = null
+    private var hasShownOrdersLoadError = false
 
     private val adapter = KitchenOrderAdapter(
         onPrimaryActionClick = { order ->
@@ -68,11 +71,20 @@ class KitchenBoardFragment : Fragment() {
     private fun listenFirestoreOrders() {
         ordersListener?.remove()
         ordersListener = KitchenOrderFirestoreRepository.listenOrders { result ->
-            if (!isAdded) return@listenOrders
-            result.onSuccess { orders ->
-                allOrders = orders.filter { it.status != KitchenOrderStatus.READY }
-                renderSelectedFilter()
-            }
+            if (_binding == null || !isAdded) return@listenOrders
+            result
+                .onSuccess { orders ->
+                    hasShownOrdersLoadError = false
+                    allOrders = orders.filter { it.status != KitchenOrderStatus.READY }
+                    renderSelectedFilter()
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to listen for kitchen orders", error)
+                    if (!hasShownOrdersLoadError) {
+                        hasShownOrdersLoadError = true
+                        showUiMessage(R.string.feedback_orders_load_failed, UiMessageType.ERROR)
+                    }
+                }
         }
     }
 
@@ -101,6 +113,8 @@ class KitchenBoardFragment : Fragment() {
             "loaded=${allOrders.size} waiting=${waitingOrders.size} preparing=${preparingOrders.size} selected=${selectedOrders.size}",
         )
         adapter.submitList(selectedOrders.toList())
+        rvKitchenOrders.isVisible = selectedOrders.isNotEmpty()
+        tvEmptyOrders.isVisible = selectedOrders.isEmpty()
         bindChip(chipWaiting, selectedFilter == KitchenFilter.WAITING, waitingOrders.size)
         bindChip(chipPreparing, selectedFilter == KitchenFilter.PREPARING, preparingOrders.size)
     }
@@ -166,13 +180,13 @@ class KitchenBoardFragment : Fragment() {
         if (nextStatus != null && canManageKitchenScreen()) {
             updateFirestoreStatus(order.orderId, nextStatus, messageRes)
         } else {
-            Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.feedback_action_failed, UiMessageType.WARNING)
         }
     }
 
     private fun updateFirestoreStatus(orderId: String, nextStatus: String, messageRes: Int) {
         KitchenOrderFirestoreRepository.updateOrderStatus(orderId, nextStatus) { result ->
-            if (!isAdded) return@updateOrderStatus
+            if (_binding == null || !isAdded) return@updateOrderStatus
             result
                 .onSuccess {
                     allOrders = allOrders.map { order ->
@@ -183,14 +197,11 @@ class KitchenBoardFragment : Fragment() {
                         }
                     }
                     renderSelectedFilter()
-                    Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+                    showUiMessage(messageRes, UiMessageType.SUCCESS)
                 }
                 .onFailure { error ->
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: "Failed to update order.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Log.e(TAG, "Failed to update kitchen orderId=$orderId to $nextStatus", error)
+                    showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -210,14 +221,6 @@ class KitchenBoardFragment : Fragment() {
             "READY", "READY_FOR_DELIVERY" -> KitchenOrderStatus.READY
             else -> KitchenOrderStatus.WAITING
         }
-    }
-
-    private fun showComingSoon(titleRes: Int) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.coming_soon_format, getString(titleRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
     }
 
     override fun onDestroyView() {

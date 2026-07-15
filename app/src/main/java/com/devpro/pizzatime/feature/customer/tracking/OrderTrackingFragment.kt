@@ -6,11 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentOrderTrackingBinding
 import com.devpro.pizzatime.databinding.ItemOrderTrackingStepBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
@@ -81,11 +83,10 @@ class OrderTrackingFragment : Fragment() {
             .addSnapshotListener { snapshot, error ->
                 if (_binding == null) return@addSnapshotListener
                 if (error != null || snapshot == null || !snapshot.exists()) {
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.notification_order_unavailable,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    AppUiMessageBus.publish(
+                        textRes = R.string.notification_order_unavailable,
+                        type = UiMessageType.ERROR,
+                    )
                     parentFragmentManager.popBackStack()
                     return@addSnapshotListener
                 }
@@ -247,11 +248,11 @@ class OrderTrackingFragment : Fragment() {
 
     private fun setupActions() {
         binding.btnProductDetail.setOnClickListener {
-            Toast.makeText(requireContext(), "Open order item detail", Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.order_tracking_item_unavailable, UiMessageType.INFO)
         }
 
         binding.btnSupport.setOnClickListener {
-            Toast.makeText(requireContext(), "Support coming soon", Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.customer_order_detail_support_message, UiMessageType.INFO)
         }
     }
 

@@ -1,6 +1,6 @@
 package com.devpro.pizzatime.core.notification
 
-import android.content.Context
+import com.devpro.pizzatime.BuildConfig
 import com.devpro.pizzatime.core.config.AppEdition
 import com.devpro.pizzatime.core.config.AppEditionConfig
 import com.devpro.pizzatime.core.session.UserRole
@@ -26,7 +26,10 @@ object NotificationSessionResolver {
         }
     }
 
-    fun currentScope(context: Context): NotificationScope? {
+    fun currentScope(): NotificationScope? {
+        if (AppEditionConfig.isGuestEdition) {
+            return null
+        }
         val userId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty().trim()
         if (userId.isBlank()) {
             return null
@@ -38,23 +41,25 @@ object NotificationSessionResolver {
         }
 
         return NotificationScope(
-            applicationId = context.packageName,
+            applicationId = BuildConfig.APPLICATION_ID,
             userId = userId,
             role = role,
         )
     }
 
     fun scopeForNotification(
-        context: Context,
         notification: AppNotification,
     ): NotificationScope? {
+        if (AppEditionConfig.isGuestEdition) {
+            return null
+        }
         val userId = notification.recipientUserId?.trim().orEmpty()
         if (userId.isBlank()) {
-            return currentScope(context)
+            return currentScope()
         }
 
         return NotificationScope(
-            applicationId = context.packageName,
+            applicationId = BuildConfig.APPLICATION_ID,
             userId = userId,
             role = notification.recipientRole,
         )

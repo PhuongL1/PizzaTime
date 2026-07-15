@@ -10,17 +10,44 @@
     android:paddingStart="24dp"
     android:paddingEnd="24dp">
 
-    <ImageView
-        android:id="@+id/btnMenu"
+    <FrameLayout
         android:layout_width="44dp"
-        android:layout_height="44dp"
-        android:background="?attr/selectableItemBackgroundBorderless"
-        android:clickable="true"
-        android:contentDescription="@string/menu_drawer_content_description"
-        android:focusable="true"
-        android:padding="8dp"
-        android:src="@drawable/ic_menu"
-        app:tint="@color/pt_gold" />
+        android:layout_height="44dp">
+
+        <ImageView
+            android:id="@+id/btnMenu"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:background="?attr/selectableItemBackgroundBorderless"
+            android:clickable="true"
+            android:contentDescription="@string/menu_drawer_content_description"
+            android:focusable="true"
+            android:padding="8dp"
+            android:src="@drawable/ic_menu"
+            app:tint="@color/pt_gold" />
+
+        <TextView
+            android:id="@+id/tvNotificationBadge"
+            android:layout_width="wrap_content"
+            android:layout_height="18dp"
+            android:layout_gravity="top|end"
+            android:background="@drawable/bg_customer_notifications_menu_badge"
+            android:clickable="false"
+            android:elevation="2dp"
+            android:focusable="false"
+            android:gravity="center"
+            android:importantForAccessibility="no"
+            android:includeFontPadding="false"
+            android:minWidth="18dp"
+            android:paddingStart="4dp"
+            android:paddingEnd="4dp"
+            android:singleLine="true"
+            android:textColor="@color/pt_white"
+            android:textSize="10sp"
+            android:textStyle="bold"
+            android:visibility="gone" />
+
+    </FrameLayout>
 
     <TextView
         android:id="@+id/tvCustomerTopBarBrand"

@@ -1,10 +1,12 @@
 package com.devpro.pizzatime.feature.admin.store
 
 import android.os.Bundle
+import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentStoreSettingsBinding
 import com.devpro.pizzatime.feature.staff.navigation.replaceForward
 import com.devpro.pizzatime.shared.location.MapPickerFragment
@@ -64,12 +66,9 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
             if (_binding == null || !isAdded) return@loadStoreSettings
             result
                 .onSuccess { settings -> bindSettings(settings) }
-                .onFailure {
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.store_settings_load_failed,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load store settings", error)
+                    showUiMessage(R.string.store_settings_load_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -104,47 +103,49 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
             freeDeliveryMinSubtotal = freeDeliveryMinSubtotal ?: -1.0,
         )
 
-        when {
-            settings.storeName.isBlank() -> {
-                showToast(R.string.store_settings_store_name_required)
-                return@with
-            }
-
-            settings.acceptingOrders && settings.pickupAddress.isBlank() -> {
-                showToast(R.string.store_settings_pickup_address_required)
-                return@with
-            }
-
-            settings.acceptingOrders && !settings.pickupLat.isValidLatitude() -> {
-                showToast(R.string.store_settings_pickup_location_required)
-                return@with
-            }
-
-            settings.acceptingOrders && !settings.pickupLng.isValidLongitude() -> {
-                showToast(R.string.store_settings_pickup_location_required)
-                return@with
-            }
-
-            settings.acceptingOrders && settings.storePhone.isBlank() -> {
-                showToast(R.string.store_settings_store_phone_required)
-                return@with
-            }
-
-            settings.baseDeliveryFee < 0 ||
-                settings.deliveryFeePerKm < 0 ||
-                settings.freeDeliveryMinSubtotal < 0 -> {
-                showToast(R.string.store_settings_delivery_fee_invalid)
-                return@with
-            }
+        edtStoreName.error = if (settings.storeName.isBlank()) {
+            getString(R.string.store_settings_store_name_required)
+        } else {
+            null
         }
+        edtPickupAddress.error = when {
+            settings.acceptingOrders && settings.pickupAddress.isBlank() ->
+                getString(R.string.store_settings_pickup_address_required)
+            settings.acceptingOrders &&
+                (!settings.pickupLat.isValidLatitude() || !settings.pickupLng.isValidLongitude()) ->
+                getString(R.string.store_settings_pickup_location_required)
+            else -> null
+        }
+        edtStorePhone.error = if (settings.acceptingOrders && settings.storePhone.isBlank()) {
+            getString(R.string.store_settings_store_phone_required)
+        } else {
+            null
+        }
+        edtBaseDeliveryFee.error = invalidFeeError(baseDeliveryFee)
+        edtDeliveryFeePerKm.error = invalidFeeError(deliveryFeePerKm)
+        edtFreeDeliveryMinSubtotal.error = invalidFeeError(freeDeliveryMinSubtotal)
+        val hasValidationError = listOf(
+            edtStoreName,
+            edtPickupAddress,
+            edtStorePhone,
+            edtBaseDeliveryFee,
+            edtDeliveryFeePerKm,
+            edtFreeDeliveryMinSubtotal,
+        ).any { it.error != null }
+        if (hasValidationError) return@with
 
         btnSaveStoreSettings.isEnabled = false
         StoreSettingsRepository.saveStoreSettings(settings) { result ->
             if (_binding == null || !isAdded) return@saveStoreSettings
             btnSaveStoreSettings.isEnabled = true
             result
-                .onSuccess { showToast(R.string.store_settings_save_success) }
-                .onFailure { showToast(R.string.store_settings_save_failed) }
+                .onSuccess {
+                    showUiMessage(R.string.store_settings_save_success, UiMessageType.SUCCESS)
+                }
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to save store settings", error)
+                    showUiMessage(R.string.store_settings_save_failed, UiMessageType.ERROR)
+                }
         }
     }
 
@@ -185,8 +186,12 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
         }
     }
 
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    private fun invalidFeeError(value: Double?): String? {
+        return if (value == null || value < 0.0) {
+            getString(R.string.store_settings_delivery_fee_invalid)
+        } else {
+            null
+        }
     }
 
     private fun formatNumber(value: Double): String {
@@ -200,5 +205,9 @@ class StoreSettingsFragment : Fragment(R.layout.fragment_store_settings) {
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
+    }
+
+    private companion object {
+        const val TAG = "StoreSettings"
     }
 }

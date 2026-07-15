@@ -3,10 +3,12 @@ package com.devpro.pizzatime.feature.kitchen.detail
 import android.os.Bundle
 import android.util.Log
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentKitchenOrderDetailBinding
 import com.devpro.pizzatime.feature.kitchen.board.KitchenOrderFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.canManageKitchenScreen
@@ -44,12 +46,12 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     currentOrder = order
                     bindOrder(order)
                 }
-                .onFailure {
-                    Toast.makeText(
-                        requireContext(),
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load kitchen orderId=$orderId", error)
+                    AppUiMessageBus.publish(
                         R.string.notification_order_unavailable,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                        UiMessageType.ERROR,
+                    )
                     parentFragmentManager.popBackStack()
                 }
         }
@@ -240,7 +242,10 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
             KitchenOrderDetailStatus.READY -> "READY_FOR_DELIVERY"
             else -> null
         }
-        if (firestoreStatus == null) return
+        if (firestoreStatus == null) {
+            showUiMessage(R.string.feedback_action_failed, UiMessageType.WARNING)
+            return
+        }
 
         KitchenOrderFirestoreRepository.updateOrderStatus(
             orderId = currentOrder.orderId,
@@ -252,18 +257,15 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     currentOrder = currentOrder.copy(status = status)
                     binding.tvStatus.text = mapStatusText(status)
                     bindActionState(status)
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.kitchen_order_detail_status_updated_toast, mapStatusText(status)),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(
+                        textRes = R.string.kitchen_order_detail_status_updated_message,
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(mapStatusText(status)),
+                    )
                 }
                 .onFailure { error ->
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: getString(R.string.kitchen_order_detail_update_failed),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Log.e(TAG, "Failed to update kitchen orderId=${currentOrder.orderId}", error)
+                    showUiMessage(R.string.kitchen_order_detail_update_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -282,21 +284,17 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     currentOrder = currentOrder.copy(status = KitchenOrderDetailStatus.CANCELLED)
                     binding.tvStatus.text = mapStatusText(KitchenOrderDetailStatus.CANCELLED)
                     bindActionState(KitchenOrderDetailStatus.CANCELLED)
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.kitchen_order_detail_cancelled_toast, orderId),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    AppUiMessageBus.publish(
+                        textRes = R.string.kitchen_order_detail_cancelled_message,
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(orderId),
+                    )
                     parentFragmentManager.popBackStack()
                 }
                 .onFailure { error ->
                     Log.e(TAG, "Could not cancel kitchen order $orderId", error)
                     binding.btnCancelOrder.isEnabled = true
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.kitchen_order_detail_cancel_failed,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(R.string.kitchen_order_detail_cancel_failed, UiMessageType.ERROR)
                 }
         }
     }

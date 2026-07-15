@@ -16,7 +16,7 @@ object NotificationDispatcher {
         sourceTag: String,
     ) {
         val context = contextOrNull() ?: return
-        val scope = NotificationSessionResolver.scopeForNotification(context, notification) ?: return
+        val scope = NotificationSessionResolver.scopeForNotification(notification) ?: return
         if (NotificationStateStore.hasDedupeKey(scope, notification.dedupeKey)) {
             Log.d(TAG, "Dedupe skipped source=$sourceTag key=${notification.dedupeKey}")
             return
@@ -27,7 +27,7 @@ object NotificationDispatcher {
         NotificationEventBus.publish(notification)
 
         if (AppForegroundState.isForeground) {
-            PizzaTimeNotificationManager.showForegroundMessage(context, notification)
+            PizzaTimeNotificationManager.showForegroundMessage(notification)
             Log.d(TAG, "Foreground event source=$sourceTag id=${notification.id}")
             return
         }

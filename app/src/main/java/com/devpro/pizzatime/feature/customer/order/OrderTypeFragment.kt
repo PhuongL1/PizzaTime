@@ -4,7 +4,6 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.annotation.StringRes
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
@@ -86,12 +85,6 @@ class OrderTypeFragment : Fragment() {
     }
 
     private fun continueWithSelectedType() {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.order_type_selected_message, getString(selectedType.titleRes)),
-            Toast.LENGTH_SHORT,
-        ).show()
-
         parentFragmentManager.replaceForward(
             containerId = R.id.fragmentContainer,
             fragment = PizzaMenuFragment(),

@@ -5,10 +5,12 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
+import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentManageOrdersBinding
 import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
 import com.devpro.pizzatime.shared.dialog.AssignShipperDialogFragment
@@ -61,11 +63,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
         }
 
         btnNewManualOrder.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.manage_orders_manual_order_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.manage_orders_manual_order_message, UiMessageType.INFO)
         }
     }
 
@@ -164,6 +162,8 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             }
 
         adapter.submitList(filteredOrders)
+        binding.rvOrders.isVisible = filteredOrders.isNotEmpty()
+        binding.tvEmptyOrders.isVisible = filteredOrders.isEmpty()
     }
 
     private fun openOrderDetail(order: AdminOrderUiModel) {
@@ -200,11 +200,11 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
     }
 
     private fun contactShipper(order: AdminOrderUiModel) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.manage_orders_contact_shipper_toast, order.orderId),
-            Toast.LENGTH_SHORT,
-        ).show()
+        showUiMessage(
+            textRes = R.string.manage_orders_contact_shipper_message,
+            type = UiMessageType.INFO,
+            args = listOf(order.orderId),
+        )
     }
 
     private fun setupAssignShipperResult() {
@@ -215,11 +215,11 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             val orderId = bundle.getString(AssignShipperDialogFragment.KEY_ORDER_ID) ?: ""
             val shipperName = bundle.getString(AssignShipperDialogFragment.KEY_SHIPPER_NAME) ?: ""
 
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.manage_orders_assigned_toast, orderId, shipperName),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(
+                textRes = R.string.manage_orders_assigned_message,
+                type = UiMessageType.SUCCESS,
+                args = listOf(orderId, shipperName),
+            )
         }
     }
 
@@ -230,11 +230,11 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
         ) { _, bundle ->
             val orderId = bundle.getString(CancelOrderConfirmationDialogFragment.KEY_ORDER_ID) ?: ""
 
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.manage_orders_cancelled_toast, orderId),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(
+                textRes = R.string.manage_orders_cancelled_message,
+                type = UiMessageType.SUCCESS,
+                args = listOf(orderId),
+            )
         }
     }
 
@@ -246,11 +246,11 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             val orderId = bundle.getString(StatusUpdateConfirmationDialogFragment.KEY_ORDER_ID) ?: ""
             val toStatus = bundle.getString(StatusUpdateConfirmationDialogFragment.KEY_TO_STATUS) ?: ""
 
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.manage_orders_status_updated_toast, orderId, toStatus),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(
+                textRes = R.string.manage_orders_status_updated_message,
+                type = UiMessageType.SUCCESS,
+                args = listOf(orderId, toStatus),
+            )
         }
     }
 

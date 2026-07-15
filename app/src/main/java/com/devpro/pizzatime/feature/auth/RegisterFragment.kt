@@ -6,12 +6,14 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentRegisterBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
@@ -55,11 +57,11 @@ class RegisterFragment : Fragment() {
         }
 
         binding.btnGoogle.setOnClickListener {
-            Toast.makeText(requireContext(), "Google sign up coming soon", Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.auth_google_signup_unavailable, UiMessageType.INFO)
         }
 
         binding.btnFacebook.setOnClickListener {
-            Toast.makeText(requireContext(), "Facebook sign up coming soon", Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.auth_facebook_signup_unavailable, UiMessageType.INFO)
         }
     }
 
@@ -102,22 +104,15 @@ class RegisterFragment : Fragment() {
             binding.btnCreateAccount.isEnabled = true
             result
                 .onSuccess {
-                    Toast.makeText(
-                        requireContext(),
-                        "Account created successfully!",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    AppUiMessageBus.publish(R.string.auth_register_success, UiMessageType.SUCCESS)
                     if (resumePendingCheckoutAfterRegister()) {
                         return@onSuccess
                     }
                     openLoginScreen(addToBackStack = false)
                 }
                 .onFailure { error ->
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: "Registration failed.",
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Log.e(TAG, "Registration failed", error)
+                    showUiMessage(R.string.auth_register_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -137,7 +132,7 @@ class RegisterFragment : Fragment() {
         FakeSessionStore.login(UserRole.CUSTOMER)
         clearAppBackStack()
         if (CartStore.items.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.cart_empty_message, Toast.LENGTH_SHORT).show()
+            AppUiMessageBus.publish(R.string.cart_empty_message, UiMessageType.INFO)
             openCartScreen(addToBackStack = false)
             return true
         }

@@ -137,6 +137,8 @@
     <string name="menu_search_hint">Search pizzas</string>
     <string name="menu_filter_content_description">Filters</string>
     <string name="menu_drawer_content_description">Open menu</string>
+    <string name="notification_badge_menu">Menu</string>
+    <string name="notification_badge_overflow">99+</string>
     <string name="menu_cart_content_description">Open cart</string>
     <string name="menu_category_all">All</string>
     <string name="menu_category_signature">Signature</string>
@@ -280,9 +282,6 @@
     <string name="customer_notifications_nav_alerts">♟\nAlerts</string>
     <string name="customer_notifications_nav_profile">♙\nProfile</string>
 
-    <string name="customer_notifications_marked_read_toast">All notifications marked as read.</string>
-    <string name="customer_notifications_open_toast">Opened: %1$s</string>
-    <string name="customer_notifications_profile_toast">Profile is coming soon.</string>
     <string name="customer_notifications_empty_title">No notifications yet</string>
     <string name="customer_notifications_empty_message">Order updates will appear here.</string>
     <string name="customer_notifications_login_required_message">Log in to see your order updates.</string>
@@ -319,7 +318,7 @@
     <string name="support_still_need_help">Still need help?</string>
     <string name="support_help_message">Our concierge team is available 24/7 to assist with your gourmet experience.</string>
     <string name="support_contact_support">▱  Contact Support</string>
-    <string name="support_contact_support_toast">Support chat is coming soon.</string>
+    <string name="support_contact_support_message">Support chat is coming soon.</string>
 
     <string name="support_nav_menu">⌘\nMenu</string>
     <string name="support_nav_orders">▤\nOrders</string>
@@ -385,12 +384,12 @@
     <string name="staff_order_detail_timeline_ready_waiting">🚚  Ready for Shipper\n    Awaiting prep completion</string>
     <string name="staff_order_detail_timeline_waiting">Waiting</string>
 
-    <string name="staff_order_detail_call_customer_toast">Calling customer...</string>
-    <string name="staff_order_detail_delay_toast">Delay notice sent.</string>
-    <string name="staff_order_detail_cancelled_toast">%1$s cancelled.</string>
-    <string name="staff_order_detail_cancelled_with_reason_toast">%1$s cancelled. Reason: %2$s</string>
+    <string name="staff_order_detail_call_customer_message">Calling customer...</string>
+    <string name="staff_order_detail_delay_message">Delay notice sent.</string>
+    <string name="staff_order_detail_cancelled_message">%1$s cancelled.</string>
+    <string name="staff_order_detail_cancelled_with_reason_message">%1$s cancelled. Reason: %2$s</string>
     <string name="staff_order_detail_cancel_failed">Failed to cancel order.</string>
-    <string name="staff_order_detail_assigned_to_shipper_toast">%1$s assigned to %2$s.</string>
+    <string name="staff_order_detail_assigned_to_shipper_message">%1$s assigned to %2$s.</string>
 
     <string name="staff_order_detail_customer_details">CUSTOMER DETAILS</string>
     <string name="staff_order_detail_customer_name_preview">Alessandra Rossi</string>
@@ -432,7 +431,7 @@
     <string name="forgot_password_send_button">SEND RESET INSTRUCTIONS</string>
     <string name="forgot_password_back_to_login">←  BACK TO LOGIN</string>
     <string name="forgot_password_invalid_account">Enter a valid email or phone number.</string>
-    <string name="forgot_password_sent_toast">Reset instructions sent to %1$s.</string>
+    <string name="forgot_password_sent_message">Reset instructions sent to %1$s.</string>
 
     <!-- Role routing -->
     <string name="role_customer">Customer</string>
@@ -496,8 +495,8 @@
     <string name="kitchen_order_detail_mark_ready">Mark as Ready</string>
     <string name="kitchen_order_detail_cancel_order">CANCEL ORDER</string>
 
-    <string name="kitchen_order_detail_status_updated_toast">Kitchen order updated: %1$s</string>
-    <string name="kitchen_order_detail_cancelled_toast">%1$s cancelled.</string>
+    <string name="kitchen_order_detail_status_updated_message">Kitchen order updated: %1$s</string>
+    <string name="kitchen_order_detail_cancelled_message">%1$s cancelled.</string>
     <string name="kitchen_order_detail_cancel_failed">Could not cancel order.</string>
     <string name="kitchen_order_detail_load_failed">Could not load order detail.</string>
     <string name="kitchen_order_detail_update_failed">Could not update order status.</string>
@@ -610,11 +609,11 @@
     <string name="manage_orders_contact">Contact</string>
 
     <string name="manage_orders_default_address">24 Artisan Street, District 1</string>
-    <string name="manage_orders_manual_order_toast">Manual order is coming soon.</string>
-    <string name="manage_orders_contact_shipper_toast">Contact shipper for #%1$s.</string>
-    <string name="manage_orders_assigned_toast">%1$s assigned to %2$s.</string>
-    <string name="manage_orders_cancelled_toast">%1$s cancelled.</string>
-    <string name="manage_orders_status_updated_toast">%1$s updated to %2$s.</string>
+    <string name="manage_orders_manual_order_message">Manual order is coming soon.</string>
+    <string name="manage_orders_contact_shipper_message">Contact shipper for #%1$s.</string>
+    <string name="manage_orders_assigned_message">%1$s assigned to %2$s.</string>
+    <string name="manage_orders_cancelled_message">%1$s cancelled.</string>
+    <string name="manage_orders_status_updated_message">%1$s updated to %2$s.</string>
 
     <!-- Admin add product -->
     <string name="add_edit_product_close_icon">×</string>
@@ -652,10 +651,6 @@
     <string name="add_edit_product_discard_changes">Discard Changes</string>
     <string name="add_edit_product_save_product">Save Artisan Product</string>
 
-    <string name="add_edit_product_upload_toast">Image upload is coming soon.</string>
-    <string name="add_edit_product_category_toast">Category picker is coming soon.</string>
-    <string name="add_edit_product_add_topping_toast">Add topping is coming soon.</string>
-    <string name="add_edit_product_save_toast">Product saved.</string>
 
     <string name="add_edit_product_available_on_description">Product is available for order</string>
     <string name="add_edit_product_available_off_description">Product is hidden from order menu</string>
@@ -901,8 +896,8 @@
     <string name="customer_order_detail_cancel_success">Order cancelled.</string>
     <string name="customer_order_detail_cancel_failed">Could not cancel this order.</string>
     <string name="order_status_stale">Order has already been updated. Please refresh.</string>
-    <string name="customer_order_detail_reorder_toast">Reorder coming soon</string>
-    <string name="customer_order_detail_support_toast">Support coming soon</string>
+    <string name="customer_order_detail_reorder_message">Reorder coming soon</string>
+    <string name="customer_order_detail_support_message">Support coming soon</string>
 
     <string name="customer_order_detail_nav_menu">Menu</string>
     <string name="customer_order_detail_nav_orders">Orders</string>
@@ -931,10 +926,9 @@
     <string name="customer_order_history_try_again">TRY AGAIN</string>
 
     <string name="customer_order_history_orders_count">%1$d ORDERS</string>
-    <string name="customer_order_history_cart_toast">Cart coming soon</string>
-    <string name="customer_order_history_reorder_toast">Reorder coming soon</string>
-    <string name="customer_order_history_support_toast">Support coming soon</string>
-    <string name="customer_order_history_try_again_toast">Try again coming soon</string>
+    <string name="customer_order_history_reorder_message">Reorder coming soon</string>
+    <string name="customer_order_history_support_message">Support coming soon</string>
+    <string name="customer_order_history_try_again_message">Try again coming soon</string>
 
     <string name="customer_order_history_nav_menu">Menu</string>
     <string name="customer_order_history_nav_orders">Orders</string>
@@ -953,16 +947,41 @@
 
     <string name="customer_favorites_pairing_icon">✦</string>
 
-    <string name="customer_favorites_add_to_cart_toast">%1$s added to cart</string>
     <string name="customer_favorites_added_to_cart">Added to cart.</string>
-    <string name="customer_favorites_saved_toast">%1$s saved to favorites</string>
-    <string name="customer_favorites_removed_toast">%1$s removed from favorites</string>
+    <string name="customer_favorites_saved_message">%1$s saved to favorites</string>
+    <string name="customer_favorites_removed_message">%1$s removed from favorites</string>
     <string name="customer_favorites_update_failed">Could not update favorites.</string>
     <string name="customer_favorites_login_required">Sign in to save favorites.</string>
     <string name="customer_favorites_view_login_required">Sign in to view favorites.</string>
     <string name="customer_favorites_product_unavailable">Product is no longer available.</string>
+    <string name="feedback_action_failed">Could not complete this action.</string>
+    <string name="feedback_orders_load_failed">Could not load orders.</string>
+    <string name="staff_logout_confirmation">Sign out of this staff account?</string>
+    <string name="kitchen_empty_orders">No orders in this queue.</string>
+    <string name="phone_not_available">Phone calling is not available.</string>
+    <string name="admin_dashboard_load_failed">Could not load the dashboard.</string>
+    <string name="admin_recent_orders_empty">No recent orders.</string>
+    <string name="manage_orders_empty">No orders match this view.</string>
+    <string name="manage_menu_availability_updated">Product availability updated.</string>
+    <string name="manage_menu_empty">No products match this view.</string>
+    <string name="promo_reactivated">Promo code reactivated.</string>
+    <string name="admin_staff_create_phone_required">Phone number is required.</string>
+    <string name="admin_staff_status_confirmation_title">Update staff access?</string>
+    <string name="admin_staff_status_confirmation_message">Change the active status for %1$s?</string>
+    <string name="admin_staff_status_confirmation_action">Update</string>
+    <string name="admin_staff_status_updated">Staff status updated.</string>
+    <string name="add_edit_product_discard_confirmation">Discard the unsaved product changes?</string>
+    <string name="auth_google_signup_unavailable">Google sign-up is not available yet.</string>
+    <string name="auth_facebook_signup_unavailable">Facebook sign-up is not available yet.</string>
+    <string name="auth_register_success">Account created successfully.</string>
+    <string name="auth_register_failed">Could not create your account.</string>
+    <string name="pizza_detail_topping_selected">Selected %1$s.</string>
+    <string name="pizza_detail_topping_removed">Removed %1$s.</string>
+    <string name="pizza_detail_added_to_cart">Added %1$d %2$s to cart.</string>
+    <string name="pizza_detail_customize_unavailable">Additional customization is not available yet.</string>
+    <string name="order_tracking_item_unavailable">Order item details are not available yet.</string>
+    <string name="customer_account_logout_confirmation">Sign out of this account?</string>
     <string name="app_edition_mismatch">This account cannot use this app edition.</string>
-    <string name="customer_favorites_cart_toast">Cart coming soon</string>
 
     <string name="customer_favorites_nav_menu">Menu</string>
     <string name="customer_favorites_nav_orders">Orders</string>
@@ -975,7 +994,7 @@
 
     <string name="customer_menu_close">×</string>
     <string name="customer_menu_chevron">›</string>
-    <string name="customer_menu_selected_toast">%1$s coming soon</string>
+    <string name="customer_menu_selected_message">%1$s coming soon</string>
 
     <string name="customer_menu_icon_menu">🍴</string>
     <string name="customer_menu_icon_orders">▣</string>
@@ -1015,7 +1034,6 @@
     <string name="no_points_history">No points history.</string>
     <string name="customer_promo_apply">APPLY</string>
     <string name="customer_promo_image_description">Promo image</string>
-    <string name="customer_promo_cart_toast">Cart coming soon</string>
     <string name="customer_promo_coming_soon">%1$s coming soon</string>
 
     <string name="no_favorites_yet">No favorites yet.</string>
@@ -1049,12 +1067,8 @@
     <string name="customer_member_qr_history">HISTORY</string>
     <string name="customer_member_qr_rewards">REWARDS</string>
 
-    <string name="customer_member_qr_cart_toast">Cart coming soon</string>
-    <string name="customer_member_qr_menu_toast">Menu coming soon</string>
-    <string name="customer_member_qr_orders_toast">Orders coming soon</string>
-    <string name="customer_member_qr_loyalty_toast">Loyalty coming soon</string>
-    <string name="customer_member_qr_history_toast">Points history coming soon</string>
-    <string name="customer_member_qr_rewards_toast">Rewards coming soon</string>
+    <string name="customer_member_qr_history_message">Points history coming soon</string>
+    <string name="customer_member_qr_rewards_message">Rewards coming soon</string>
     <string name="detail_add_to_cart">Add to Cart</string>
     <string name="home_nav_menu">Menu</string>
     <!-- account -->
@@ -1077,31 +1091,21 @@
     <string name="customer_account_chevron_description">chevron</string>
     <string name="customer_account_dough_points">%1$s Dough Points</string>
 
-    <string name="customer_account_cart_toast">Cart coming soon</string>
-    <string name="customer_account_menu_toast">Menu coming soon</string>
-    <string name="customer_account_orders_toast">Orders coming soon</string>
     <string name="customer_account_no_orders_yet">No orders yet.</string>
-    <string name="customer_account_loyalty_toast">Loyalty coming soon</string>
-    <string name="customer_account_edit_profile_toast">Edit profile coming soon</string>
     <string name="customer_account_edit_profile_title">Edit profile</string>
     <string name="customer_account_edit_profile_save">Save</string>
     <string name="customer_account_edit_name_hint">Name</string>
     <string name="customer_account_edit_phone_hint">Phone</string>
     <string name="customer_account_edit_address_hint">Delivery address</string>
-    <string name="customer_account_login_required_toast">Please log in to view your profile.</string>
+    <string name="customer_account_login_required_message">Please log in to view your profile.</string>
     <string name="customer_account_profile_load_failed">Using saved fallback profile.</string>
-    <string name="customer_account_name_required_toast">Name is required.</string>
-    <string name="customer_account_profile_saved_toast">Profile updated.</string>
+    <string name="customer_account_name_required_message">Name is required.</string>
+    <string name="customer_account_profile_saved_message">Profile updated.</string>
     <string name="customer_account_profile_save_failed">Could not update profile.</string>
     <string name="customer_account_change_photo">Change photo</string>
     <string name="customer_account_photo_updated">Profile photo updated.</string>
     <string name="customer_account_photo_update_failed">Could not update photo.</string>
-    <string name="customer_account_order_history_toast">Order history coming soon</string>
-    <string name="customer_account_payment_methods_toast">Payment methods coming soon</string>
-    <string name="customer_account_delivery_addresses_toast">Delivery addresses coming soon</string>
-    <string name="customer_account_favorites_toast">Favorites coming soon</string>
-    <string name="customer_account_settings_toast">Settings coming soon</string>
-    <string name="customer_account_logout_toast">Logout coming soon</string>
+    <string name="customer_account_payment_methods_message">Payment methods coming soon</string>
     <string name="account_store_info">Store Info</string>
     <string name="account_account_info">Account Info</string>
     <string name="account_change_password">Change Password</string>
@@ -1247,7 +1251,6 @@
     <!-- dialog select shipper  -->
     <string name="assign_shipper_active_deliveries">%1$d active</string>
     <string name="assign_shipper_eta">%1$d min away</string>
-    <string name="assign_shipper_success_toast">%1$s assigned to %2$s.</string>
 
     <string name="assign_shipper_delivery_meta">%1$d active • %2$d min away</string>
     <string name="assign_shipper_available">Available</string>
@@ -1279,13 +1282,11 @@
     <string name="staff_drawer_support">ⓘ   Support</string>
     <string name="staff_drawer_logout">⇱   Logout</string>
     <string name="staff_drawer_version">V2.4.0</string>
-    <string name="staff_drawer_order_history_toast">Order history is coming soon.</string>
+    <string name="staff_drawer_order_history_message">Order history is coming soon.</string>
 
-    <string name="staff_drawer_inventory_toast">Inventory is coming soon.</string>
-    <string name="staff_drawer_schedule_toast">Staff schedule is coming soon.</string>
-    <string name="staff_drawer_support_toast">Support is coming soon.</string>
-    <string name="staff_drawer_logout_toast">Logged out.</string>
-    <string name="account_store_info_view_only_toast">Chỉ admin mới có thể chỉnh sửa</string>
+    <string name="staff_drawer_inventory_message">Inventory is coming soon.</string>
+    <string name="staff_drawer_schedule_message">Staff schedule is coming soon.</string>
+    <string name="staff_drawer_support_message">Support is coming soon.</string>
     <string name="role_employee_fallback">Employee</string>
     <string name="role_view_only">View only</string>
 </resources>

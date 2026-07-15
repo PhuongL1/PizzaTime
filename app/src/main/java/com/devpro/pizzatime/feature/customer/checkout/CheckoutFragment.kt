@@ -5,11 +5,12 @@ import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.GuestSession
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
 import com.devpro.pizzatime.feature.auth.PendingAuthDestinationStore
@@ -191,11 +192,11 @@ class CheckoutFragment : Fragment() {
         }
 
         binding.paymentCreditCard.setOnClickListener {
-            showToast(R.string.checkout_payment_method_coming_soon)
+            showCheckoutMessage(R.string.checkout_payment_method_coming_soon, UiMessageType.INFO)
         }
 
         binding.paymentApplePay.setOnClickListener {
-            showToast(R.string.checkout_payment_method_coming_soon)
+            showCheckoutMessage(R.string.checkout_payment_method_coming_soon, UiMessageType.INFO)
         }
 
         binding.paymentCash.setOnClickListener {
@@ -213,7 +214,7 @@ class CheckoutFragment : Fragment() {
         }
 
         if (orderItems.isEmpty()) {
-            Toast.makeText(requireContext(), "Your cart is empty.", Toast.LENGTH_SHORT).show()
+            showCheckoutMessage(R.string.cart_empty_title, UiMessageType.INFO)
             return
         }
         val user = FirebaseAuth.getInstance().currentUser
@@ -222,11 +223,11 @@ class CheckoutFragment : Fragment() {
             return
         }
         if (selectedDeliveryAddress.trim().isBlank()) {
-            showToast(R.string.checkout_delivery_address_missing)
+            showCheckoutMessage(R.string.checkout_delivery_address_missing)
             return
         }
         if (!selectedDeliveryLat.isValidLatitude() || !selectedDeliveryLng.isValidLongitude()) {
-            showToast(R.string.checkout_delivery_location_missing)
+            showCheckoutMessage(R.string.checkout_delivery_location_missing)
             return
         }
 
@@ -246,7 +247,7 @@ class CheckoutFragment : Fragment() {
                 }
                 .onFailure {
                     setPlaceOrderLoading(false)
-                    showToast(R.string.checkout_verify_failed)
+                    showCheckoutMessage(R.string.checkout_verify_failed)
                 }
         }
     }
@@ -259,7 +260,7 @@ class CheckoutFragment : Fragment() {
         when (validationResult) {
             CheckoutConsistencyResult.ItemsUnavailable -> {
                 setPlaceOrderLoading(false)
-                showToast(R.string.checkout_items_unavailable)
+                showCheckoutMessage(R.string.checkout_items_unavailable)
             }
 
             is CheckoutConsistencyResult.PriceChanged -> {
@@ -271,7 +272,7 @@ class CheckoutFragment : Fragment() {
                 renderOrderItems(orderItems)
                 updateDeliveryEstimate()
                 setPlaceOrderLoading(false)
-                showToast(R.string.checkout_prices_changed)
+                showCheckoutMessage(R.string.checkout_prices_changed)
             }
 
             CheckoutConsistencyResult.PromoInvalid -> {
@@ -280,7 +281,7 @@ class CheckoutFragment : Fragment() {
                 CartStore.clearPromo()
                 updateDeliveryEstimate()
                 setPlaceOrderLoading(false)
-                showToast(R.string.checkout_promo_invalid)
+                showCheckoutMessage(R.string.checkout_promo_invalid)
             }
 
             is CheckoutConsistencyResult.Valid -> {
@@ -314,27 +315,27 @@ class CheckoutFragment : Fragment() {
                     when {
                         !settings.acceptingOrders -> {
                             setPlaceOrderLoading(false)
-                            showToast(R.string.checkout_store_closed)
+                            showCheckoutMessage(R.string.checkout_store_closed)
                         }
 
                         settings.storeName.isBlank() || settings.pickupAddress.isBlank() -> {
                             setPlaceOrderLoading(false)
-                            showToast(R.string.checkout_store_pickup_missing)
+                            showCheckoutMessage(R.string.checkout_store_pickup_missing)
                         }
 
                         !settings.pickupLat.isValidLatitude() || !settings.pickupLng.isValidLongitude() -> {
                             setPlaceOrderLoading(false)
-                            showToast(R.string.checkout_store_location_missing)
+                            showCheckoutMessage(R.string.checkout_store_location_missing)
                         }
 
                         selectedDeliveryAddress.trim().isBlank() -> {
                             setPlaceOrderLoading(false)
-                            showToast(R.string.checkout_delivery_address_missing)
+                            showCheckoutMessage(R.string.checkout_delivery_address_missing)
                         }
 
                         !selectedDeliveryLat.isValidLatitude() || !selectedDeliveryLng.isValidLongitude() -> {
                             setPlaceOrderLoading(false)
-                            showToast(R.string.checkout_delivery_location_missing)
+                            showCheckoutMessage(R.string.checkout_delivery_location_missing)
                         }
 
                         else -> {
@@ -344,7 +345,7 @@ class CheckoutFragment : Fragment() {
                             )
                             if (estimate == null) {
                                 setPlaceOrderLoading(false)
-                                showToast(R.string.checkout_delivery_location_missing)
+                                showCheckoutMessage(R.string.checkout_delivery_location_missing)
                             } else {
                                 currentDeliveryEstimate = estimate
                                 renderSummary()
@@ -355,7 +356,7 @@ class CheckoutFragment : Fragment() {
                 }
                 .onFailure {
                     setPlaceOrderLoading(false)
-                    showToast(R.string.checkout_store_pickup_missing)
+                    showCheckoutMessage(R.string.checkout_store_pickup_missing)
                 }
         }
     }
@@ -398,7 +399,7 @@ class CheckoutFragment : Fragment() {
                     }
                     .onFailure { error ->
                         setPlaceOrderLoading(false)
-                        showToast(R.string.checkout_place_order_failed)
+                        showCheckoutMessage(R.string.checkout_place_order_failed)
                     }
             },
         )
@@ -424,8 +425,11 @@ class CheckoutFragment : Fragment() {
         )
     }
 
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    private fun showCheckoutMessage(
+        messageRes: Int,
+        type: UiMessageType = UiMessageType.ERROR,
+    ) {
+        showUiMessage(messageRes, type)
     }
 
     private fun blockCheckoutForGuest(): Boolean {
@@ -451,7 +455,7 @@ class CheckoutFragment : Fragment() {
             val lat = bundle.getDouble(MapPickerFragment.KEY_LAT)
             val lng = bundle.getDouble(MapPickerFragment.KEY_LNG)
             if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
-                showToast(R.string.checkout_delivery_location_missing)
+                showCheckoutMessage(R.string.checkout_delivery_location_missing)
                 return@setFragmentResultListener
             }
             selectedDeliveryAddress = address
@@ -490,7 +494,7 @@ class CheckoutFragment : Fragment() {
         ) { result ->
             if (_binding == null || !isAdded) return@updateDeliveryLocation
             result.onFailure {
-                showToast(R.string.checkout_delivery_location_save_failed)
+                showCheckoutMessage(R.string.checkout_delivery_location_save_failed)
             }
         }
     }

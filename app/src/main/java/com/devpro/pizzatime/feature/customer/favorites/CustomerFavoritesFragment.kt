@@ -1,18 +1,23 @@
 package com.devpro.pizzatime.feature.customer.favorites
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
+import androidx.annotation.StringRes
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.product.ProductOptionDefaults
+import com.devpro.pizzatime.core.ui.message.UiMessage
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.UiText
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerFavoritesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteCompactBinding
 import com.devpro.pizzatime.databinding.ItemCustomerFavoriteFeaturedBinding
@@ -85,9 +90,14 @@ class CustomerFavoritesFragment : Fragment() {
                     favoritesData = favoritesData.copy(favorites = favorites)
                     renderFavorites(getString(R.string.no_favorites_yet))
                 }
-                .onFailure {
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load favorites", error)
                     favoritesData = favoritesData.copy(favorites = emptyList())
                     renderFavorites(getString(R.string.no_favorites_yet))
+                    showFavoritesMessage(
+                        textRes = R.string.feedback_action_failed,
+                        type = UiMessageType.ERROR,
+                    )
                 }
         }
     }
@@ -212,7 +222,10 @@ class CustomerFavoritesFragment : Fragment() {
     private fun removeFavorite(item: CustomerFavoriteItemUiModel) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid == null) {
-            showToast(getString(R.string.customer_favorites_view_login_required))
+            showFavoritesMessage(
+                textRes = R.string.customer_favorites_view_login_required,
+                type = UiMessageType.INFO,
+            )
             return
         }
 
@@ -220,11 +233,19 @@ class CustomerFavoritesFragment : Fragment() {
             if (_binding == null) return@removeFavorite
             result
                 .onSuccess {
-                    showToast(getString(R.string.customer_favorites_removed_toast, item.name))
+                    showFavoritesMessage(
+                        textRes = R.string.customer_favorites_removed_message,
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(item.name),
+                    )
                     loadFirestoreFavorites()
                 }
-                .onFailure {
-                    showToast(getString(R.string.customer_favorites_update_failed))
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to remove favorite productId=${item.id}", error)
+                    showFavoritesMessage(
+                        textRes = R.string.customer_favorites_update_failed,
+                        type = UiMessageType.ERROR,
+                    )
                 }
         }
     }
@@ -235,20 +256,31 @@ class CustomerFavoritesFragment : Fragment() {
     ) {
         val currentUser = FirebaseAuth.getInstance().currentUser
         if (currentUser == null) {
-            showToast(getString(R.string.customer_favorites_view_login_required))
+            showFavoritesMessage(
+                textRes = R.string.customer_favorites_view_login_required,
+                type = UiMessageType.INFO,
+            )
             return
         }
 
         buttonView.isEnabled = false
-        resolveProductForCart(item) { resolvedProduct ->
-            if (_binding == null) {
-                buttonView.isEnabled = true
-                return@resolveProductForCart
-            }
+        resolveProductForCart(item) { result ->
+            if (_binding == null) return@resolveProductForCart
 
             buttonView.isEnabled = true
+            val resolvedProduct = result.getOrElse { error ->
+                Log.e(TAG, "Failed to resolve favorite productId=${item.id} for cart", error)
+                showFavoritesMessage(
+                    textRes = R.string.feedback_action_failed,
+                    type = UiMessageType.ERROR,
+                )
+                return@resolveProductForCart
+            }
             if (resolvedProduct == null) {
-                showToast(getString(R.string.customer_favorites_product_unavailable))
+                showFavoritesMessage(
+                    textRes = R.string.customer_favorites_product_unavailable,
+                    type = UiMessageType.ERROR,
+                )
                 return@resolveProductForCart
             }
 
@@ -260,33 +292,40 @@ class CustomerFavoritesFragment : Fragment() {
 
             CartStore.addItem(cartItem)
             setupTopBar()
-            showToast(getString(R.string.customer_favorites_added_to_cart))
+            showFavoritesMessage(
+                textRes = R.string.customer_favorites_added_to_cart,
+                type = UiMessageType.SUCCESS,
+            )
         }
     }
 
     private fun resolveProductForCart(
         item: CustomerFavoriteItemUiModel,
-        onResolved: (ResolvedFavoriteProduct?) -> Unit,
+        onResolved: (Result<ResolvedFavoriteProduct?>) -> Unit,
     ) {
         val localProduct = item.toResolvedProductOrNull()
         if (localProduct != null) {
-            onResolved(localProduct)
+            onResolved(Result.success(localProduct))
             return
         }
 
         val productId = item.id.trim()
         if (productId.isBlank()) {
-            onResolved(null)
+            onResolved(Result.success(null))
             return
         }
 
         CustomerFavoritesFirestoreRepository.loadProduct(productId) { result ->
             if (_binding == null) return@loadProduct
-            val resolved = result
-                .getOrNull()
-                ?.takeIf { product -> product.available }
-                ?.toResolvedFavoriteProduct(fallbackImageRes = item.imageRes ?: R.drawable.img_pizza_time)
-            onResolved(resolved)
+            onResolved(
+                result.map { product ->
+                    product
+                        ?.takeIf { it.available }
+                        ?.toResolvedFavoriteProduct(
+                            fallbackImageRes = item.imageRes ?: R.drawable.img_pizza_time,
+                        )
+                },
+            )
         }
     }
 
@@ -339,8 +378,22 @@ class CustomerFavoritesFragment : Fragment() {
         }
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun showFavoritesMessage(
+        @StringRes textRes: Int,
+        type: UiMessageType,
+        args: List<Any> = emptyList(),
+    ) {
+        val currentBinding = _binding ?: return
+        showUiMessage(
+            message = UiMessage(
+                text = UiText.Resource(
+                    resId = textRes,
+                    args = args,
+                ),
+                type = type,
+            ),
+            anchorView = currentBinding.customerBottomNav.root,
+        )
     }
 
     private fun formatPrice(value: Double): String {
@@ -539,6 +592,7 @@ class CustomerFavoritesFragment : Fragment() {
     }
 
     private companion object {
+        private const val TAG = "CustomerFavorites"
         private const val DEFAULT_MEDIUM_SIZE = "Medium"
     }
 }

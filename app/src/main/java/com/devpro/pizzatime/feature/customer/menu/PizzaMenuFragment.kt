@@ -8,7 +8,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
@@ -115,11 +114,6 @@ class PizzaMenuFragment : Fragment() {
     private fun setupActions() = with(binding) {
         btnFilter.setOnClickListener {
             categoryScroll.isVisible = !categoryScroll.isVisible
-            Toast.makeText(
-                requireContext(),
-                R.string.menu_filters_updated,
-                Toast.LENGTH_SHORT,
-            ).show()
         }
     }
 

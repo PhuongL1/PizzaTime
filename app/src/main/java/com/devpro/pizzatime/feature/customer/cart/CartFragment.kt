@@ -6,12 +6,13 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.session.GuestSession
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCartBinding
 import com.devpro.pizzatime.databinding.ItemCartPizzaBinding
 import com.devpro.pizzatime.feature.auth.PendingAuthDestinationStore
@@ -222,12 +223,9 @@ class CartFragment : Fragment() {
                                 discountAmount = promoResult.discount,
                             )
                             binding.tvPromoHint.setText(promoResult.promoCode)
+                            binding.tvPromoHint.error = null
                             renderSummary(CartStore.items)
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.cart_promo_applied_successfully,
-                                Toast.LENGTH_SHORT,
-                            ).show()
+                            showUiMessage(R.string.cart_promo_applied_successfully, UiMessageType.SUCCESS)
                         }
 
                         is CheckoutConsistencyRepository.PromoValidationResult.Invalid -> {
@@ -245,11 +243,7 @@ class CartFragment : Fragment() {
         CartStore.clearPromo()
         binding.tvPromoHint.text = null
         renderSummary(CartStore.items)
-        Toast.makeText(
-            requireContext(),
-            R.string.cart_promo_code_not_valid,
-            Toast.LENGTH_SHORT,
-        ).show()
+        binding.tvPromoHint.error = getString(R.string.cart_promo_code_not_valid)
     }
 
     private fun showPromoValidationMessage(
@@ -260,11 +254,7 @@ class CartFragment : Fragment() {
                 CartStore.clearPromo()
                 binding.tvPromoHint.text = null
                 renderSummary(CartStore.items)
-                Toast.makeText(
-                    requireContext(),
-                    R.string.promo_not_eligible_for_this_cart,
-                    Toast.LENGTH_SHORT,
-                ).show()
+                binding.tvPromoHint.error = getString(R.string.promo_not_eligible_for_this_cart)
             }
 
             CheckoutConsistencyRepository.PromoValidationFailureReason.UNAVAILABLE -> {

@@ -1,24 +1,28 @@
 package com.devpro.pizzatime.feature.admin.product
 
-import android.app.AlertDialog
 import android.net.Uri
 import android.os.Bundle
+import android.util.Log
 import android.view.View
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.product.ProductOptionDefaults
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentAddEditProductBinding
 import com.devpro.pizzatime.feature.admin.menu.AdminMenuFirestoreRepository
 import com.devpro.pizzatime.feature.admin.menu.CloudinaryConfig
 import com.devpro.pizzatime.feature.admin.menu.CloudinaryProductImageRepository
 import com.devpro.pizzatime.feature.admin.menu.AdminMenuUiModel
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Locale
 
 class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
@@ -38,6 +42,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     private val toppingOptions = mutableListOf<String>()
     private val selectedToppings = linkedSetOf<String>()
     private var isUploadingImage = false
+    private var isSavingProduct = false
 
     private val pickHeroImageLauncher =
         registerForActivityResult(ActivityResultContracts.GetContent()) { uri ->
@@ -88,8 +93,12 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                 .onSuccess { product ->
                     bindExistingProduct(product)
                 }
-                .onFailure {
-                    showToast(R.string.manage_menu_edit_product_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load admin productId=$productId", error)
+                    AppUiMessageBus.publish(
+                        R.string.manage_menu_edit_product_failed,
+                        UiMessageType.ERROR,
+                    )
                     parentFragmentManager.popBackStack()
                 }
         }
@@ -171,6 +180,10 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         binding.sizeSection.isVisible = ProductOptionDefaults.supportsSizeOptions(productCategory)
         binding.crustSection.isVisible = ProductOptionDefaults.supportsCrustOptions(productCategory)
         binding.toppingsSection.isVisible = ProductOptionDefaults.supportsToppingOptions(productCategory)
+        binding.tvSizeError.isVisible = binding.tvSizeError.isVisible &&
+            binding.sizeSection.isVisible && selectedSizes.isEmpty()
+        binding.tvCrustError.isVisible = binding.tvCrustError.isVisible &&
+            binding.crustSection.isVisible && selectedCrusts.isEmpty()
 
         if (binding.sizeSection.isVisible) {
             renderSizeOptions(productCategory)
@@ -332,7 +345,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
 
         btnDiscardChanges.setOnClickListener {
             if (productId == null) {
-                parentFragmentManager.popBackStack()
+                showDiscardChangesConfirmation()
             } else {
                 showDeleteProductConfirmation()
             }
@@ -347,7 +360,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         if (isUploadingImage) return
 
         if (!CloudinaryConfig.isConfigured) {
-            showToast(R.string.manage_menu_cloudinary_not_configured)
+            showUiMessage(R.string.manage_menu_cloudinary_not_configured, UiMessageType.ERROR)
             return
         }
 
@@ -372,10 +385,11 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                     imageUrl = uploadedImageUrl
                     binding.etImageUrl.setText(uploadedImageUrl)
                     binding.ivHeroImage.loadProductImage(uploadedImageUrl, R.drawable.img_pizza_time)
-                    showToast(R.string.manage_menu_upload_image_saved)
+                    showUiMessage(R.string.manage_menu_upload_image_saved, UiMessageType.SUCCESS)
                 }
-                .onFailure {
-                    showToast(R.string.manage_menu_upload_image_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to upload product image", error)
+                    showUiMessage(R.string.manage_menu_upload_image_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -386,7 +400,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
 
         currentBinding.heroUploadCard.isEnabled = !uploading
         currentBinding.heroUploadCard.alpha = if (uploading) 0.6f else 1f
-        currentBinding.btnSaveProduct.isEnabled = !uploading
+        currentBinding.btnSaveProduct.isEnabled = !uploading && !isSavingProduct
     }
 
     private fun showCategoryDialog() {
@@ -398,7 +412,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         )
         val labels = categories.map { (_, labelRes) -> getString(labelRes) }.toTypedArray()
         val selectedIndex = categories.indexOfFirst { (categoryId, _) -> categoryId == selectedCategoryId }
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.add_edit_product_category)
             .setSingleChoiceItems(labels, selectedIndex) { dialog, which ->
                 selectedCategoryId = categories[which].first
@@ -414,37 +428,42 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         val input = EditText(requireContext()).apply {
             hint = getString(R.string.add_edit_product_topping_name_hint)
         }
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.add_edit_product_add_new)
             .setView(input)
             .setNegativeButton(android.R.string.cancel, null)
-            .setPositiveButton(R.string.add_edit_product_add_new) { _, _ ->
-                addTopping(input.text.toString())
+            .setPositiveButton(R.string.add_edit_product_add_new, null)
+            .create()
+            .apply {
+                setOnShowListener {
+                    getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        if (addTopping(input)) dismiss()
+                    }
+                }
             }
             .show()
     }
 
-    private fun addTopping(rawName: String) {
-        val topping = rawName.trim()
+    private fun addTopping(input: EditText): Boolean {
+        val topping = input.text.toString().trim()
         if (topping.isBlank()) {
-            showToast(R.string.add_edit_product_topping_required)
-            return
+            input.error = getString(R.string.add_edit_product_topping_required)
+            return false
         }
         val duplicate = toppingOptions.any { it.equals(topping, ignoreCase = true) }
         if (duplicate) {
-            showToast(R.string.add_edit_product_topping_duplicate)
-            return
+            input.error = getString(R.string.add_edit_product_topping_duplicate)
+            return false
         }
+        input.error = null
         toppingOptions.add(topping)
         selectedToppings.add(topping)
         renderToppings()
+        return true
     }
 
     private fun saveProduct() = with(binding) {
-        if (isUploadingImage) {
-            showToast(R.string.manage_menu_uploading_image)
-            return
-        }
+        if (isUploadingImage || isSavingProduct) return
 
         val name = etPizzaName.text.toString().trim()
         val description = etDescription.text.toString().trim()
@@ -455,35 +474,32 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         val toppings = getSelectedToppings()
         val productCategory = currentProductCategory()
 
-        when {
-            name.isBlank() -> {
-                showToast(R.string.manage_menu_edit_name_required)
-                return
-            }
-
-            basePrice == null || basePrice <= 0.0 -> {
-                showToast(R.string.manage_menu_edit_price_required)
-                return
-            }
-
-            ProductOptionDefaults.supportsSizeOptions(productCategory) && sizes.isEmpty() -> {
-                showToast(R.string.add_edit_product_size_required)
-                return
-            }
-
-            ProductOptionDefaults.supportsCrustOptions(productCategory) && crusts.isEmpty() -> {
-                showToast(R.string.add_edit_product_crust_required)
-                return
-            }
+        etPizzaName.error = if (name.isBlank()) {
+            getString(R.string.manage_menu_edit_name_required)
+        } else {
+            null
         }
+        etBasePrice.error = if (basePrice == null || basePrice <= 0.0) {
+            getString(R.string.manage_menu_edit_price_required)
+        } else {
+            null
+        }
+        if (etPizzaName.error != null || etBasePrice.error != null) return
+        tvSizeError.text = getString(R.string.add_edit_product_size_required)
+        tvSizeError.isVisible = ProductOptionDefaults.supportsSizeOptions(productCategory) && sizes.isEmpty()
+        tvCrustError.text = getString(R.string.add_edit_product_crust_required)
+        tvCrustError.isVisible = ProductOptionDefaults.supportsCrustOptions(productCategory) && crusts.isEmpty()
+        if (tvSizeError.isVisible || tvCrustError.isVisible) return
 
+        val validatedBasePrice = basePrice ?: return
+        setProductSaving(true)
         val existingProductId = productId
         if (existingProductId == null) {
             createProduct(
                 productId = normalizeProductId(name),
                 name = name,
                 description = description,
-                basePrice = basePrice,
+                basePrice = validatedBasePrice,
                 sizes = sizes,
                 crusts = crusts,
                 toppings = toppings,
@@ -493,7 +509,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
                 productId = existingProductId,
                 name = name,
                 description = description,
-                basePrice = basePrice,
+                basePrice = validatedBasePrice,
                 sizes = sizes,
                 crusts = crusts,
                 toppings = toppings,
@@ -511,7 +527,8 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
         toppings: List<String>,
     ) {
         if (productId.isBlank()) {
-            showToast(R.string.manage_menu_create_id_required)
+            setProductSaving(false)
+            binding.etPizzaName.error = getString(R.string.manage_menu_create_id_required)
             return
         }
 
@@ -530,11 +547,16 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
             if (_binding == null) return@createProduct
             result
                 .onSuccess {
-                    showToast(R.string.manage_menu_create_product_saved)
+                    AppUiMessageBus.publish(
+                        R.string.manage_menu_create_product_saved,
+                        UiMessageType.SUCCESS,
+                    )
                     parentFragmentManager.popBackStack()
                 }
-                .onFailure {
-                    showToast(R.string.manage_menu_create_product_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to create admin productId=$productId", error)
+                    setProductSaving(false)
+                    showUiMessage(R.string.manage_menu_create_product_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -563,22 +585,38 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
             if (_binding == null) return@updateProduct
             result
                 .onSuccess {
-                    showToast(R.string.manage_menu_edit_product_saved)
+                    AppUiMessageBus.publish(
+                        R.string.manage_menu_edit_product_saved,
+                        UiMessageType.SUCCESS,
+                    )
                     parentFragmentManager.popBackStack()
                 }
-                .onFailure {
-                    showToast(R.string.manage_menu_edit_product_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to update admin productId=$productId", error)
+                    setProductSaving(false)
+                    showUiMessage(R.string.manage_menu_edit_product_failed, UiMessageType.ERROR)
                 }
         }
     }
 
     private fun showDeleteProductConfirmation() {
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.manage_menu_delete_product_title)
             .setMessage(R.string.manage_menu_delete_product_message)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(R.string.manage_menu_confirm_delete_product) { _, _ ->
                 deleteProduct()
+            }
+            .show()
+    }
+
+    private fun showDiscardChangesConfirmation() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.add_edit_product_discard_changes)
+            .setMessage(R.string.add_edit_product_discard_confirmation)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.add_edit_product_discard_changes) { _, _ ->
+                parentFragmentManager.popBackStack()
             }
             .show()
     }
@@ -589,11 +627,15 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
             if (_binding == null) return@deleteProduct
             result
                 .onSuccess {
-                    showToast(R.string.manage_menu_delete_product_saved)
+                    AppUiMessageBus.publish(
+                        R.string.manage_menu_delete_product_saved,
+                        UiMessageType.SUCCESS,
+                    )
                     parentFragmentManager.popBackStack()
                 }
-                .onFailure {
-                    showToast(R.string.manage_menu_delete_product_failed)
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to delete admin productId=$id", error)
+                    showUiMessage(R.string.manage_menu_delete_product_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -633,8 +675,10 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
             .trim('-')
     }
 
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), getString(messageRes), Toast.LENGTH_SHORT).show()
+    private fun setProductSaving(saving: Boolean) {
+        isSavingProduct = saving
+        val currentBinding = _binding ?: return
+        currentBinding.btnSaveProduct.isEnabled = !saving && !isUploadingImage
     }
 
     private fun formatPriceValue(value: Double): String {
@@ -710,6 +754,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
 
     override fun onDestroyView() {
         isUploadingImage = false
+        isSavingProduct = false
         super.onDestroyView()
         _binding = null
     }
@@ -720,6 +765,7 @@ class AddEditProductFragment : Fragment(R.layout.fragment_add_edit_product) {
     )
 
     companion object {
+        private const val TAG = "AddEditProduct"
         private const val ARG_PRODUCT_ID = "arg_product_id"
 
         fun newInstance(productId: String? = null): AddEditProductFragment {

@@ -3,9 +3,10 @@ package com.devpro.pizzatime.feature.auth.forgot
 import android.os.Bundle
 import android.util.Patterns
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentForgotPasswordBinding
 import com.devpro.pizzatime.feature.staff.navigation.openLoginScreen
 
@@ -43,11 +44,11 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
             return
         }
 
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.forgot_password_sent_toast, account),
-            Toast.LENGTH_SHORT,
-        ).show()
+        showUiMessage(
+            textRes = R.string.forgot_password_sent_message,
+            type = UiMessageType.SUCCESS,
+            args = listOf(account),
+        )
     }
 
     private fun isValidAccount(account: String): Boolean {

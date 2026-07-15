@@ -9,7 +9,6 @@ import android.view.View
 import android.view.ViewGroup
 import android.view.Window
 import android.view.WindowManager
-import android.widget.Toast
 import androidx.core.graphics.drawable.toDrawable
 import androidx.core.view.isVisible
 import androidx.fragment.app.DialogFragment
@@ -171,13 +170,10 @@ class AssignShipperDialogFragment : DialogFragment() {
         }
 
         if (selectedShipper == null) {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.assign_shipper_no_shipper_selected),
-                Toast.LENGTH_SHORT,
-            ).show()
+            binding.btnAssignShipper.error = getString(R.string.assign_shipper_no_shipper_selected)
             return
         }
+        binding.btnAssignShipper.error = null
 
         val result = Bundle().apply {
             putString(KEY_ORDER_ID, orderId)
@@ -192,6 +188,9 @@ class AssignShipperDialogFragment : DialogFragment() {
     private fun updateAssignButtonState() {
         val hasSelectedShipper = selectedShipperId != null
 
+        if (hasSelectedShipper) {
+            binding.btnAssignShipper.error = null
+        }
         binding.btnAssignShipper.isEnabled = hasSelectedShipper
         binding.btnAssignShipper.alpha = if (hasSelectedShipper) {
             ENABLED_ALPHA

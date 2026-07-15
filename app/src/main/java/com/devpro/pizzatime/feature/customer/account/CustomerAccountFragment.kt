@@ -1,10 +1,10 @@
 package com.devpro.pizzatime.feature.customer.account
 
-import android.app.AlertDialog
 import android.graphics.Typeface
 import android.net.Uri
 import android.os.Bundle
 import android.text.InputType
+import android.util.Log
 import android.view.Gravity
 import android.view.LayoutInflater
 import android.view.View
@@ -12,14 +12,18 @@ import android.view.ViewGroup
 import android.widget.EditText
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.core.ui.message.UiMessage
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.UiText
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerAccountBinding
 import com.devpro.pizzatime.feature.admin.menu.CloudinaryProductImageRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
@@ -36,6 +40,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openStoreSettings
 import com.devpro.pizzatime.feature.staff.navigation.signOutAndOpenLogin
 import com.google.firebase.auth.EmailAuthProvider
 import com.google.firebase.auth.FirebaseAuth
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.text.NumberFormat
 import java.util.Locale
 
@@ -138,7 +143,7 @@ class CustomerAccountFragment : Fragment() {
 
         rowPaymentMethods.setOnClickListener {
             if (currentRole == UserRole.CUSTOMER) {
-                showToast(getString(R.string.customer_account_payment_methods_toast))
+                showAccountMessage(getString(R.string.customer_account_payment_methods_message))
             } else {
                 showAccountInfoDialog()
             }
@@ -161,8 +166,7 @@ class CustomerAccountFragment : Fragment() {
         }
 
         logoutCard.setOnClickListener {
-            showToast(getString(R.string.customer_account_logout_toast))
-            signOutAndOpenLogin()
+            showLogoutConfirmation()
         }
 
         configureMenuForRole()
@@ -180,13 +184,14 @@ class CustomerAccountFragment : Fragment() {
             isLoadingOrderRoute = false
             binding.rowOrderHistory.isEnabled = true
 
-            val orders = result.getOrElse {
-                showToast(getString(R.string.customer_account_no_orders_yet))
+            val orders = result.getOrElse { error ->
+                Log.e(TAG, "Failed to load customer order route", error)
+                showAccountMessage(getString(R.string.customer_order_detail_load_failed), UiMessageType.ERROR)
                 return@loadOrderHistory
             }
 
             when (orders.size) {
-                0 -> showToast(getString(R.string.customer_account_no_orders_yet))
+                0 -> openCustomerOrderHistory()
                 1 -> openOrderTracking(orders.first().orderId)
                 else -> openCustomerOrderHistory()
             }
@@ -218,7 +223,7 @@ class CustomerAccountFragment : Fragment() {
     private fun startAvatarPicker() {
         if (isUploadingAvatar) return
         if (FirebaseAuth.getInstance().currentUser == null) {
-            showToast(getString(R.string.customer_favorites_login_required))
+            showAccountMessage(getString(R.string.customer_favorites_login_required), UiMessageType.WARNING)
             return
         }
         pickAvatarImage.launch("image/*")
@@ -228,13 +233,13 @@ class CustomerAccountFragment : Fragment() {
         val user = FirebaseAuth.getInstance().currentUser
         val uid = user?.uid
         if (uid.isNullOrBlank()) {
-            showToast(getString(R.string.customer_account_login_required_toast))
+            showAccountMessage(getString(R.string.customer_account_login_required_message), UiMessageType.WARNING)
             openLoginScreen(addToBackStack = false)
             return
         }
 
         CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
-            if (!isAdded) return@loadProfile
+            if (_binding == null || !isAdded) return@loadProfile
             result
                 .onSuccess { profile ->
                     currentRole = profile.role
@@ -250,8 +255,9 @@ class CustomerAccountFragment : Fragment() {
                     configureMenuForRole()
                     applyAuthenticatedRowVisibility()
                 }
-                .onFailure {
-                    showToast(getString(R.string.customer_account_profile_load_failed))
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to load customer profile", error)
+                    showAccountMessage(getString(R.string.customer_account_profile_load_failed), UiMessageType.ERROR)
                 }
         }
     }
@@ -259,7 +265,7 @@ class CustomerAccountFragment : Fragment() {
     private fun uploadAvatar(imageUri: Uri) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            showToast(getString(R.string.customer_favorites_login_required))
+            showAccountMessage(getString(R.string.customer_favorites_login_required), UiMessageType.WARNING)
             return
         }
 
@@ -278,16 +284,21 @@ class CustomerAccountFragment : Fragment() {
                             .onSuccess {
                                 accountData = accountData.copy(avatarUrl = avatarUrl)
                                 bindAccount()
-                                showToast(getString(R.string.customer_account_photo_updated))
+                                showAccountMessage(getString(R.string.customer_account_photo_updated), UiMessageType.SUCCESS)
                             }
-                            .onFailure {
-                                showToast(getString(R.string.customer_account_photo_update_failed))
+                            .onFailure { error ->
+                                Log.e(TAG, "Failed to save customer avatar", error)
+                                showAccountMessage(
+                                    getString(R.string.customer_account_photo_update_failed),
+                                    UiMessageType.ERROR,
+                                )
                             }
                     }
                 }
-                .onFailure {
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to upload customer avatar", error)
                     setAvatarUploading(false)
-                    showToast(getString(R.string.customer_account_photo_update_failed))
+                    showAccountMessage(getString(R.string.customer_account_photo_update_failed), UiMessageType.ERROR)
                 }
         }
     }
@@ -305,7 +316,7 @@ class CustomerAccountFragment : Fragment() {
     private fun showEditProfileDialog() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            showToast(getString(R.string.customer_account_login_required_toast))
+            showAccountMessage(getString(R.string.customer_account_login_required_message), UiMessageType.WARNING)
             openLoginScreen(addToBackStack = false)
             return
         }
@@ -337,7 +348,7 @@ class CustomerAccountFragment : Fragment() {
             }
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.customer_account_edit_profile_title)
             .setView(form)
             .setNegativeButton(android.R.string.cancel, null)
@@ -346,9 +357,15 @@ class CustomerAccountFragment : Fragment() {
             .apply {
                 setOnShowListener {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                        val name = nameInput.text.toString().trim()
+                        if (name.isBlank()) {
+                            nameInput.error = getString(R.string.customer_account_name_required_message)
+                            return@setOnClickListener
+                        }
+                        nameInput.error = null
                         saveProfile(
                             uid = uid,
-                            name = nameInput.text.toString().trim(),
+                            name = name,
                             phone = phoneInput.text.toString().trim(),
                             deliveryAddress = if (includeDeliveryAddress) {
                                 addressInput.text.toString().trim()
@@ -383,18 +400,13 @@ class CustomerAccountFragment : Fragment() {
         deliveryAddress: String,
         onSaved: () -> Unit,
     ) {
-        if (name.isBlank()) {
-            showToast(getString(R.string.customer_account_name_required_toast))
-            return
-        }
-
         CustomerProfileFirestoreRepository.updateProfile(
             uid = uid,
             name = name,
             phone = phone,
             deliveryAddress = deliveryAddress,
         ) { result ->
-            if (!isAdded) return@updateProfile
+            if (_binding == null || !isAdded) return@updateProfile
             result
                 .onSuccess {
                     accountData = accountData.copy(
@@ -403,11 +415,12 @@ class CustomerAccountFragment : Fragment() {
                         deliveryAddress = deliveryAddress,
                     )
                     bindAccount()
-                    showToast(getString(R.string.customer_account_profile_saved_toast))
+                    showAccountMessage(getString(R.string.customer_account_profile_saved_message), UiMessageType.SUCCESS)
                     onSaved()
                 }
-                .onFailure {
-                    showToast(getString(R.string.customer_account_profile_save_failed))
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to save customer profile", error)
+                    showAccountMessage(getString(R.string.customer_account_profile_save_failed), UiMessageType.ERROR)
                 }
         }
     }
@@ -518,12 +531,12 @@ class CustomerAccountFragment : Fragment() {
 
     private fun showStoreInfoDialog() {
         StoreSettingsRepository.loadStoreSettings { result ->
-            if (!isAdded) return@loadStoreSettings
+            if (_binding == null || !isAdded) return@loadStoreSettings
             val message = result.fold(
                 onSuccess = { settings -> buildStoreInfoMessage(settings) },
                 onFailure = { getString(R.string.account_store_info_not_configured) },
             )
-            AlertDialog.Builder(requireContext())
+            MaterialAlertDialogBuilder(requireContext())
                 .setTitle(R.string.account_store_info)
                 .setMessage(message)
                 .setNegativeButton(android.R.string.ok, null)
@@ -597,7 +610,7 @@ class CustomerAccountFragment : Fragment() {
             ),
         ).joinToString(separator = "\n")
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.account_account_info)
             .setMessage(message)
             .setNegativeButton(android.R.string.ok, null)
@@ -625,7 +638,7 @@ class CustomerAccountFragment : Fragment() {
             addView(forgotPasswordText)
         }
 
-        val dialog = AlertDialog.Builder(requireContext())
+        val dialog = MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.account_change_password)
             .setView(form)
             .setNegativeButton(android.R.string.cancel, null)
@@ -638,10 +651,21 @@ class CustomerAccountFragment : Fragment() {
                 openForgotPassword()
             }
             dialog.getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
+                val oldPassword = oldPasswordInput.text.toString()
+                val newPassword = newPasswordInput.text.toString()
+                val confirmPassword = confirmPasswordInput.text.toString()
+                val valid = validatePasswordInputs(
+                    oldPasswordInput = oldPasswordInput,
+                    newPasswordInput = newPasswordInput,
+                    confirmPasswordInput = confirmPasswordInput,
+                    oldPassword = oldPassword,
+                    newPassword = newPassword,
+                    confirmPassword = confirmPassword,
+                )
+                if (!valid) return@setOnClickListener
                 changePassword(
-                    oldPassword = oldPasswordInput.text.toString(),
-                    newPassword = newPasswordInput.text.toString(),
-                    confirmPassword = confirmPasswordInput.text.toString(),
+                    oldPassword = oldPassword,
+                    newPassword = newPassword,
                     onChanged = { dialog.dismiss() },
                 )
             }
@@ -657,32 +681,44 @@ class CustomerAccountFragment : Fragment() {
         )
     }
 
-    private fun changePassword(
+    private fun validatePasswordInputs(
+        oldPasswordInput: EditText,
+        newPasswordInput: EditText,
+        confirmPasswordInput: EditText,
         oldPassword: String,
         newPassword: String,
         confirmPassword: String,
+    ): Boolean {
+        oldPasswordInput.error = if (oldPassword.isBlank()) {
+            getString(R.string.account_password_fields_required)
+        } else {
+            null
+        }
+        newPasswordInput.error = when {
+            newPassword.isBlank() -> getString(R.string.account_password_fields_required)
+            newPassword.length < MIN_PASSWORD_LENGTH -> getString(R.string.account_password_too_short)
+            else -> null
+        }
+        confirmPasswordInput.error = if (confirmPassword != newPassword) {
+            getString(R.string.account_passwords_do_not_match)
+        } else {
+            null
+        }
+        return oldPasswordInput.error == null &&
+            newPasswordInput.error == null &&
+            confirmPasswordInput.error == null
+    }
+
+    private fun changePassword(
+        oldPassword: String,
+        newPassword: String,
         onChanged: () -> Unit,
     ) {
         val user = FirebaseAuth.getInstance().currentUser
         val email = user?.email.orEmpty()
         when {
             user == null || email.isBlank() -> {
-                showToast(getString(R.string.account_login_required))
-                return
-            }
-
-            oldPassword.isBlank() || newPassword.isBlank() -> {
-                showToast(getString(R.string.account_password_fields_required))
-                return
-            }
-
-            newPassword != confirmPassword -> {
-                showToast(getString(R.string.account_passwords_do_not_match))
-                return
-            }
-
-            newPassword.length < MIN_PASSWORD_LENGTH -> {
-                showToast(getString(R.string.account_password_too_short))
+                showAccountMessage(getString(R.string.account_login_required), UiMessageType.WARNING)
                 return
             }
         }
@@ -696,13 +732,14 @@ class CustomerAccountFragment : Fragment() {
                 user.updatePassword(newPassword)
             }
             .addOnSuccessListener {
-                if (!isAdded) return@addOnSuccessListener
-                showToast(getString(R.string.account_password_changed))
+                if (_binding == null || !isAdded) return@addOnSuccessListener
+                showAccountMessage(getString(R.string.account_password_changed), UiMessageType.SUCCESS)
                 onChanged()
             }
             .addOnFailureListener { error ->
-                if (!isAdded) return@addOnFailureListener
-                showToast(error.message ?: getString(R.string.account_password_change_failed))
+                if (_binding == null || !isAdded) return@addOnFailureListener
+                Log.e(TAG, "Failed to change account password", error)
+                showAccountMessage(getString(R.string.account_password_change_failed), UiMessageType.ERROR)
             }
     }
 
@@ -730,8 +767,23 @@ class CustomerAccountFragment : Fragment() {
         return (this * resources.displayMetrics.density).toInt()
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun showLogoutConfirmation() {
+        MaterialAlertDialogBuilder(requireContext())
+            .setTitle(R.string.customer_menu_title_logout)
+            .setMessage(R.string.customer_account_logout_confirmation)
+            .setNegativeButton(android.R.string.cancel, null)
+            .setPositiveButton(R.string.customer_menu_title_logout) { _, _ ->
+                signOutAndOpenLogin()
+            }
+            .show()
+    }
+
+    private fun showAccountMessage(
+        message: String,
+        type: UiMessageType = UiMessageType.INFO,
+    ) {
+        val text = UiText.Dynamic.from(message) ?: return
+        showUiMessage(UiMessage(text = text, type = type))
     }
 
     override fun onDestroyView() {
@@ -740,6 +792,7 @@ class CustomerAccountFragment : Fragment() {
     }
 
     private companion object {
+        const val TAG = "CustomerAccount"
         const val DEFAULT_AVATAR_INITIALS = "PT"
         const val ENABLED_ALPHA = 1f
         const val DISABLED_ALPHA = 0.45f

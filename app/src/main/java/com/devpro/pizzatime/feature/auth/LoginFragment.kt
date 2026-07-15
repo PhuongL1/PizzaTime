@@ -6,7 +6,6 @@ import android.util.Patterns
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.lifecycle.ViewModelProvider
@@ -17,6 +16,9 @@ import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentLoginBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.clearAppBackStack
@@ -80,20 +82,16 @@ class LoginFragment : Fragment() {
                         OrderNotificationMonitor.stop()
                         FakeSessionStore.logout()
                         CartStore.clearForLogout()
-                        Toast.makeText(
-                            requireContext(),
-                            R.string.app_edition_mismatch,
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                        showUiMessage(R.string.app_edition_mismatch, UiMessageType.ERROR)
                         return@onSuccess
                     }
 
                     CartStore.onUserChanged(user.uid)
-                    Toast.makeText(
-                        requireContext(),
-                        getString(R.string.auth_login_success_as, user.displayName),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    AppUiMessageBus.publish(
+                        textRes = R.string.auth_login_success_as,
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(user.displayName),
+                    )
 
                     FcmTokenRegistrar.registerCurrentToken()
                     openHomeByRole(user.role)
@@ -102,11 +100,8 @@ class LoginFragment : Fragment() {
                     OrderNotificationMonitor.stop()
                     FakeSessionStore.logout()
                     CartStore.clearForLogout()
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: getString(R.string.auth_login_failed),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    Log.e(TAG, "Login failed", error)
+                    showUiMessage(R.string.auth_login_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -157,7 +152,7 @@ class LoginFragment : Fragment() {
         FakeSessionStore.login(role)
         clearAppBackStack()
         if (CartStore.items.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.cart_empty_message, Toast.LENGTH_SHORT).show()
+            AppUiMessageBus.publish(R.string.cart_empty_message, UiMessageType.INFO)
             openCartScreen(addToBackStack = false)
             return true
         }

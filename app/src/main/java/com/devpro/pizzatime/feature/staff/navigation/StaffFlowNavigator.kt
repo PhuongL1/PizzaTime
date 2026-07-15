@@ -1,13 +1,14 @@
 package com.devpro.pizzatime.feature.staff.navigation
 
 import android.view.View
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.session.FakeSessionStore
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
 import com.devpro.pizzatime.feature.admin.menu.ManageMenuFragment
 import com.devpro.pizzatime.feature.admin.orders.ManageOrdersFragment
@@ -19,6 +20,7 @@ import com.devpro.pizzatime.feature.admin.store.StoreSettingsFragment
 import com.devpro.pizzatime.feature.auth.LoginFragment
 import com.devpro.pizzatime.feature.auth.LoginRequiredFragment
 import com.devpro.pizzatime.feature.auth.forgot.ForgotPasswordFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import com.devpro.pizzatime.feature.customer.account.CustomerAccountFragment
 import com.devpro.pizzatime.feature.customer.cart.CartFragment
 import com.devpro.pizzatime.feature.customer.checkout.CheckoutFragment
@@ -436,44 +438,30 @@ fun Fragment.openStaffDrawer(
 private fun Fragment.handleStaffDrawerItem(item: StaffDrawerItem) {
     when (item) {
         StaffDrawerItem.ORDER_HISTORY -> {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_drawer_order_history_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.staff_drawer_order_history_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.INVENTORY -> {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_drawer_inventory_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.staff_drawer_inventory_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.STAFF_SCHEDULE -> {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_drawer_schedule_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.staff_drawer_schedule_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.SUPPORT -> {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_drawer_support_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.staff_drawer_support_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.LOGOUT -> {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.staff_drawer_logout_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
-            signOutAndOpenLogin()
+            MaterialAlertDialogBuilder(requireContext())
+                .setTitle(R.string.customer_menu_title_logout)
+                .setMessage(R.string.staff_logout_confirmation)
+                .setNegativeButton(android.R.string.cancel, null)
+                .setPositiveButton(R.string.customer_menu_title_logout) { _, _ ->
+                    signOutAndOpenLogin()
+                }
+                .show()
         }
     }
 }

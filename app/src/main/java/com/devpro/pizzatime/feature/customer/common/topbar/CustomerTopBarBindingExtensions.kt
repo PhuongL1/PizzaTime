@@ -2,6 +2,7 @@ package com.devpro.pizzatime.feature.customer.common.topbar
 
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import com.devpro.pizzatime.core.ui.notification.bindNotificationBadge
 import com.devpro.pizzatime.databinding.LayoutCustomerTopBarBinding
 import com.devpro.pizzatime.feature.customer.menubottomsheet.CustomerMenuBottomSheetDialog
 
@@ -13,6 +14,7 @@ fun Fragment.setupCustomerTopBar(
     topBar.btnMenu.setOnClickListener {
         CustomerMenuBottomSheetDialog.show(parentFragmentManager)
     }
+    bindNotificationBadge(topBar.tvNotificationBadge, topBar.btnMenu)
 
     topBar.cartButtonContainer.setOnClickListener {
         onCartClick()

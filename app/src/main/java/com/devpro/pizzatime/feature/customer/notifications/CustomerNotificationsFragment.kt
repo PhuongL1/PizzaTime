@@ -3,15 +3,19 @@ package com.devpro.pizzatime.feature.customer.notifications
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.notification.AppNotification
 import com.devpro.pizzatime.core.notification.NotificationDeepLink
 import com.devpro.pizzatime.core.notification.NotificationInboxStore
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerNotificationsBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
@@ -24,7 +28,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openOrderTracking
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
 import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
 import com.google.firebase.auth.FirebaseAuth
-import java.io.Closeable
+import kotlinx.coroutines.launch
 
 class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifications) {
 
@@ -37,8 +41,6 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
     private val adapter = CustomerNotificationAdapter(
         onNotificationClick = ::openNotification,
     )
-    private var inboxObserver: Closeable? = null
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCustomerNotificationsBinding.bind(view)
@@ -48,20 +50,17 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
         setupBottomNav()
         loadCustomerAvatar()
         observeInbox()
-        renderNotifications(NotificationInboxStore.loadForCurrentAccount())
     }
 
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
             loadCustomerAvatar()
-            renderNotifications(NotificationInboxStore.loadForCurrentAccount())
+            NotificationInboxStore.refreshForCurrentAccount()
         }
     }
 
     override fun onDestroyView() {
-        inboxObserver?.close()
-        inboxObserver = null
         _binding = null
         super.onDestroyView()
     }
@@ -86,12 +85,14 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
     }
 
     private fun observeInbox() {
-        inboxObserver?.close()
-        inboxObserver = NotificationInboxStore.observeNotifications { notifications ->
-            if (_binding == null) {
-                return@observeNotifications
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                NotificationInboxStore.notifications.collect { notifications ->
+                    if (_binding != null) {
+                        renderNotifications(notifications)
+                    }
+                }
             }
-            renderNotifications(notifications)
         }
     }
 
@@ -113,7 +114,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
         binding.rvNotifications.isVisible = hasNotifications
         binding.emptyState.isVisible = !hasNotifications
         binding.btnMarkAllRead.isVisible = hasNotifications
-        binding.btnMarkAllRead.isEnabled = NotificationInboxStore.unreadCount() > 0
+        binding.btnMarkAllRead.isEnabled = notifications.any { notification -> !notification.isRead }
         binding.tvEmptyTitle.setText(R.string.customer_notifications_empty_title)
         binding.tvEmptyMessage.setText(R.string.customer_notifications_empty_message)
         adapter.submitList(items)
@@ -138,7 +139,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.CUSTOMER_ORDER_TRACKING -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openOrderTracking(orderId)
                 }
@@ -147,7 +148,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.CUSTOMER_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openCustomerOrderDetail(orderId)
                 }
@@ -156,7 +157,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.STAFF_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openStaffOrderDetail(orderId)
                 }
@@ -165,7 +166,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.KITCHEN_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openKitchenOrderDetail(orderId)
                 }
@@ -174,7 +175,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.SHIPPER_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openShipperDeliveryDetail(orderId)
                 }
@@ -183,7 +184,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.ADMIN_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openStaffOrderDetail(orderId)
                 }
