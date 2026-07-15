@@ -961,6 +961,7 @@
     <string name="customer_favorites_login_required">Sign in to save favorites.</string>
     <string name="customer_favorites_view_login_required">Sign in to view favorites.</string>
     <string name="customer_favorites_product_unavailable">Product is no longer available.</string>
+    <string name="feedback_action_failed">Could not complete this action.</string>
     <string name="app_edition_mismatch">This account cannot use this app edition.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 
