@@ -137,6 +137,8 @@
     <string name="menu_search_hint">Search pizzas</string>
     <string name="menu_filter_content_description">Filters</string>
     <string name="menu_drawer_content_description">Open menu</string>
+    <string name="notification_badge_menu">Menu</string>
+    <string name="notification_badge_overflow">99+</string>
     <string name="menu_cart_content_description">Open cart</string>
     <string name="menu_category_all">All</string>
     <string name="menu_category_signature">Signature</string>

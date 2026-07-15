@@ -34,7 +34,7 @@ object OrderNotificationMonitor {
 
     fun start(role: UserRole) {
         val context = appContext ?: return
-        val scope = NotificationSessionResolver.currentScope(context)
+        val scope = NotificationSessionResolver.currentScope()
         if (role == UserRole.GUEST || scope == null || scope.role != role) {
             stop()
             return

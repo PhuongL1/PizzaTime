@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.GuestSession
+import com.devpro.pizzatime.core.ui.notification.bindNotificationBadge
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.menubottomsheet.CustomerMenuBottomSheetDialog
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
@@ -24,12 +25,17 @@ fun Fragment.bindCustomerTopBar(
     onMenuClick: (() -> Unit)? = null,
     onCartClick: (() -> Unit)? = null,
 ) {
-    root.findViewById<View>(R.id.btnMenu)?.setOnClickListener {
+    val menuButton = root.findViewById<View>(R.id.btnMenu)
+    menuButton?.setOnClickListener {
         if (onMenuClick != null) {
             onMenuClick()
         } else {
             CustomerMenuBottomSheetDialog.show(parentFragmentManager)
         }
+    }
+    val notificationBadge = root.findViewById<TextView>(R.id.tvNotificationBadge)
+    if (menuButton != null && notificationBadge != null) {
+        bindNotificationBadge(notificationBadge, menuButton)
     }
 
     root.findViewById<View>(R.id.cartButtonContainer)?.setOnClickListener {

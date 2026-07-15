@@ -8,6 +8,7 @@ import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.bumptech.glide.Glide
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.notification.bindNotificationBadge
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.menubottomsheet.CustomerMenuBottomSheetDialog
 import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
@@ -30,8 +31,13 @@ fun Fragment.bindStaffTopBar(
         }
     }
 
-    root.findViewById<View>(R.id.btnMenu)?.setOnClickListener {
+    val menuButton = root.findViewById<View>(R.id.btnMenu)
+    menuButton?.setOnClickListener {
         onMenuClick?.invoke() ?: CustomerMenuBottomSheetDialog.show(parentFragmentManager)
+    }
+    val notificationBadge = root.findViewById<TextView>(R.id.tvNotificationBadge)
+    if (menuButton != null && notificationBadge != null) {
+        bindNotificationBadge(notificationBadge, menuButton)
     }
 
     root.findViewById<View>(R.id.avatarFrame)?.let { avatarFrame ->

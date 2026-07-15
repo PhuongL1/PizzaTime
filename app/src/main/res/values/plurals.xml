@@ -1,5 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <resources>
+    <plurals name="notification_badge_menu_unread">
+        <item quantity="one">Menu, %d unread notification</item>
+        <item quantity="other">Menu, %d unread notifications</item>
+    </plurals>
+
     <plurals name="staff_order_detail_items_total">
         <item quantity="one">%d Item Total</item>
         <item quantity="other">%d Items Total</item>

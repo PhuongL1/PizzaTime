@@ -16,7 +16,7 @@ object NotificationDispatcher {
         sourceTag: String,
     ) {
         val context = contextOrNull() ?: return
-        val scope = NotificationSessionResolver.scopeForNotification(context, notification) ?: return
+        val scope = NotificationSessionResolver.scopeForNotification(notification) ?: return
         if (NotificationStateStore.hasDedupeKey(scope, notification.dedupeKey)) {
             Log.d(TAG, "Dedupe skipped source=$sourceTag key=${notification.dedupeKey}")
             return

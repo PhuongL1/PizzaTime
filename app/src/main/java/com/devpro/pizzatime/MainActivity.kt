@@ -100,6 +100,7 @@ class MainActivity : AppCompatActivity() {
 
     override fun onResume() {
         super.onResume()
+        NotificationInboxStore.refreshForCurrentAccount()
         OrderNotificationMonitor.setForegroundActivity(this)
     }
 
@@ -123,7 +124,7 @@ class MainActivity : AppCompatActivity() {
         if (!isHomeFragment(fragment)) {
             return
         }
-        val scope = NotificationSessionResolver.currentScope(applicationContext) ?: return
+        val scope = NotificationSessionResolver.currentScope() ?: return
         if (!NotificationPermissionHelper.shouldRequestNotificationPermission(this)) {
             return
         }

@@ -23,7 +23,7 @@ class PizzaTimeFirebaseMessagingService : FirebaseMessagingService() {
         NotificationStateStore.init(applicationContext)
         NotificationDispatcher.init(applicationContext)
         PizzaTimeNotificationManager.init(applicationContext)
-        val scope = NotificationSessionResolver.currentScope(applicationContext) ?: return
+        val scope = NotificationSessionResolver.currentScope() ?: return
         val notification = message.toNotification(scope) ?: return
         NotificationDispatcher.dispatch(notification, TAG)
     }

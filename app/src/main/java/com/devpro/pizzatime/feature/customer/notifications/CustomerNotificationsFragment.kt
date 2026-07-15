@@ -5,6 +5,9 @@ import android.text.format.DateUtils
 import android.view.View
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
@@ -25,7 +28,7 @@ import com.devpro.pizzatime.feature.staff.navigation.openOrderTracking
 import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
 import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
 import com.google.firebase.auth.FirebaseAuth
-import java.io.Closeable
+import kotlinx.coroutines.launch
 
 class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifications) {
 
@@ -38,8 +41,6 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
     private val adapter = CustomerNotificationAdapter(
         onNotificationClick = ::openNotification,
     )
-    private var inboxObserver: Closeable? = null
-
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentCustomerNotificationsBinding.bind(view)
@@ -49,20 +50,17 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
         setupBottomNav()
         loadCustomerAvatar()
         observeInbox()
-        renderNotifications(NotificationInboxStore.loadForCurrentAccount())
     }
 
     override fun onResume() {
         super.onResume()
         if (_binding != null) {
             loadCustomerAvatar()
-            renderNotifications(NotificationInboxStore.loadForCurrentAccount())
+            NotificationInboxStore.refreshForCurrentAccount()
         }
     }
 
     override fun onDestroyView() {
-        inboxObserver?.close()
-        inboxObserver = null
         _binding = null
         super.onDestroyView()
     }
@@ -87,12 +85,14 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
     }
 
     private fun observeInbox() {
-        inboxObserver?.close()
-        inboxObserver = NotificationInboxStore.observeNotifications { notifications ->
-            if (_binding == null) {
-                return@observeNotifications
+        viewLifecycleOwner.lifecycleScope.launch {
+            viewLifecycleOwner.repeatOnLifecycle(Lifecycle.State.STARTED) {
+                NotificationInboxStore.notifications.collect { notifications ->
+                    if (_binding != null) {
+                        renderNotifications(notifications)
+                    }
+                }
             }
-            renderNotifications(notifications)
         }
     }
 
@@ -114,7 +114,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
         binding.rvNotifications.isVisible = hasNotifications
         binding.emptyState.isVisible = !hasNotifications
         binding.btnMarkAllRead.isVisible = hasNotifications
-        binding.btnMarkAllRead.isEnabled = NotificationInboxStore.unreadCount() > 0
+        binding.btnMarkAllRead.isEnabled = notifications.any { notification -> !notification.isRead }
         binding.tvEmptyTitle.setText(R.string.customer_notifications_empty_title)
         binding.tvEmptyMessage.setText(R.string.customer_notifications_empty_message)
         adapter.submitList(items)

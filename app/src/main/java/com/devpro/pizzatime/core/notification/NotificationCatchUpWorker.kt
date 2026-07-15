@@ -23,7 +23,7 @@ class NotificationCatchUpWorker(
         NotificationDispatcher.init(applicationContext)
         PizzaTimeNotificationManager.init(applicationContext)
 
-        val scope = NotificationSessionResolver.currentScope(applicationContext) ?: return Result.success()
+        val scope = NotificationSessionResolver.currentScope() ?: return Result.success()
         return runCatching {
             processOrders(scope)
             if (scope.role == com.devpro.pizzatime.core.session.UserRole.ADMIN) {

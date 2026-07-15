@@ -1,48 +1,80 @@
 package com.devpro.pizzatime.core.notification
 
 import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
+import com.devpro.pizzatime.core.config.AppEditionConfig
 import com.devpro.pizzatime.core.session.UserRole
+import com.google.firebase.auth.FirebaseAuth
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.map
 import org.json.JSONArray
 import org.json.JSONObject
-import java.io.Closeable
-import java.util.concurrent.CopyOnWriteArraySet
 
 object NotificationInboxStore {
 
-    private lateinit var appContext: Context
-    private val cache = mutableMapOf<String, MutableList<AppNotification>>()
-    private val observers = CopyOnWriteArraySet<(List<AppNotification>) -> Unit>()
+    private lateinit var preferences: SharedPreferences
+    private val cache = mutableMapOf<String, List<AppNotification>>()
+    private val mutableActiveNotifications = MutableStateFlow<List<AppNotification>>(emptyList())
+    private val authStateListener = FirebaseAuth.AuthStateListener {
+        refreshForCurrentAccount()
+    }
+    private var authListenerRegistered = false
     private var activeScopeKey: String? = null
 
+    val notifications: StateFlow<List<AppNotification>> = mutableActiveNotifications.asStateFlow()
+
+    val unreadCount: Flow<Int> = notifications
+        .map(::unreadNotificationCount)
+        .distinctUntilChanged()
+
+    @Synchronized
     fun init(context: Context) {
-        appContext = context.applicationContext
-    }
-
-    fun loadForCurrentAccount(): List<AppNotification> {
-        val context = contextOrNull() ?: return emptyList()
-        val scope = NotificationSessionResolver.currentScope(context)
-        val notifications = if (scope == null) {
-            emptyList()
-        } else {
-            loadForScope(scope)
+        if (!::preferences.isInitialized) {
+            preferences = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
         }
-        activeScopeKey = scope?.storageKey()
-        notifyObservers(notifications)
-        return notifications
+        if (!authListenerRegistered) {
+            authListenerRegistered = true
+            FirebaseAuth.getInstance().addAuthStateListener(authStateListener)
+        }
+        refreshForCurrentAccount()
     }
 
-    fun observeNotifications(listener: (List<AppNotification>) -> Unit): Closeable {
-        observers += listener
-        activeNotifications()?.let(listener)
-        return Closeable { observers -= listener }
+    @Synchronized
+    fun refreshForCurrentAccount(): List<AppNotification> {
+        if (!::preferences.isInitialized) {
+            publishActiveNotifications(emptyList())
+            return emptyList()
+        }
+
+        val scope = NotificationSessionResolver.currentScope()
+        val key = scope?.storageKey()
+        activeScopeKey = key
+        if (scope == null || key == null) {
+            publishActiveNotifications(emptyList())
+            return emptyList()
+        }
+
+        val cached = cache[key]
+        if (cached != null) {
+            publishActiveNotifications(cached)
+            return cached
+        }
+
+        publishActiveNotifications(emptyList())
+        return loadForScope(scope).also(::publishActiveNotifications)
     }
 
+    @Synchronized
     fun addOrUpdate(notification: AppNotification) {
-        val context = contextOrNull() ?: return
-        val scope = NotificationSessionResolver.scopeForNotification(context, notification) ?: return
+        if (!::preferences.isInitialized) return
+        val scope = NotificationSessionResolver.scopeForNotification(notification) ?: return
         val key = scope.storageKey()
-        val items = loadMutableForScope(scope)
+        val items = loadForScope(scope).toMutableList()
         val existingIndex = items.indexOfFirst { item ->
             item.id == notification.id || item.dedupeKey == notification.dedupeKey
         }
@@ -56,123 +88,111 @@ object NotificationInboxStore {
         val trimmed = items
             .sortedByDescending { it.createdAtMillis }
             .take(NotificationDefaults.MAX_INBOX_SIZE)
-            .toMutableList()
         cache[key] = trimmed
         saveScope(scope, trimmed)
         Log.d(TAG, "Inbox saved role=${scope.role.name} size=${trimmed.size}")
         if (activeScopeKey == key) {
-            notifyObservers(trimmed)
+            publishActiveNotifications(trimmed)
         }
     }
 
+    @Synchronized
     fun markRead(notificationId: String) {
         val scope = activeScope() ?: return
-        val items = loadMutableForScope(scope)
-        val updatedItems = items.map { item ->
-            if (item.id == notificationId) {
-                item.copy(isRead = true)
-            } else {
-                item
-            }
-        }
-        cache[scope.storageKey()] = updatedItems.toMutableList()
+        val updatedItems = markNotificationRead(loadForScope(scope), notificationId)
+        cache[scope.storageKey()] = updatedItems
         saveScope(scope, updatedItems)
-        notifyObservers(updatedItems)
+        publishActiveNotifications(updatedItems)
     }
 
+    @Synchronized
     fun markAllRead() {
         val scope = activeScope() ?: return
-        val updatedItems = loadMutableForScope(scope).map { it.copy(isRead = true) }
-        cache[scope.storageKey()] = updatedItems.toMutableList()
+        val updatedItems = markAllNotificationsRead(loadForScope(scope))
+        cache[scope.storageKey()] = updatedItems
         saveScope(scope, updatedItems)
-        notifyObservers(updatedItems)
+        publishActiveNotifications(updatedItems)
     }
 
+    @Synchronized
     fun clearForSignedOutAccount() {
         activeScopeKey = null
-        notifyObservers(emptyList())
+        publishActiveNotifications(emptyList())
     }
 
-    fun unreadCount(): Int {
-        return activeNotifications().orEmpty().count { notification -> !notification.isRead }
-    }
-
+    @Synchronized
     fun containsDedupeKey(dedupeKey: String): Boolean {
-        return activeNotifications()
-            .orEmpty()
-            .any { notification -> notification.dedupeKey == dedupeKey }
+        return activeNotifications().any { notification -> notification.dedupeKey == dedupeKey }
     }
 
     private fun activeScope(): NotificationScope? {
-        val context = contextOrNull() ?: return null
-        val scope = NotificationSessionResolver.currentScope(context) ?: return null
+        if (!::preferences.isInitialized) return null
+        val scope = NotificationSessionResolver.currentScope() ?: return null
         if (scope.storageKey() != activeScopeKey) {
-            activeScopeKey = scope.storageKey()
+            refreshForCurrentAccount()
         }
         return scope
     }
 
-    private fun activeNotifications(): List<AppNotification>? {
-        val scopeKey = activeScopeKey ?: return null
-        return cache[scopeKey]
+    private fun activeNotifications(): List<AppNotification> {
+        val scopeKey = activeScopeKey ?: return emptyList()
+        return cache[scopeKey].orEmpty()
     }
 
     private fun loadForScope(scope: NotificationScope): List<AppNotification> {
-        return loadMutableForScope(scope).toList()
-    }
-
-    private fun loadMutableForScope(scope: NotificationScope): MutableList<AppNotification> {
         val key = scope.storageKey()
-        cache[key]?.let { cached -> return cached.toMutableList() }
+        cache[key]?.let { cached -> return cached }
 
-        val context = contextOrNull() ?: return mutableListOf()
-        val raw = context
-            .getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .getString(key, "")
-            .orEmpty()
-        val items = if (raw.isBlank()) {
-            mutableListOf()
+        val raw = if (preferences.contains(key)) {
+            preferences.getString(key, "").orEmpty()
         } else {
-            parseNotifications(raw)
+            preferences.getString(scope.legacyStorageKey(), "").orEmpty().also { legacyRaw ->
+                if (legacyRaw.isNotBlank()) {
+                    preferences.edit().putString(key, legacyRaw).apply()
+                }
+            }
         }
+        val items = parsePersistedInboxOrEmpty(
+            raw = raw,
+            decoder = ::parseNotifications,
+            onFailure = { error -> Log.w(TAG, "Persisted inbox decode failed", error) },
+        )
         cache[key] = items
-        return items.toMutableList()
+        return items
     }
 
     private fun saveScope(
         scope: NotificationScope,
         items: List<AppNotification>,
     ) {
-        val context = contextOrNull() ?: return
         val payload = JSONArray().apply {
             items.forEach { item -> put(item.toJson()) }
         }
-        context.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
-            .edit()
+        preferences.edit()
             .putString(scope.storageKey(), payload.toString())
             .apply()
     }
 
-    private fun parseNotifications(raw: String): MutableList<AppNotification> {
-        return runCatching {
-            val array = JSONArray(raw)
-            buildList {
-                for (index in 0 until array.length()) {
-                    val item = array.optJSONObject(index) ?: continue
-                    add(item.toNotification())
-                }
-            }.sortedByDescending { it.createdAtMillis }.toMutableList()
-        }.getOrDefault(mutableListOf())
+    private fun parseNotifications(raw: String): List<AppNotification> {
+        val array = JSONArray(raw)
+        return buildList {
+            for (index in 0 until array.length()) {
+                val item = array.optJSONObject(index) ?: continue
+                add(item.toNotification())
+            }
+        }.sortedByDescending { it.createdAtMillis }
     }
 
-    private fun notifyObservers(notifications: List<AppNotification>) {
-        observers.forEach { observer ->
-            observer(notifications)
-        }
+    private fun publishActiveNotifications(notifications: List<AppNotification>) {
+        mutableActiveNotifications.value = notifications.toList()
     }
 
     private fun NotificationScope.storageKey(): String {
-        return "notification_inbox_${applicationId}_${userId}_${role.name.lowercase()}"
+        return notificationInboxStorageKey(this, AppEditionConfig.current)
+    }
+
+    private fun NotificationScope.legacyStorageKey(): String {
+        return legacyNotificationInboxStorageKey(this)
     }
 
     private fun AppNotification.toJson(): JSONObject {
@@ -211,10 +231,6 @@ object NotificationInboxStore {
         )
     }
 
-    private fun contextOrNull(): Context? {
-        return if (::appContext.isInitialized) appContext else null
-    }
-
     private const val PREFS_NAME = "pizza_time_notification_inbox"
-    private const val TAG = "NotificationInbox"
+    private const val TAG = "NotificationInboxStore"
 }
