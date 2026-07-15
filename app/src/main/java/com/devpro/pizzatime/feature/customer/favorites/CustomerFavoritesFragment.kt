@@ -234,7 +234,7 @@ class CustomerFavoritesFragment : Fragment() {
             result
                 .onSuccess {
                     showFavoritesMessage(
-                        textRes = R.string.customer_favorites_removed_toast,
+                        textRes = R.string.customer_favorites_removed_message,
                         type = UiMessageType.SUCCESS,
                         args = listOf(item.name),
                     )

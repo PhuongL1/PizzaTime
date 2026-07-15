@@ -390,9 +390,9 @@ class PizzaDetailFragment : Fragment() {
                     bindFavoriteIcon()
                     showUiMessage(
                         textRes = if (isFavorite) {
-                            R.string.customer_favorites_saved_toast
+                            R.string.customer_favorites_saved_message
                         } else {
-                            R.string.customer_favorites_removed_toast
+                            R.string.customer_favorites_removed_message
                         },
                         type = UiMessageType.SUCCESS,
                         args = listOf(pizzaDetail.name),

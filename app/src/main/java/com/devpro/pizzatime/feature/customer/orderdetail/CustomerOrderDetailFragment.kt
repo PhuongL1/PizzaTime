@@ -233,11 +233,11 @@ class CustomerOrderDetailFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         btnReorder.setOnClickListener {
-            showUiMessage(R.string.customer_order_detail_reorder_toast, UiMessageType.INFO)
+            showUiMessage(R.string.customer_order_detail_reorder_message, UiMessageType.INFO)
         }
 
         btnSupport.setOnClickListener {
-            showUiMessage(R.string.customer_order_detail_support_toast, UiMessageType.INFO)
+            showUiMessage(R.string.customer_order_detail_support_message, UiMessageType.INFO)
         }
 
         btnRateOrder.setOnClickListener {

@@ -95,7 +95,7 @@ class SupportFaqFragment : Fragment(R.layout.fragment_support_faq) {
         }
 
         btnContactSupport.setOnClickListener {
-            showUiMessage(R.string.support_contact_support_toast, UiMessageType.INFO)
+            showUiMessage(R.string.support_contact_support_message, UiMessageType.INFO)
         }
     }
 

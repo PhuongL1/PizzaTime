@@ -63,7 +63,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
         }
 
         btnNewManualOrder.setOnClickListener {
-            showUiMessage(R.string.manage_orders_manual_order_toast, UiMessageType.INFO)
+            showUiMessage(R.string.manage_orders_manual_order_message, UiMessageType.INFO)
         }
     }
 
@@ -201,7 +201,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
 
     private fun contactShipper(order: AdminOrderUiModel) {
         showUiMessage(
-            textRes = R.string.manage_orders_contact_shipper_toast,
+            textRes = R.string.manage_orders_contact_shipper_message,
             type = UiMessageType.INFO,
             args = listOf(order.orderId),
         )
@@ -216,7 +216,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             val shipperName = bundle.getString(AssignShipperDialogFragment.KEY_SHIPPER_NAME) ?: ""
 
             showUiMessage(
-                textRes = R.string.manage_orders_assigned_toast,
+                textRes = R.string.manage_orders_assigned_message,
                 type = UiMessageType.SUCCESS,
                 args = listOf(orderId, shipperName),
             )
@@ -231,7 +231,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             val orderId = bundle.getString(CancelOrderConfirmationDialogFragment.KEY_ORDER_ID) ?: ""
 
             showUiMessage(
-                textRes = R.string.manage_orders_cancelled_toast,
+                textRes = R.string.manage_orders_cancelled_message,
                 type = UiMessageType.SUCCESS,
                 args = listOf(orderId),
             )
@@ -247,7 +247,7 @@ class ManageOrdersFragment : Fragment(R.layout.fragment_manage_orders) {
             val toStatus = bundle.getString(StatusUpdateConfirmationDialogFragment.KEY_TO_STATUS) ?: ""
 
             showUiMessage(
-                textRes = R.string.manage_orders_status_updated_toast,
+                textRes = R.string.manage_orders_status_updated_message,
                 type = UiMessageType.SUCCESS,
                 args = listOf(orderId, toStatus),
             )

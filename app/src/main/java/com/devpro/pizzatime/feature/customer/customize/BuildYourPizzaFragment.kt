@@ -223,7 +223,7 @@ class BuildYourPizzaFragment : Fragment() {
         showUiMessage(R.string.build_pizza_added_message, UiMessageType.SUCCESS)
 
             // TODO: Sau này thay bằng CartRepository.addItem(...)
-            // Fake UI hiện chỉ tính giá và show toast.
+            // This prototype currently calculates price without persisting a custom product.
         }
     }
 

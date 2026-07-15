@@ -9,11 +9,15 @@ import android.content.Intent
 import android.media.RingtoneManager
 import android.os.Build
 import android.util.Log
-import android.widget.Toast
 import androidx.core.app.NotificationCompat
 import androidx.core.app.NotificationManagerCompat
 import com.devpro.pizzatime.MainActivity
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessage
+import com.devpro.pizzatime.core.ui.message.UiMessageDuration
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.UiText
 
 object PizzaTimeNotificationManager {
 
@@ -56,11 +60,15 @@ object PizzaTimeNotificationManager {
         return true
     }
 
-    fun showForegroundMessage(
-        context: Context,
-        notification: AppNotification,
-    ) {
-        Toast.makeText(context.applicationContext, notification.title, Toast.LENGTH_SHORT).show()
+    fun showForegroundMessage(notification: AppNotification) {
+        val text = UiText.Dynamic.from(notification.title) ?: return
+        AppUiMessageBus.publish(
+            UiMessage(
+                text = text,
+                type = UiMessageType.INFO,
+                duration = UiMessageDuration.LONG,
+            ),
+        )
     }
 
     fun ensureChannels(context: Context) {

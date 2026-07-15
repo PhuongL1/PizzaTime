@@ -162,11 +162,11 @@ class CustomerHomeFragment : Fragment() {
         }
 
         promoCard.setOnClickListener {
-            openFeaturedProductOrToast()
+            openFeaturedProductOrMessage()
         }
 
         btnPromoAction.setOnClickListener {
-            openFeaturedProductOrToast()
+            openFeaturedProductOrMessage()
         }
 
         bindCustomerBottomNav(
@@ -344,7 +344,7 @@ class CustomerHomeFragment : Fragment() {
         }
     }
 
-    private fun openFeaturedProductOrToast() {
+    private fun openFeaturedProductOrMessage() {
         val product = featuredProduct
         if (product == null) {
             showUiMessage(R.string.home_no_featured_product, UiMessageType.INFO)
@@ -634,9 +634,9 @@ class CustomerHomeFragment : Fragment() {
                     renderFilteredProducts()
                     showUiMessage(
                         textRes = if (isFavorite) {
-                            R.string.customer_favorites_removed_toast
+                            R.string.customer_favorites_removed_message
                         } else {
-                            R.string.customer_favorites_saved_toast
+                            R.string.customer_favorites_saved_message
                         },
                         type = UiMessageType.SUCCESS,
                         args = listOf(item.name),

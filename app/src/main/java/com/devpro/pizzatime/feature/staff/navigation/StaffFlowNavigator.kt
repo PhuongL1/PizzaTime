@@ -438,19 +438,19 @@ fun Fragment.openStaffDrawer(
 private fun Fragment.handleStaffDrawerItem(item: StaffDrawerItem) {
     when (item) {
         StaffDrawerItem.ORDER_HISTORY -> {
-            showUiMessage(R.string.staff_drawer_order_history_toast, UiMessageType.INFO)
+            showUiMessage(R.string.staff_drawer_order_history_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.INVENTORY -> {
-            showUiMessage(R.string.staff_drawer_inventory_toast, UiMessageType.INFO)
+            showUiMessage(R.string.staff_drawer_inventory_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.STAFF_SCHEDULE -> {
-            showUiMessage(R.string.staff_drawer_schedule_toast, UiMessageType.INFO)
+            showUiMessage(R.string.staff_drawer_schedule_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.SUPPORT -> {
-            showUiMessage(R.string.staff_drawer_support_toast, UiMessageType.INFO)
+            showUiMessage(R.string.staff_drawer_support_message, UiMessageType.INFO)
         }
 
         StaffDrawerItem.LOGOUT -> {

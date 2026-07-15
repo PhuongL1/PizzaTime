@@ -143,7 +143,7 @@ class CustomerAccountFragment : Fragment() {
 
         rowPaymentMethods.setOnClickListener {
             if (currentRole == UserRole.CUSTOMER) {
-                showAccountMessage(getString(R.string.customer_account_payment_methods_toast))
+                showAccountMessage(getString(R.string.customer_account_payment_methods_message))
             } else {
                 showAccountInfoDialog()
             }
@@ -233,7 +233,7 @@ class CustomerAccountFragment : Fragment() {
         val user = FirebaseAuth.getInstance().currentUser
         val uid = user?.uid
         if (uid.isNullOrBlank()) {
-            showAccountMessage(getString(R.string.customer_account_login_required_toast), UiMessageType.WARNING)
+            showAccountMessage(getString(R.string.customer_account_login_required_message), UiMessageType.WARNING)
             openLoginScreen(addToBackStack = false)
             return
         }
@@ -316,7 +316,7 @@ class CustomerAccountFragment : Fragment() {
     private fun showEditProfileDialog() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            showAccountMessage(getString(R.string.customer_account_login_required_toast), UiMessageType.WARNING)
+            showAccountMessage(getString(R.string.customer_account_login_required_message), UiMessageType.WARNING)
             openLoginScreen(addToBackStack = false)
             return
         }
@@ -359,7 +359,7 @@ class CustomerAccountFragment : Fragment() {
                     getButton(AlertDialog.BUTTON_POSITIVE).setOnClickListener {
                         val name = nameInput.text.toString().trim()
                         if (name.isBlank()) {
-                            nameInput.error = getString(R.string.customer_account_name_required_toast)
+                            nameInput.error = getString(R.string.customer_account_name_required_message)
                             return@setOnClickListener
                         }
                         nameInput.error = null
@@ -415,7 +415,7 @@ class CustomerAccountFragment : Fragment() {
                         deliveryAddress = deliveryAddress,
                     )
                     bindAccount()
-                    showAccountMessage(getString(R.string.customer_account_profile_saved_toast), UiMessageType.SUCCESS)
+                    showAccountMessage(getString(R.string.customer_account_profile_saved_message), UiMessageType.SUCCESS)
                     onSaved()
                 }
                 .onFailure { error ->

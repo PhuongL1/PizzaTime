@@ -45,7 +45,7 @@ class ForgotPasswordFragment : Fragment(R.layout.fragment_forgot_password) {
         }
 
         showUiMessage(
-            textRes = R.string.forgot_password_sent_toast,
+            textRes = R.string.forgot_password_sent_message,
             type = UiMessageType.SUCCESS,
             args = listOf(account),
         )

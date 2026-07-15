@@ -81,7 +81,7 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
 
     private fun showComingSoon(label: String) {
         AppUiMessageBus.publish(
-            textRes = R.string.customer_menu_selected_toast,
+            textRes = R.string.customer_menu_selected_message,
             type = UiMessageType.INFO,
             args = listOf(label),
         )

@@ -252,7 +252,7 @@ class OrderTrackingFragment : Fragment() {
         }
 
         binding.btnSupport.setOnClickListener {
-            showUiMessage(R.string.customer_order_detail_support_toast, UiMessageType.INFO)
+            showUiMessage(R.string.customer_order_detail_support_message, UiMessageType.INFO)
         }
     }
 

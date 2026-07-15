@@ -81,11 +81,11 @@ class CustomerMemberQrFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         historyCard.setOnClickListener {
-            showMemberMessage(getString(R.string.customer_member_qr_history_toast))
+            showMemberMessage(getString(R.string.customer_member_qr_history_message))
         }
 
         rewardsCard.setOnClickListener {
-            showMemberMessage(getString(R.string.customer_member_qr_rewards_toast))
+            showMemberMessage(getString(R.string.customer_member_qr_rewards_message))
         }
     }
 

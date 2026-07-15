@@ -207,11 +207,11 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         }
 
         btnCallCustomer.setOnClickListener {
-            showUiMessage(R.string.staff_order_detail_call_customer_toast, UiMessageType.INFO)
+            showUiMessage(R.string.staff_order_detail_call_customer_message, UiMessageType.INFO)
         }
 
         btnDelay10.setOnClickListener {
-            showUiMessage(R.string.staff_order_detail_delay_toast, UiMessageType.INFO)
+            showUiMessage(R.string.staff_order_detail_delay_message, UiMessageType.INFO)
         }
 
         btnAssignShipper.setOnClickListener {
@@ -287,9 +287,9 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
                     btnDelay10.isVisible = false
 
                     val messageRes = if (reason.isBlank()) {
-                        R.string.staff_order_detail_cancelled_toast
+                        R.string.staff_order_detail_cancelled_message
                     } else {
-                        R.string.staff_order_detail_cancelled_with_reason_toast
+                        R.string.staff_order_detail_cancelled_with_reason_message
                     }
                     AppUiMessageBus.publish(
                         textRes = messageRes,
@@ -312,7 +312,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
         btnDelay10.isVisible = false
 
         showUiMessage(
-            textRes = R.string.staff_order_detail_assigned_to_shipper_toast,
+            textRes = R.string.staff_order_detail_assigned_to_shipper_message,
             type = UiMessageType.SUCCESS,
             args = listOf(orderId, shipperName),
         )

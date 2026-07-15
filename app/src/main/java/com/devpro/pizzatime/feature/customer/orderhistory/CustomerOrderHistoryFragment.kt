@@ -210,7 +210,7 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
 
                 btnSecondary.setOnClickListener { openOrderTracking(order.orderId) }
-                btnPrimary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_reorder_toast) }
+                btnPrimary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_reorder_message) }
             }
 
             CustomerOrderHistoryStatus.CANCELED -> {
@@ -219,8 +219,8 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_muted_outline_button)
 
-                btnSecondary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_support_toast) }
-                btnPrimary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_try_again_toast) }
+                btnSecondary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_support_message) }
+                btnPrimary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_try_again_message) }
             }
 
             CustomerOrderHistoryStatus.IN_PROGRESS -> {

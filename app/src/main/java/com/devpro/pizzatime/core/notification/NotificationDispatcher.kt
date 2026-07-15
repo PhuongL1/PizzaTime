@@ -27,7 +27,7 @@ object NotificationDispatcher {
         NotificationEventBus.publish(notification)
 
         if (AppForegroundState.isForeground) {
-            PizzaTimeNotificationManager.showForegroundMessage(context, notification)
+            PizzaTimeNotificationManager.showForegroundMessage(notification)
             Log.d(TAG, "Foreground event source=$sourceTag id=${notification.id}")
             return
         }

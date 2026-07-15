@@ -258,7 +258,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     binding.tvStatus.text = mapStatusText(status)
                     bindActionState(status)
                     showUiMessage(
-                        textRes = R.string.kitchen_order_detail_status_updated_toast,
+                        textRes = R.string.kitchen_order_detail_status_updated_message,
                         type = UiMessageType.SUCCESS,
                         args = listOf(mapStatusText(status)),
                     )
@@ -285,7 +285,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     binding.tvStatus.text = mapStatusText(KitchenOrderDetailStatus.CANCELLED)
                     bindActionState(KitchenOrderDetailStatus.CANCELLED)
                     AppUiMessageBus.publish(
-                        textRes = R.string.kitchen_order_detail_cancelled_toast,
+                        textRes = R.string.kitchen_order_detail_cancelled_message,
                         type = UiMessageType.SUCCESS,
                         args = listOf(orderId),
                     )
