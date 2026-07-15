@@ -400,11 +400,13 @@ class CustomerAccountFragment : Fragment() {
         deliveryAddress: String,
         onSaved: () -> Unit,
     ) {
+        val deliveryAddressChanged = deliveryAddress.trim() != accountData.deliveryAddress.trim()
         CustomerProfileFirestoreRepository.updateProfile(
             uid = uid,
             name = name,
             phone = phone,
             deliveryAddress = deliveryAddress,
+            clearDeliveryLocation = deliveryAddressChanged,
         ) { result ->
             if (_binding == null || !isAdded) return@updateProfile
             result
@@ -413,6 +415,11 @@ class CustomerAccountFragment : Fragment() {
                         fullName = name,
                         phone = phone,
                         deliveryAddress = deliveryAddress,
+                        deliveryCoordinate = if (deliveryAddressChanged) {
+                            null
+                        } else {
+                            accountData.deliveryCoordinate
+                        },
                     )
                     bindAccount()
                     showAccountMessage(getString(R.string.customer_account_profile_saved_message), UiMessageType.SUCCESS)

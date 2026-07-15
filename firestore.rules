@@ -91,6 +91,9 @@ service cloud.firestore {
         && request.resource.data.paymentMethod == "CASH_ON_DELIVERY"
         && request.resource.data.paymentStatus == "UNPAID"
         && request.resource.data.cashCollected == false
+        && request.resource.data.deliveryAddress is string
+        && request.resource.data.deliveryAddress.size() > 0
+        && request.resource.data.deliveryLocation is latlng
         && request.resource.data.items is list
         && request.resource.data.itemsSubtotal is number
         && request.resource.data.discountAmount is number
@@ -113,8 +116,7 @@ service cloud.firestore {
           "paymentStatus",
           "cashCollected",
           "deliveryAddress",
-          "deliveryLat",
-          "deliveryLng",
+          "deliveryLocation",
           "distanceKm",
           "itemsSubtotal",
           "subtotal",

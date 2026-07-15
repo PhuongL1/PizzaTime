@@ -7,6 +7,7 @@ import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDashboardUiModel
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailUiModel
 import com.devpro.pizzatime.feature.shipper.detail.ShipperPaymentItemUiModel
+import com.devpro.pizzatime.shared.location.OrderDeliveryDestinationResolver
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -163,6 +164,7 @@ object ShipperOrderFirestoreRepository {
         val total = getDouble("finalTotal") ?: getDouble("total") ?: 0.0
         val deliveryFee = getDouble("deliveryFee") ?: 0.0
         val rawItems = get("items") as? List<*>
+        val deliveryCoordinate = OrderDeliveryDestinationResolver.resolve(data.orEmpty())
 
         return ShipperDeliveryDetailUiModel(
             orderId = id,
@@ -175,9 +177,7 @@ object ShipperOrderFirestoreRepository {
             customerName = customerName,
             customerPhone = getString("customerPhone").orNotProvided(),
             address = getString("deliveryAddress").orNotProvided(),
-            deliveryLat = getDouble("deliveryLat"),
-            deliveryLng = getDouble("deliveryLng"),
-            distanceKm = getDouble("distanceKm"),
+            deliveryCoordinate = deliveryCoordinate,
             deliveryFee = String.format(Locale.US, "$%.2f", deliveryFee),
             courierNote = getString("note") ?: "",
             paymentAmount = String.format(Locale.US, "$%.2f", total),

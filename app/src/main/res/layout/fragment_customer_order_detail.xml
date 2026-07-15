@@ -408,7 +408,7 @@
                     android:layout_marginTop="6dp"
                     android:textColor="@color/pt_text_secondary_dark_bg"
                     android:textSize="14sp"
-                    tools:text="123 Nguyen Trai, Ha Noi" />
+                    tools:text="Selected delivery address" />
 
                 <TextView
                     android:id="@+id/tvStorePhone"

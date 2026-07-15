@@ -22,8 +22,10 @@ import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import com.devpro.pizzatime.feature.staff.navigation.replaceForward
+import com.devpro.pizzatime.shared.location.DeliveryLocationSelection
 import com.devpro.pizzatime.shared.location.LocationDistanceCalculator
 import com.devpro.pizzatime.shared.location.MapPickerFragment
+import com.devpro.pizzatime.shared.location.MapPickerResultParser
 import com.devpro.pizzatime.shared.location.isValidCoordinate
 import com.devpro.pizzatime.shared.location.isValidLatitude
 import com.devpro.pizzatime.shared.location.isValidLongitude
@@ -43,9 +45,8 @@ class CheckoutFragment : Fragment() {
     private var orderItems = emptyList<CheckoutOrderItemUiModel>()
     private var appliedDiscount = 0.0
     private var appliedPromoCode = ""
-    private var selectedDeliveryAddress = ""
-    private var selectedDeliveryLat: Double? = null
-    private var selectedDeliveryLng: Double? = null
+    private var selectedDeliveryLocation = DeliveryLocationSelection.empty()
+    private var hasUserSelectedDeliveryLocation = false
     private var customerName = ""
     private var customerPhone = ""
     private var currentStoreSettings: StoreSettingsUiModel? = null
@@ -88,18 +89,20 @@ class CheckoutFragment : Fragment() {
         CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
             if (_binding == null) return@loadProfile
             result.onSuccess { profile ->
-                val profileAddress = profile.deliveryAddress.trim()
                 customerName = profile.fullName
                 customerPhone = profile.phone
-                selectedDeliveryLat = profile.deliveryLat
-                selectedDeliveryLng = profile.deliveryLng
-                if (profileAddress.isNotBlank()) {
-                    selectedDeliveryAddress = profileAddress
+                if (!hasUserSelectedDeliveryLocation) {
+                    selectedDeliveryLocation = DeliveryLocationSelection.from(
+                        address = profile.deliveryAddress,
+                        coordinate = profile.deliveryCoordinate,
+                    )
                 }
                 renderDeliveryDetails(
                     name = profile.fullName,
                     phone = profile.phone.ifBlank { getString(R.string.checkout_delivery_phone) },
-                    address = selectedDeliveryAddress.ifBlank { getString(R.string.common_not_provided) },
+                    address = selectedDeliveryLocation.address.ifBlank {
+                        getString(R.string.common_not_provided)
+                    },
                 )
                 renderDeliveryCoordinateStatus()
                 updateDeliveryEstimate()
@@ -128,10 +131,13 @@ class CheckoutFragment : Fragment() {
     }
 
     private fun renderDeliveryCoordinateStatus() {
-        binding.tvDeliveryCoordinates.text = if (
-            selectedDeliveryLat.isValidLatitude() && selectedDeliveryLng.isValidLongitude()
-        ) {
-            getString(R.string.location_coordinates_format, selectedDeliveryLat, selectedDeliveryLng)
+        val coordinate = selectedDeliveryLocation.coordinate
+        binding.tvDeliveryCoordinates.text = if (coordinate != null) {
+            getString(
+                R.string.location_coordinates_format,
+                coordinate.latitude,
+                coordinate.longitude,
+            )
         } else {
             getString(R.string.location_coordinates_missing)
         }
@@ -222,11 +228,11 @@ class CheckoutFragment : Fragment() {
             blockCheckoutForGuest()
             return
         }
-        if (selectedDeliveryAddress.trim().isBlank()) {
+        if (selectedDeliveryLocation.address.isBlank()) {
             showCheckoutMessage(R.string.checkout_delivery_address_missing)
             return
         }
-        if (!selectedDeliveryLat.isValidLatitude() || !selectedDeliveryLng.isValidLongitude()) {
+        if (selectedDeliveryLocation.coordinate == null) {
             showCheckoutMessage(R.string.checkout_delivery_location_missing)
             return
         }
@@ -328,12 +334,12 @@ class CheckoutFragment : Fragment() {
                             showCheckoutMessage(R.string.checkout_store_location_missing)
                         }
 
-                        selectedDeliveryAddress.trim().isBlank() -> {
+                        selectedDeliveryLocation.address.isBlank() -> {
                             setPlaceOrderLoading(false)
                             showCheckoutMessage(R.string.checkout_delivery_address_missing)
                         }
 
-                        !selectedDeliveryLat.isValidLatitude() || !selectedDeliveryLng.isValidLongitude() -> {
+                        selectedDeliveryLocation.coordinate == null -> {
                             setPlaceOrderLoading(false)
                             showCheckoutMessage(R.string.checkout_delivery_location_missing)
                         }
@@ -370,6 +376,12 @@ class CheckoutFragment : Fragment() {
         storeSettings: StoreSettingsUiModel,
         deliveryEstimate: DeliveryEstimate,
     ) {
+        val deliveryCoordinate = selectedDeliveryLocation.coordinate
+        if (deliveryCoordinate == null) {
+            setPlaceOrderLoading(false)
+            showCheckoutMessage(R.string.checkout_delivery_location_missing)
+            return
+        }
         val itemsSubtotal = items.sumOf { it.price * it.quantity }
         val discountAmount = discount.coerceAtLeast(0.0)
         val finalTotal = (itemsSubtotal - discountAmount).coerceAtLeast(0.0) +
@@ -383,9 +395,8 @@ class CheckoutFragment : Fragment() {
             itemsSubtotal = itemsSubtotal,
             discountAmount = discountAmount,
             finalTotal = finalTotal,
-            deliveryAddress = selectedDeliveryAddress.trim(),
-            deliveryLat = selectedDeliveryLat,
-            deliveryLng = selectedDeliveryLng,
+            deliveryAddress = selectedDeliveryLocation.address,
+            deliveryCoordinate = deliveryCoordinate,
             customerName = customerName.ifBlank { customerEmail },
             customerPhone = customerPhone,
             storeSettings = storeSettings,
@@ -451,24 +462,36 @@ class CheckoutFragment : Fragment() {
             if (bundle.getString(MapPickerFragment.KEY_MODE) != MapPickerFragment.MODE_CUSTOMER_DELIVERY) {
                 return@setFragmentResultListener
             }
-            val address = bundle.getString(MapPickerFragment.KEY_ADDRESS).orEmpty()
-            val lat = bundle.getDouble(MapPickerFragment.KEY_LAT)
-            val lng = bundle.getDouble(MapPickerFragment.KEY_LNG)
-            if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
+            val selection = MapPickerResultParser.parse(
+                hasAddress = bundle.containsKey(MapPickerFragment.KEY_ADDRESS),
+                address = bundle.getString(MapPickerFragment.KEY_ADDRESS),
+                hasLatitude = bundle.containsKey(MapPickerFragment.KEY_LAT),
+                latitude = if (bundle.containsKey(MapPickerFragment.KEY_LAT)) {
+                    bundle.getDouble(MapPickerFragment.KEY_LAT)
+                } else {
+                    null
+                },
+                hasLongitude = bundle.containsKey(MapPickerFragment.KEY_LNG),
+                longitude = if (bundle.containsKey(MapPickerFragment.KEY_LNG)) {
+                    bundle.getDouble(MapPickerFragment.KEY_LNG)
+                } else {
+                    null
+                },
+            )
+            if (selection == null) {
                 showCheckoutMessage(R.string.checkout_delivery_location_missing)
                 return@setFragmentResultListener
             }
-            selectedDeliveryAddress = address
-            selectedDeliveryLat = lat
-            selectedDeliveryLng = lng
+            selectedDeliveryLocation = selection
+            hasUserSelectedDeliveryLocation = true
             renderDeliveryDetails(
                 name = customerName.ifBlank { getString(R.string.checkout_delivery_name) },
                 phone = customerPhone.ifBlank { getString(R.string.checkout_delivery_phone) },
-                address = selectedDeliveryAddress,
+                address = selection.address,
             )
             renderDeliveryCoordinateStatus()
             updateDeliveryEstimate()
-            saveDeliveryLocation(address, lat, lng)
+            saveDeliveryLocation(selection)
         }
     }
 
@@ -477,20 +500,18 @@ class CheckoutFragment : Fragment() {
             containerId = R.id.fragmentContainer,
             fragment = MapPickerFragment.newInstance(
                 mode = MapPickerFragment.MODE_CUSTOMER_DELIVERY,
-                initialAddress = selectedDeliveryAddress,
-                initialLat = selectedDeliveryLat,
-                initialLng = selectedDeliveryLng,
+                initialAddress = selectedDeliveryLocation.address,
+                initialLat = selectedDeliveryLocation.coordinate?.latitude,
+                initialLng = selectedDeliveryLocation.coordinate?.longitude,
             )
         )
     }
 
-    private fun saveDeliveryLocation(address: String, lat: Double, lng: Double) {
+    private fun saveDeliveryLocation(selection: DeliveryLocationSelection) {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         CustomerProfileFirestoreRepository.updateDeliveryLocation(
             uid = uid,
-            deliveryAddress = address,
-            deliveryLat = lat,
-            deliveryLng = lng,
+            selection = selection,
         ) { result ->
             if (_binding == null || !isAdded) return@updateDeliveryLocation
             result.onFailure {
@@ -513,17 +534,15 @@ class CheckoutFragment : Fragment() {
     ): DeliveryEstimate? {
         if (settings == null) return null
         if (!isValidCoordinate(settings.pickupLat, settings.pickupLng)) return null
-        if (!isValidCoordinate(selectedDeliveryLat, selectedDeliveryLng)) return null
 
         val pickupLat = settings.pickupLat ?: return null
         val pickupLng = settings.pickupLng ?: return null
-        val deliveryLat = selectedDeliveryLat ?: return null
-        val deliveryLng = selectedDeliveryLng ?: return null
+        val deliveryCoordinate = selectedDeliveryLocation.coordinate ?: return null
         val rawDistanceKm = LocationDistanceCalculator.calculateDistanceKm(
             startLat = pickupLat,
             startLng = pickupLng,
-            endLat = deliveryLat,
-            endLng = deliveryLng,
+            endLat = deliveryCoordinate.latitude,
+            endLng = deliveryCoordinate.longitude,
         )
         val roundedDistanceKm = ceil(rawDistanceKm * 10.0) / 10.0
         val deliveryFee = if (

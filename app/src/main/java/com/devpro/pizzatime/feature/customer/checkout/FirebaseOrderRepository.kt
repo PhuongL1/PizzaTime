@@ -3,6 +3,8 @@ package com.devpro.pizzatime.feature.customer.checkout
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
+import com.devpro.pizzatime.shared.location.DeliveryCoordinate
+import com.devpro.pizzatime.shared.location.OrderDeliveryDestinationResolver
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
@@ -24,14 +26,17 @@ object FirebaseOrderRepository {
         discountAmount: Double,
         finalTotal: Double,
         deliveryAddress: String = "",
-        deliveryLat: Double?,
-        deliveryLng: Double?,
+        deliveryCoordinate: DeliveryCoordinate,
         customerName: String = "",
         customerPhone: String = "",
         storeSettings: StoreSettingsUiModel,
         promoCode: String = "",
         onResult: (Result<String>) -> Unit,
     ) {
+        if (deliveryAddress.isBlank()) {
+            onResult(Result.failure(IllegalArgumentException("A delivery address is required.")))
+            return
+        }
         val orderItems = items.map { item ->
             hashMapOf(
                 "productId" to item.id,
@@ -62,9 +67,6 @@ object FirebaseOrderRepository {
             "paymentMethod" to "CASH_ON_DELIVERY",
             "paymentStatus" to "UNPAID",
             "cashCollected" to false,
-            "deliveryAddress" to deliveryAddress,
-            "deliveryLat" to deliveryLat,
-            "deliveryLng" to deliveryLng,
             "distanceKm" to distanceKm,
             "itemsSubtotal" to itemsSubtotal,
             "subtotal" to itemsSubtotal,
@@ -86,6 +88,12 @@ object FirebaseOrderRepository {
             ),
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp(),
+        )
+        baseOrder.putAll(
+            OrderDeliveryDestinationResolver.canonicalFields(
+                address = deliveryAddress,
+                coordinate = deliveryCoordinate,
+            ),
         )
 
         createOrderWithUniqueCode(

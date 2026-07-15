@@ -247,7 +247,7 @@
                     android:lineSpacingExtra="5dp"
                     android:textColor="@color/pt_text_secondary"
                     android:textSize="18sp"
-                    tools:text="123 Nguyen Trai, Ha Noi" />
+                    tools:text="Pickup address" />
 
                 <TextView
                     android:id="@+id/tvStorePhone"
@@ -265,7 +265,7 @@
                     android:layout_marginTop="8dp"
                     android:textColor="@color/pt_text_muted"
                     android:textSize="13sp"
-                    tools:text="21.027800, 105.834200" />
+                    tools:text="Pickup coordinates" />
 
                 <TextView
                     android:id="@+id/btnOpenPickupMap"
@@ -362,12 +362,50 @@
                 android:background="@drawable/bg_shipper_map_card"
                 android:orientation="vertical"
                 android:paddingHorizontal="28dp"
-                android:paddingTop="220dp"
+                android:paddingTop="28dp"
                 android:paddingBottom="28dp">
+
+                <FrameLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="240dp">
+
+                    <org.osmdroid.views.MapView
+                        android:id="@+id/deliveryMapView"
+                        android:layout_width="match_parent"
+                        android:layout_height="match_parent"
+                        android:contentDescription="@string/shipper_detail_map_content_description" />
+
+                    <TextView
+                        android:id="@+id/btnCenterMap"
+                        android:layout_width="wrap_content"
+                        android:layout_height="40dp"
+                        android:layout_gravity="top|end"
+                        android:layout_margin="10dp"
+                        android:background="@drawable/bg_chip_unselected_dark"
+                        android:gravity="center"
+                        android:paddingHorizontal="14dp"
+                        android:text="@string/shipper_detail_center_map"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="13sp"
+                        android:textStyle="bold" />
+
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_gravity="bottom|start"
+                        android:background="@color/pt_surface_dark"
+                        android:paddingHorizontal="6dp"
+                        android:paddingVertical="3dp"
+                        android:text="@string/osm_attribution"
+                        android:textColor="@color/pt_text_primary"
+                        android:textSize="11sp" />
+
+                </FrameLayout>
 
                 <TextView
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
+                    android:layout_marginTop="22dp"
                     android:letterSpacing="0.12"
                     android:text="@string/shipper_detail_delivery_address"
                     android:textColor="@color/pt_gold_light"
@@ -391,7 +429,25 @@
                     android:layout_marginTop="8dp"
                     android:textColor="@color/pt_text_muted"
                     android:textSize="13sp"
-                    tools:text="21.027800, 105.834200" />
+                    tools:text="Delivery coordinates" />
+
+                <TextView
+                    android:id="@+id/tvDeliveryLocationState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="10dp"
+                    android:text="@string/shipper_detail_delivery_location_unavailable"
+                    android:textColor="@color/pt_text_secondary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/tvCurrentLocationState"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/shipper_detail_current_location_unavailable"
+                    android:textColor="@color/pt_text_secondary"
+                    android:textSize="14sp" />
 
                 <TextView
                     android:id="@+id/tvDeliveryDistance"
@@ -400,7 +456,7 @@
                     android:layout_marginTop="8dp"
                     android:textColor="@color/pt_text_muted"
                     android:textSize="13sp"
-                    tools:text="3.2 km" />
+                    tools:text="Straight-line distance: 3.2 km" />
 
                 <TextView
                     android:id="@+id/tvDeliveryFee"

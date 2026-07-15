@@ -123,7 +123,7 @@
                         android:textColor="@color/pt_gold_light"
                         android:textSize="14sp"
                         android:textStyle="bold"
-                        tools:text="ETA: 8 MIN" />
+                        tools:text="Delivery status" />
 
                 </LinearLayout>
 

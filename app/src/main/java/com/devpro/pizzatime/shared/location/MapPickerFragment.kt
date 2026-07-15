@@ -13,6 +13,7 @@ import android.os.Looper
 import android.view.View
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
+import androidx.core.widget.doAfterTextChanged
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.ui.message.UiMessageType
@@ -27,7 +28,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             "FragmentMapPickerBinding is only valid between onViewCreated and onDestroyView."
         }
 
-    private var selectedCoordinate: DeliveryCoordinate? = null
+    private var selectedLocation = DeliveryLocationSelection.empty()
     private var mapController: OsmdroidMapController? = null
     private var pendingLocationListener: LocationListener? = null
     private val timeoutHandler = Handler(Looper.getMainLooper())
@@ -58,21 +59,24 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         }
         val initialAddress = savedInstanceState?.getString(STATE_ADDRESS)
             ?: arguments?.getString(ARG_INITIAL_ADDRESS).orEmpty()
-        selectedCoordinate = if (savedInstanceState != null) {
-            DeliveryCoordinate.from(
+        selectedLocation = if (savedInstanceState != null) {
+            DeliveryLocationSelection.from(
+                address = initialAddress,
                 latitude = savedInstanceState.getDoubleOrNull(STATE_LAT),
                 longitude = savedInstanceState.getDoubleOrNull(STATE_LNG),
             )
         } else {
-            DeliveryCoordinate.from(
-                latitude = arguments?.getDouble(ARG_INITIAL_LAT),
-                longitude = arguments?.getDouble(ARG_INITIAL_LNG),
+            DeliveryLocationSelection.from(
+                address = initialAddress,
+                latitude = arguments?.getDoubleOrNull(ARG_INITIAL_LAT),
+                longitude = arguments?.getDoubleOrNull(ARG_INITIAL_LNG),
             )
         }
 
         binding.tvMapPickerTitle.setText(titleRes)
-        binding.edtMapAddress.setText(initialAddress)
+        binding.edtMapAddress.setText(selectedLocation.address)
         setupMap()
+        setupAddressEditing()
         setupActions()
     }
 
@@ -80,7 +84,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         val controller = OsmdroidMapController(binding.mapView).also {
             mapController = it
         }
-        val initialCoordinate = selectedCoordinate
+        val initialCoordinate = selectedLocation.coordinate
         if (initialCoordinate != null) {
             setSelectedPoint(initialCoordinate)
             controller.center(initialCoordinate)
@@ -93,7 +97,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
 
     private fun setSelectedPoint(coordinate: DeliveryCoordinate) {
         if (_binding == null) return
-        selectedCoordinate = coordinate
+        selectedLocation = selectedLocation.selectCoordinate(coordinate)
         mapController?.replaceMarker(
             slot = OsmdroidMapController.MarkerSlot.SELECTION,
             coordinate = coordinate,
@@ -103,6 +107,17 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             coordinate.latitude,
             coordinate.longitude,
         )
+    }
+
+    private fun setupAddressEditing() {
+        binding.edtMapAddress.doAfterTextChanged { editable ->
+            val previousSelection = selectedLocation
+            selectedLocation = previousSelection.editAddress(editable?.toString().orEmpty())
+            if (previousSelection.coordinate != null && selectedLocation.coordinate == null) {
+                mapController?.removeMarker(OsmdroidMapController.MarkerSlot.SELECTION)
+                binding.tvSelectedCoordinate.setText(R.string.map_picker_select_point_prompt)
+            }
+        }
     }
 
     private fun setupActions() = with(binding) {
@@ -124,9 +139,9 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         }
 
         btnUseLocation.setOnClickListener {
-            val address = edtMapAddress.text.toString().trim()
-            val coordinate = selectedCoordinate
-            if (address.isBlank()) {
+            val selection = selectedLocation
+            val coordinate = selection.coordinate
+            if (selection.address.isBlank()) {
                 edtMapAddress.error = getString(R.string.map_picker_address_required)
                 return@setOnClickListener
             }
@@ -141,7 +156,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
                 REQUEST_KEY,
                 Bundle().apply {
                     putString(KEY_MODE, arguments?.getString(ARG_MODE).orEmpty())
-                    putString(KEY_ADDRESS, address)
+                    putString(KEY_ADDRESS, selection.address)
                     putDouble(KEY_LAT, coordinate.latitude)
                     putDouble(KEY_LNG, coordinate.longitude)
                 },
@@ -290,8 +305,8 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
 
     override fun onSaveInstanceState(outState: Bundle) {
         super.onSaveInstanceState(outState)
-        outState.putString(STATE_ADDRESS, _binding?.edtMapAddress?.text?.toString().orEmpty())
-        selectedCoordinate?.let { coordinate ->
+        outState.putString(STATE_ADDRESS, selectedLocation.address)
+        selectedLocation.coordinate?.let { coordinate ->
             outState.putDouble(STATE_LAT, coordinate.latitude)
             outState.putDouble(STATE_LNG, coordinate.longitude)
         }

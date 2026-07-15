@@ -1,5 +1,7 @@
 package com.devpro.pizzatime.feature.shipper.detail
 
+import com.devpro.pizzatime.shared.location.DeliveryCoordinate
+
 data class ShipperDeliveryDetailUiModel(
     val orderId: String,
     val displayOrderCode: String = orderId,
@@ -16,9 +18,7 @@ data class ShipperDeliveryDetailUiModel(
     val pickupLng: Double? = null,
     val storePhone: String = "",
     val customerPhone: String = "",
-    val deliveryLat: Double? = null,
-    val deliveryLng: Double? = null,
-    val distanceKm: Double? = null,
+    val deliveryCoordinate: DeliveryCoordinate? = null,
     val deliveryFee: String = "",
 )
 

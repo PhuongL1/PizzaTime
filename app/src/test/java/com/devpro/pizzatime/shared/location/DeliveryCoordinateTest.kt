@@ -54,4 +54,16 @@ class DeliveryCoordinateTest {
         assertEquals(1, registry.size)
         assertEquals(1, created)
     }
+
+    @Test
+    fun `marker removal clears the conceptual slot`() {
+        val registry = ReplaceableMapValues<String, Any> { Any() }
+        val marker = registry.getOrCreate("destination")
+        var removed: Any? = null
+
+        registry.remove("destination") { value -> removed = value }
+
+        assertSame(marker, removed)
+        assertEquals(0, registry.size)
+    }
 }

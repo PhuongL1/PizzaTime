@@ -222,7 +222,7 @@
     <string name="checkout_your_order">YOUR ORDER</string>
     <string name="checkout_subtotal">Subtotal</string>
     <string name="checkout_discount">Promo Discount</string>
-    <string name="checkout_delivery_distance">Delivery Distance</string>
+    <string name="checkout_delivery_distance">Straight-line distance</string>
     <string name="checkout_delivery_fee">Delivery Fee</string>
     <string name="checkout_total">Total</string>
     <string name="checkout_place_order">Place Order</string>
@@ -373,7 +373,6 @@
     <string name="staff_order_detail_item_image_content_description">Order item image</string>
     <string name="staff_order_detail_payment_content_description">Payment method</string>
 
-    <string name="staff_order_detail_estimated_delivery">Estimated Delivery: %1$s</string>
     <string name="staff_order_detail_payment_summary">Paid in full • %1$s</string>
     <string name="staff_order_detail_quoted_note">"%1$s"</string>
 
@@ -394,7 +393,6 @@
     <string name="staff_order_detail_customer_details">CUSTOMER DETAILS</string>
     <string name="staff_order_detail_customer_name_preview">Alessandra Rossi</string>
     <string name="staff_order_detail_customer_address_preview">142 Via del Corso, Suite 4B</string>
-    <string name="staff_order_detail_estimated_delivery_preview">Estimated Delivery: 11:45 PM</string>
 
     <string name="staff_order_detail_order_items">ORDER ITEMS</string>
     <string name="staff_order_detail_items_total_preview">3 Items Total</string>
@@ -879,7 +877,7 @@
     <string name="customer_order_detail_pickup_from">PICKUP FROM</string>
     <string name="customer_order_detail_timeline_title">Order Timeline</string>
     <string name="customer_order_detail_subtotal">Subtotal</string>
-    <string name="customer_order_detail_delivery_distance">Delivery Distance</string>
+    <string name="customer_order_detail_delivery_distance">Straight-line distance</string>
     <string name="customer_order_detail_delivery_fee">Delivery Fee</string>
     <string name="customer_order_detail_payment_method">Payment Method</string>
     <string name="customer_order_detail_payment_status">Payment Status</string>
@@ -1153,7 +1151,7 @@
     <string name="store_settings_store_name">STORE NAME</string>
     <string name="store_settings_store_name_hint">PizzaTime</string>
     <string name="store_settings_pickup_address">PICKUP ADDRESS</string>
-    <string name="store_settings_pickup_address_hint">123 Nguyen Trai, Ha Noi</string>
+    <string name="store_settings_pickup_address_hint">Enter the pickup address</string>
     <string name="store_settings_store_phone">STORE PHONE</string>
     <string name="store_settings_store_phone_hint">0900000000</string>
     <string name="store_settings_opening_hours">OPENING HOURS</string>
@@ -1180,8 +1178,8 @@
     <string name="shipper_open_delivery_map">OPEN MAP</string>
     <string name="staff_order_detail_pickup_info">Pickup: %1$s, %2$s, %3$s</string>
     <string name="staff_order_detail_delivery_info">Delivery: %1$s, %2$s</string>
-    <string name="staff_order_detail_distance_fee">Distance: %1$s · Delivery fee: %2$s</string>
-    <string name="staff_order_detail_distance_missing">Distance: Not provided · Delivery fee: Not provided</string>
+    <string name="staff_order_detail_distance_fee">Straight-line distance: %1$s · Delivery fee: %2$s</string>
+    <string name="staff_order_detail_distance_missing">Straight-line distance: Not provided · Delivery fee: Not provided</string>
     <string name="staff_order_detail_payment_summary_uncollected">%1$s • Amount due %2$s</string>
     <string name="staff_order_detail_payment_summary_collected">%1$s • Collected %2$s by %3$s</string>
     <string name="payment_method_cash_on_delivery">Cash on Delivery</string>
@@ -1208,6 +1206,20 @@
     <string name="shipper_detail_delivered_cash_collected">Delivered &amp; Cash Collected</string>
     <string name="shipper_detail_order_completed">Order completed.</string>
     <string name="shipper_detail_order_cancelled">Order cancelled.</string>
+    <string name="shipper_detail_map_content_description">Delivery destination and current shipper position map</string>
+    <string name="shipper_detail_center_map">Center map</string>
+    <string name="shipper_detail_delivery_marker_title">Delivery destination</string>
+    <string name="shipper_detail_current_marker_title">Your current position</string>
+    <string name="shipper_detail_delivery_location_available">Delivery location is available.</string>
+    <string name="shipper_detail_delivery_location_unavailable">Delivery location is unavailable.</string>
+    <string name="shipper_detail_current_location_available">Current position is available.</string>
+    <string name="shipper_detail_current_location_unavailable">Current position is unavailable.</string>
+    <string name="shipper_detail_current_location_loading">Locating your current position…</string>
+    <string name="shipper_detail_location_permission_required">Location permission is required to show your current position.</string>
+    <string name="shipper_detail_location_services_unavailable">Location services are unavailable.</string>
+    <string name="shipper_detail_distance_kilometers">%1$s km</string>
+    <string name="shipper_detail_straight_line_distance">Straight-line distance: %1$s</string>
+    <string name="shipper_detail_straight_line_distance_unavailable">Straight-line distance: unavailable</string>
     <string name="shipper_complete_delivery_title">Complete delivery?</string>
     <string name="shipper_complete_delivery_message_with_amount">Confirm that this order has been delivered and cash payment has been collected from the customer.\n\nAmount to collect: %1$s</string>
     <string name="shipper_complete_delivery_confirm">Complete Order</string>
