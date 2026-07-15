@@ -29,6 +29,8 @@ import com.devpro.pizzatime.databinding.ItemShipperPaymentRowBinding
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
+import com.devpro.pizzatime.feature.shipper.navigation.ExternalMapLaunchResult
+import com.devpro.pizzatime.feature.shipper.navigation.ExternalMapNavigator
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.bindCurrentProfileAvatar
@@ -211,10 +213,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         }
 
         btnNavigate.setOnClickListener {
-            openExternalMap(
-                coordinate = detail.deliveryCoordinate,
-                label = detail.customerName,
-            )
+            openDeliveryNavigation(detail)
         }
 
         btnConfirmDelivery.setOnClickListener { handleDeliveryAction(detail) }
@@ -336,6 +335,33 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         } catch (error: ActivityNotFoundException) {
             Log.e(TAG, "No map application can handle the delivery location", error)
             showUiMessage(R.string.location_not_available, UiMessageType.ERROR)
+        }
+    }
+
+    private fun openDeliveryNavigation(detail: ShipperDeliveryDetailUiModel) {
+        when (
+            ExternalMapNavigator.launch(
+                context = requireContext(),
+                coordinate = detail.deliveryCoordinate,
+                address = detail.navigationAddress,
+                coordinateLabel = detail.navigationAddress.ifBlank {
+                    getString(R.string.shipper_detail_navigation_label)
+                },
+            )
+        ) {
+            ExternalMapLaunchResult.GOOGLE_MAPS,
+            ExternalMapLaunchResult.GENERIC_MAP,
+                -> Unit
+
+            ExternalMapLaunchResult.DESTINATION_UNAVAILABLE -> showUiMessage(
+                R.string.shipper_detail_navigation_destination_unavailable,
+                UiMessageType.WARNING,
+            )
+
+            ExternalMapLaunchResult.NO_HANDLER -> showUiMessage(
+                R.string.shipper_detail_navigation_app_unavailable,
+                UiMessageType.WARNING,
+            )
         }
     }
 

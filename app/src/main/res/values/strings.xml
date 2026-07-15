@@ -1220,6 +1220,10 @@
     <string name="shipper_detail_distance_kilometers">%1$s km</string>
     <string name="shipper_detail_straight_line_distance">Straight-line distance: %1$s</string>
     <string name="shipper_detail_straight_line_distance_unavailable">Straight-line distance: unavailable</string>
+    <string name="shipper_detail_start_navigation">Start navigation</string>
+    <string name="shipper_detail_navigation_destination_unavailable">Navigation destination is unavailable.</string>
+    <string name="shipper_detail_navigation_app_unavailable">No navigation app is available.</string>
+    <string name="shipper_detail_navigation_label">Delivery destination</string>
     <string name="shipper_complete_delivery_title">Complete delivery?</string>
     <string name="shipper_complete_delivery_message_with_amount">Confirm that this order has been delivered and cash payment has been collected from the customer.\n\nAmount to collect: %1$s</string>
     <string name="shipper_complete_delivery_confirm">Complete Order</string>

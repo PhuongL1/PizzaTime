@@ -166,6 +166,7 @@ object ShipperOrderFirestoreRepository {
         val rawItems = get("items") as? List<*>
         val deliveryCoordinate = OrderDeliveryDestinationResolver.resolve(data.orEmpty())
 
+        val deliveryAddress = getString("deliveryAddress").orEmpty().trim()
         return ShipperDeliveryDetailUiModel(
             orderId = id,
             displayOrderCode = displayOrderCode(),
@@ -176,7 +177,8 @@ object ShipperOrderFirestoreRepository {
             storePhone = getString("storePhone").orNotProvided(),
             customerName = customerName,
             customerPhone = getString("customerPhone").orNotProvided(),
-            address = getString("deliveryAddress").orNotProvided(),
+            address = deliveryAddress.orNotProvided(),
+            navigationAddress = deliveryAddress,
             deliveryCoordinate = deliveryCoordinate,
             deliveryFee = String.format(Locale.US, "$%.2f", deliveryFee),
             courierNote = getString("note") ?: "",

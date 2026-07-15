@@ -345,7 +345,7 @@
                         android:layout_weight="1"
                         android:background="@drawable/bg_shipper_detail_disabled_button"
                         android:gravity="center"
-                        android:text="@string/shipper_open_delivery_map"
+                        android:text="@string/shipper_detail_start_navigation"
                         android:textColor="@color/pt_text_secondary_dark_bg"
                         android:textSize="16sp"
                         android:textStyle="bold" />
