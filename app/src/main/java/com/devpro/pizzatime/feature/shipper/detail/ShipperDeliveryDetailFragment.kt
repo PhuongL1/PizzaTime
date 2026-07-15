@@ -31,6 +31,14 @@ import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
 import com.devpro.pizzatime.feature.shipper.navigation.ExternalMapLaunchResult
 import com.devpro.pizzatime.feature.shipper.navigation.ExternalMapNavigator
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingEligibility
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingEligibilityPolicy
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingFirestoreRepository
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingRepositoryResult
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingRuntimePhase
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingRuntimeState
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingRuntimeStateStore
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingService
 import com.devpro.pizzatime.feature.staff.navigation.StaffBottomNavTab
 import com.devpro.pizzatime.feature.staff.navigation.backToPreviousStaffScreen
 import com.devpro.pizzatime.feature.staff.navigation.bindCurrentProfileAvatar
@@ -49,6 +57,9 @@ import com.devpro.pizzatime.shared.location.OneShotDeviceLocationSource
 import com.devpro.pizzatime.shared.location.OsmdroidMapController
 import com.google.firebase.auth.FirebaseAuth
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
+import java.io.Closeable
+import java.text.DateFormat
+import java.util.Date
 
 class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_delivery_detail) {
 
@@ -71,6 +82,14 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     private var isLocationRequestInFlight = false
     private var hasLoadedDetail = false
     private var shownLocationMessageState: CurrentLocationUiState? = null
+    private var loadedOrderId: String? = null
+    private var pendingTrackingStartOrderId: String? = null
+    private var trackingStartInFlight = false
+    private var trackingStateSubscription: Closeable? = null
+    private var trackingRuntimeState = DeliveryTrackingRuntimeState.Inactive
+    private val deliveryTrackingRepository by lazy(LazyThreadSafetyMode.NONE) {
+        DeliveryTrackingFirestoreRepository()
+    }
 
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
@@ -81,10 +100,16 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             hasLocationPermission()
         if (isGranted) {
             requestCurrentDeviceLocation()
+            pendingTrackingStartOrderId?.let { orderId ->
+                pendingTrackingStartOrderId = null
+                validateAndStartTracking(orderId)
+            }
         } else {
+            pendingTrackingStartOrderId = null
             currentDeviceCoordinate = null
             currentLocationUiState = CurrentLocationUiState.PERMISSION_REQUIRED
             renderDeliveryMap()
+            renderTrackingStatus()
             showLocationMessageOnce(
                 state = CurrentLocationUiState.PERMISSION_REQUIRED,
                 textRes = R.string.shipper_detail_location_permission_required,
@@ -101,6 +126,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
 
         val orderId = arguments?.getString(ARG_ORDER_ID).orEmpty()
         setupDeliveryMap()
+        setupTrackingStatus()
         setupBottomNav()
         setupAvatar()
         loadOrder(orderId)
@@ -121,9 +147,11 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
             result
                 .onSuccess { (detail, status) ->
                     firestoreStatus = status
+                    loadedOrderId = detail.orderId
                     hasLoadedDetail = true
                     bindDetail(detail)
                     setupActions(detail)
+                    renderTrackingStatus()
                     requestCurrentPositionIfEligible()
                 }
                 .onFailure { error ->
@@ -217,6 +245,9 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         }
 
         btnConfirmDelivery.setOnClickListener { handleDeliveryAction(detail) }
+        btnResumeTracking.setOnClickListener {
+            requestTrackingStart(detail.orderId, requestPermissionIfNeeded = true)
+        }
     }
 
     private fun handleDeliveryAction(detail: ShipperDeliveryDetailUiModel) {
@@ -305,6 +336,14 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                     isUpdatingStatus = false
                     firestoreStatus = nextStatus
                     renderActionButton(nextStatus)
+                    renderTrackingStatus()
+                    when (nextStatus) {
+                        "DELIVERING" -> requestTrackingStart(
+                            orderId = orderId,
+                            requestPermissionIfNeeded = false,
+                        )
+                        "DELIVERED" -> DeliveryTrackingService.stop(requireContext())
+                    }
                     showUiMessage(
                         textRes = R.string.shipper_detail_delivery_confirmed,
                         type = UiMessageType.SUCCESS,
@@ -316,7 +355,140 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                     isUpdatingStatus = false
                     renderActionButton(firestoreStatus)
                     showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
-                }
+            }
+        }
+    }
+
+    private fun setupTrackingStatus() {
+        trackingStateSubscription?.close()
+        trackingStateSubscription = DeliveryTrackingRuntimeStateStore.observe { state ->
+            trackingRuntimeState = state
+            if (_binding != null) {
+                renderTrackingStatus()
+            }
+        }
+    }
+
+    private fun requestTrackingStart(
+        orderId: String,
+        requestPermissionIfNeeded: Boolean,
+    ) {
+        if (!isLocalTrackingFlowEligible(orderId)) {
+            showTrackingStartFailed()
+            return
+        }
+        if (!hasLocationPermission()) {
+            renderTrackingStatus()
+            if (requestPermissionIfNeeded && lifecycle.currentState.isAtLeast(Lifecycle.State.RESUMED)) {
+                pendingTrackingStartOrderId = orderId
+                hasRequestedLocationPermission = true
+                locationPermissionLauncher.launch(
+                    arrayOf(
+                        Manifest.permission.ACCESS_COARSE_LOCATION,
+                        Manifest.permission.ACCESS_FINE_LOCATION,
+                    ),
+                )
+            }
+            return
+        }
+        validateAndStartTracking(orderId)
+    }
+
+    private fun validateAndStartTracking(orderId: String) {
+        if (trackingStartInFlight || !isLocalTrackingFlowEligible(orderId)) {
+            return
+        }
+        val shipperId = FirebaseAuth.getInstance().currentUser?.uid
+        if (shipperId.isNullOrBlank()) {
+            showTrackingStartFailed()
+            return
+        }
+
+        trackingStartInFlight = true
+        renderTrackingStatus()
+        deliveryTrackingRepository.validateEligibility(shipperId, orderId) { result ->
+            trackingStartInFlight = false
+            if (
+                _binding == null ||
+                loadedOrderId != orderId ||
+                FirebaseAuth.getInstance().currentUser?.uid != shipperId ||
+                !isLocalTrackingFlowEligible(orderId)
+            ) {
+                return@validateEligibility
+            }
+
+            val isEligible = result is DeliveryTrackingRepositoryResult.Success &&
+                result.value is DeliveryTrackingEligibility.Eligible
+            if (!isEligible || !DeliveryTrackingService.start(requireContext(), orderId)) {
+                showTrackingStartFailed()
+            }
+            renderTrackingStatus()
+        }
+    }
+
+    private fun isLocalTrackingFlowEligible(orderId: String): Boolean {
+        if (loadedOrderId != orderId || firestoreStatus != "DELIVERING") {
+            return false
+        }
+        return DeliveryTrackingEligibilityPolicy.evaluateLocal(
+            edition = AppEditionConfig.current,
+            sessionLoggedIn = FakeSessionStore.isLoggedIn,
+            sessionRole = FakeSessionStore.currentRole,
+            authenticatedUid = FirebaseAuth.getInstance().currentUser?.uid,
+        ) is DeliveryTrackingEligibility.Eligible
+    }
+
+    private fun renderTrackingStatus() = with(binding) {
+        val orderId = loadedOrderId
+        val canShowTracking = orderId != null && isLocalTrackingFlowEligible(orderId)
+        trackingStatusCard.isVisible = canShowTracking
+        if (!canShowTracking) {
+            btnResumeTracking.isVisible = false
+            return@with
+        }
+
+        val runtimeForOrder = trackingRuntimeState.takeIf { state -> state.orderId == orderId }
+            ?: DeliveryTrackingRuntimeState.Inactive
+        val effectivePhase = when {
+            !hasLocationPermission() -> DeliveryTrackingRuntimePhase.PERMISSION_REQUIRED
+            else -> runtimeForOrder.phase
+        }
+        tvTrackingStatus.setText(
+            when (effectivePhase) {
+                DeliveryTrackingRuntimePhase.ACTIVE -> R.string.delivery_tracking_status_active
+                DeliveryTrackingRuntimePhase.STARTING -> R.string.delivery_tracking_status_starting
+                DeliveryTrackingRuntimePhase.WAITING_FOR_LOCATION -> R.string.delivery_tracking_status_waiting
+                DeliveryTrackingRuntimePhase.PERMISSION_REQUIRED ->
+                    R.string.delivery_tracking_status_permission_required
+                DeliveryTrackingRuntimePhase.SERVICES_UNAVAILABLE ->
+                    R.string.delivery_tracking_status_services_unavailable
+                DeliveryTrackingRuntimePhase.INACTIVE -> R.string.delivery_tracking_status_inactive
+            },
+        )
+        val lastUpdateMillis = runtimeForOrder.lastLocationUpdateMillis
+        tvTrackingLastUpdate.text = if (lastUpdateMillis != null && lastUpdateMillis > 0L) {
+            getString(
+                R.string.delivery_tracking_last_update,
+                DateFormat.getTimeInstance(DateFormat.SHORT).format(Date(lastUpdateMillis)),
+            )
+        } else {
+            getString(R.string.delivery_tracking_last_update_unavailable)
+        }
+
+        val anotherOrderIsActive = trackingRuntimeState.orderId != null &&
+            trackingRuntimeState.orderId != orderId &&
+            trackingRuntimeState.phase != DeliveryTrackingRuntimePhase.INACTIVE
+        btnResumeTracking.isVisible = effectivePhase in setOf(
+            DeliveryTrackingRuntimePhase.INACTIVE,
+            DeliveryTrackingRuntimePhase.PERMISSION_REQUIRED,
+            DeliveryTrackingRuntimePhase.SERVICES_UNAVAILABLE,
+        ) && !anotherOrderIsActive
+        btnResumeTracking.isEnabled = btnResumeTracking.isVisible && !trackingStartInFlight
+    }
+
+    private fun showTrackingStartFailed() {
+        if (_binding != null && isAdded) {
+            showUiMessage(R.string.delivery_tracking_resume_failed, UiMessageType.WARNING)
         }
     }
 
@@ -687,6 +859,9 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     override fun onResume() {
         super.onResume()
         mapController?.onResume()
+        if (_binding != null) {
+            renderTrackingStatus()
+        }
         if (hasLoadedDetail) {
             requestCurrentPositionIfEligible()
         }
@@ -700,6 +875,8 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     override fun onDestroyView() {
+        trackingStateSubscription?.close()
+        trackingStateSubscription = null
         deviceLocationSource?.cancel()
         deviceLocationSource = null
         mapController?.destroy()
@@ -712,6 +889,10 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         isLocationRequestInFlight = false
         hasLoadedDetail = false
         shownLocationMessageState = null
+        loadedOrderId = null
+        pendingTrackingStartOrderId = null
+        trackingStartInFlight = false
+        trackingRuntimeState = DeliveryTrackingRuntimeState.Inactive
         _binding = null
         super.onDestroyView()
     }
@@ -725,7 +906,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     companion object {
-        private const val ARG_ORDER_ID = "orderId"
+        internal const val ARG_ORDER_ID = "orderId"
         private const val TAG = "ShipperDeliveryDetail"
         private const val STATE_LOCATION_PERMISSION_REQUESTED = "location_permission_requested"
         private const val MAP_CAMERA_PADDING_DP = 48f

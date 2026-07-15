@@ -43,6 +43,12 @@
             </intent-filter>
         </service>
 
+        <service
+            android:name=".feature.shipper.tracking.DeliveryTrackingService"
+            android:enabled="${deliveryTrackingServiceEnabled}"
+            android:exported="false"
+            android:foregroundServiceType="location" />
+
     </application>
 
 </manifest>

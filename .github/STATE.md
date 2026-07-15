@@ -17,13 +17,13 @@ note: "none"
 ### task-20260702-80
 task: "Implement billing-free OpenStreetMap delivery tracking"
 type: feat
-phase: QA_80C_DONE
+phase: IMPLEMENT_80E
 plan: "Deliver five gated phases: harden osmdroid; persist/show canonical destination; external navigation; assigned-Shipper foreground tracking; owning-Customer live map"
 approach: "Use osmdroid in PizzaTime, LocationManager for device fixes, deliveryLocation GeoPoint, one orders/{orderId}/tracking/current document, and external map apps for road routing/ETA"
 files: ".github/audits/task-20260702-80-google-maps-audit.md, shared location/map helpers, checkout/order mappers, Shipper detail/service, Customer tracking, manifests/resources, firestore.rules, isolated rules tests"
-review: 1/3
-qa: 3/5
-note: "80A 66fc4b3; 80B e91ccbb; 80C Google-app attempt, generic/address fallback, tests, six debug assemblies, and full build passed"
+review: 2/3
+qa: 4/5
+note: "80A 66fc4b3; 80B e91ccbb; 80C f1923da; 80D implemented with shipper-only FGS tracking, rules tests passing, and firestore.rules deployed to pizzatime-de04c; moving to owning-Customer live map"
 
 ### task-20260605-1
 task: "Soạn giáo án Kotlin OOP 1 buổi cho người mới"

@@ -27,6 +27,7 @@ import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
 import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingNotificationRouter
 import com.devpro.pizzatime.feature.splash.SplashFragment
 import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
 import com.google.android.material.dialog.MaterialAlertDialogBuilder
@@ -50,6 +51,7 @@ class MainActivity : AppCompatActivity() {
                 context = applicationContext,
                 fragmentManager = supportFragmentManager,
             )
+            DeliveryTrackingNotificationRouter.handlePending(supportFragmentManager)
         }
     }
 
@@ -66,6 +68,7 @@ class MainActivity : AppCompatActivity() {
         PizzaTimeNotificationManager.init(applicationContext)
         OrderNotificationMonitor.init(applicationContext)
         NotificationDeepLinkCoordinator.captureIntent(applicationContext, intent)
+        DeliveryTrackingNotificationRouter.captureIntent(intent)
         supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false)
 
         binding = ActivityMainBinding.inflate(layoutInflater)
@@ -91,10 +94,12 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         NotificationDeepLinkCoordinator.captureIntent(applicationContext, intent)
+        DeliveryTrackingNotificationRouter.captureIntent(intent)
         NotificationDeepLinkCoordinator.handlePendingRequest(
             context = applicationContext,
             fragmentManager = supportFragmentManager,
         )
+        DeliveryTrackingNotificationRouter.handlePending(supportFragmentManager)
     }
 
     override fun onResume() {

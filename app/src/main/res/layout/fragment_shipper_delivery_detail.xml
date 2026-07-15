@@ -500,6 +500,48 @@
             </LinearLayout>
 
             <LinearLayout
+                android:id="@+id/trackingStatusCard"
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:layout_marginTop="24dp"
+                android:background="@drawable/bg_shipper_note_card"
+                android:orientation="vertical"
+                android:padding="24dp"
+                android:visibility="gone">
+
+                <TextView
+                    android:id="@+id/tvTrackingStatus"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="@string/delivery_tracking_status_inactive"
+                    android:textColor="@color/pt_text_primary"
+                    android:textSize="17sp"
+                    android:textStyle="bold" />
+
+                <TextView
+                    android:id="@+id/tvTrackingLastUpdate"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="8dp"
+                    android:text="@string/delivery_tracking_last_update_unavailable"
+                    android:textColor="@color/pt_text_secondary"
+                    android:textSize="14sp" />
+
+                <TextView
+                    android:id="@+id/btnResumeTracking"
+                    android:layout_width="match_parent"
+                    android:layout_height="48dp"
+                    android:layout_marginTop="18dp"
+                    android:background="@drawable/bg_button_primary_gold"
+                    android:gravity="center"
+                    android:text="@string/delivery_tracking_resume"
+                    android:textColor="@color/pt_text_dark"
+                    android:textSize="15sp"
+                    android:textStyle="bold" />
+
+            </LinearLayout>
+
+            <LinearLayout
                 android:id="@+id/paymentCard"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"

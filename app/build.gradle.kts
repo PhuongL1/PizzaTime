@@ -20,6 +20,7 @@ android {
         versionName = "1.0"
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
+        manifestPlaceholders["deliveryTrackingServiceEnabled"] = "false"
     }
 
     flavorDimensions += "role"
@@ -100,6 +101,7 @@ android {
             dimension = "role"
             applicationIdSuffix = ".shipper"
             versionNameSuffix = "-shipper"
+            manifestPlaceholders["deliveryTrackingServiceEnabled"] = "true"
 
             buildConfigField(
                 "String",

@@ -42,6 +42,7 @@ import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.kitchen.detail.KitchenOrderDetailFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.shipper.detail.ShipperDeliveryDetailFragment
+import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingService
 import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
 import com.devpro.pizzatime.feature.staff.detail.StaffOrderDetailFragment
 import com.devpro.pizzatime.shared.drawer.StaffDrawerItem
@@ -100,6 +101,7 @@ fun Fragment.clearAppBackStack() {
 }
 
 fun Fragment.signOutAndOpenLogin() {
+    DeliveryTrackingService.stop(requireContext())
     FcmTokenRegistrar.clearCurrentDeviceToken(requireContext().applicationContext)
     FirebaseAuth.getInstance().signOut()
     OrderNotificationMonitor.stop()

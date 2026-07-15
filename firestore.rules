@@ -151,6 +151,85 @@ service cloud.firestore {
         );
     }
 
+    function orderDocument(orderId) {
+      return get(/databases/$(database)/documents/orders/$(orderId));
+    }
+
+    function canReadCurrentTracking(orderId) {
+      return exists(/databases/$(database)/documents/orders/$(orderId))
+        && (
+          (
+            isCustomer()
+            && orderDocument(orderId).data.customerId == request.auth.uid
+          )
+          || (
+            isShipper()
+            && orderDocument(orderId).data.shipperId == request.auth.uid
+          )
+        );
+    }
+
+    function validCurrentTrackingFields() {
+      return request.resource.data.keys().hasAll([
+          "shipperId",
+          "location",
+          "accuracyMeters",
+          "recordedAt",
+          "updatedAt",
+          "orderStatus",
+          "schemaVersion"
+        ])
+        && request.resource.data.keys().hasOnly([
+          "shipperId",
+          "location",
+          "accuracyMeters",
+          "bearingDegrees",
+          "speedMetersPerSecond",
+          "recordedAt",
+          "updatedAt",
+          "orderStatus",
+          "schemaVersion"
+        ])
+        && request.resource.data.shipperId is string
+        && request.resource.data.shipperId == request.auth.uid
+        && request.resource.data.location is latlng
+        && request.resource.data.accuracyMeters is number
+        && request.resource.data.accuracyMeters >= 0
+        && request.resource.data.accuracyMeters <= 100
+        && (
+          !request.resource.data.keys().hasAny(["bearingDegrees"])
+          || (
+            request.resource.data.bearingDegrees is number
+            && request.resource.data.bearingDegrees >= 0
+            && request.resource.data.bearingDegrees < 360
+          )
+        )
+        && (
+          !request.resource.data.keys().hasAny(["speedMetersPerSecond"])
+          || (
+            request.resource.data.speedMetersPerSecond is number
+            && request.resource.data.speedMetersPerSecond >= 0
+            && request.resource.data.speedMetersPerSecond <= 100
+          )
+        )
+        && request.resource.data.recordedAt is timestamp
+        && request.resource.data.recordedAt >= request.time - duration.value(10, "m")
+        && request.resource.data.recordedAt <= request.time + duration.value(1, "m")
+        && request.resource.data.updatedAt is timestamp
+        && request.resource.data.updatedAt == request.time
+        && request.resource.data.orderStatus == "DELIVERING"
+        && request.resource.data.schemaVersion is int
+        && request.resource.data.schemaVersion == 1;
+    }
+
+    function canWriteCurrentTracking(orderId) {
+      return exists(/databases/$(database)/documents/orders/$(orderId))
+        && isShipper()
+        && orderDocument(orderId).data.shipperId == request.auth.uid
+        && orderDocument(orderId).data.status == "DELIVERING"
+        && validCurrentTrackingFields();
+    }
+
     function orderStatusOnlyUpdate() {
       return request.resource.data.diff(resource.data).affectedKeys().hasOnly([
         "status",
@@ -402,6 +481,12 @@ service cloud.firestore {
           && shipperStatusTransition()
         );
       allow delete: if isAdmin();
+
+      match /tracking/current {
+        allow get: if canReadCurrentTracking(orderId);
+        allow create, update: if canWriteCurrentTracking(orderId);
+        allow list, delete: if false;
+      }
     }
 
     match /{document=**} {
