@@ -1,6 +1,5 @@
 package com.devpro.pizzatime.feature.customer.orderdetail
 
-import android.app.AlertDialog
 import android.graphics.Typeface
 import android.graphics.drawable.ColorDrawable
 import android.os.Bundle
@@ -11,11 +10,14 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.ScrollView
 import android.widget.TextView
-import android.widget.Toast
+import androidx.appcompat.app.AlertDialog
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderDetailBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderDetailLineBinding
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
@@ -26,6 +28,7 @@ import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestore
 import com.devpro.pizzatime.feature.customer.rating.CustomerProductReviewFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
 import com.google.firebase.auth.FirebaseAuth
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import java.util.Locale
 
 class CustomerOrderDetailFragment : Fragment() {
@@ -98,16 +101,16 @@ class CustomerOrderDetailFragment : Fragment() {
                         bindOrderDetail(detail)
                         loadRatingState(detail)
                     }
-                    .onFailure {
-                        Toast.makeText(
-                            requireContext(),
-                            if (it.message?.contains("not found", ignoreCase = true) == true) {
+                    .onFailure { error ->
+                        Log.e(TAG, "Failed to load customer orderId=$orderId", error)
+                        AppUiMessageBus.publish(
+                            textRes = if (error.message?.contains("not found", ignoreCase = true) == true) {
                                 R.string.notification_order_unavailable
                             } else {
                                 R.string.customer_order_detail_load_failed
                             },
-                            Toast.LENGTH_SHORT,
-                        ).show()
+                            type = UiMessageType.ERROR,
+                        )
                         parentFragmentManager.popBackStack()
                     }
             }
@@ -230,19 +233,11 @@ class CustomerOrderDetailFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         btnReorder.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.customer_order_detail_reorder_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.customer_order_detail_reorder_toast, UiMessageType.INFO)
         }
 
         btnSupport.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.customer_order_detail_support_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.customer_order_detail_support_toast, UiMessageType.INFO)
         }
 
         btnRateOrder.setOnClickListener {
@@ -285,11 +280,11 @@ class CustomerOrderDetailFragment : Fragment() {
         val detail = currentOrderDetail ?: return
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         if (uid.isNullOrBlank()) {
-            Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.customer_favorites_login_required, UiMessageType.WARNING)
             return
         }
         if (!isRealOrderLoaded) {
-            Toast.makeText(requireContext(), R.string.could_not_save_rating, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.could_not_save_rating, UiMessageType.ERROR)
             return
         }
 
@@ -300,7 +295,7 @@ class CustomerOrderDetailFragment : Fragment() {
             item.productId.trim().ifBlank { item.name.trim().lowercase(Locale.US) }
         }
         if (rateableItems.isEmpty()) {
-            Toast.makeText(requireContext(), R.string.select_a_rating, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.select_a_rating, UiMessageType.WARNING)
             return
         }
 
@@ -385,7 +380,7 @@ class CustomerOrderDetailFragment : Fragment() {
                     item.productId to (selectedRatings[item.productId] ?: 0)
                 }.filterValues { it in 1..5 }
                 if (payload.size != rateableItems.size) {
-                    Toast.makeText(requireContext(), R.string.select_a_rating, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.select_a_rating, UiMessageType.WARNING)
                     return@setOnClickListener
                 }
 
@@ -402,16 +397,12 @@ class CustomerOrderDetailFragment : Fragment() {
                         .onSuccess {
                             existingRatings = payload
                             binding.btnRateOrder.text = getString(R.string.update_rating)
-                            Toast.makeText(requireContext(), R.string.rating_saved, Toast.LENGTH_SHORT).show()
+                            showUiMessage(R.string.rating_saved, UiMessageType.SUCCESS)
                             dialog.dismiss()
                         }
                         .onFailure { error ->
                             Log.e(TAG, "Submit rating failed", error)
-                            Toast.makeText(
-                                requireContext(),
-                                R.string.could_not_save_rating,
-                                Toast.LENGTH_SHORT,
-                            ).show()
+                            showUiMessage(R.string.could_not_save_rating, UiMessageType.ERROR)
                             updateSaveButtonState?.invoke()
                         }
                 }
@@ -479,7 +470,7 @@ class CustomerOrderDetailFragment : Fragment() {
             return
         }
 
-        AlertDialog.Builder(requireContext())
+        MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.customer_order_detail_cancel_title)
             .setMessage(R.string.customer_order_detail_cancel_message)
             .setNegativeButton(android.R.string.cancel, null)
@@ -501,21 +492,14 @@ class CustomerOrderDetailFragment : Fragment() {
             result
                 .onSuccess {
                     isCancellingOrder = false
-                    Toast.makeText(
-                        requireContext(),
-                        R.string.customer_order_detail_cancel_success,
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(R.string.customer_order_detail_cancel_success, UiMessageType.SUCCESS)
                     loadOrder(currentOrderId)
                 }
                 .onFailure { error ->
+                    Log.e(TAG, "Failed to cancel customer orderId=$currentOrderId", error)
                     isCancellingOrder = false
                     binding.btnCancelOrder.isEnabled = true
-                    Toast.makeText(
-                        requireContext(),
-                        error.message ?: getString(R.string.customer_order_detail_cancel_failed),
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                    showUiMessage(R.string.customer_order_detail_cancel_failed, UiMessageType.ERROR)
                 }
         }
     }

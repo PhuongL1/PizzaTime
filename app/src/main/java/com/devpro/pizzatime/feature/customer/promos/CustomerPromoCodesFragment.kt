@@ -7,11 +7,12 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerPromoCodesBinding
 import com.devpro.pizzatime.databinding.ItemCustomerPromoCardBinding
 import com.devpro.pizzatime.feature.customer.cart.CartStore
@@ -75,7 +76,7 @@ class CustomerPromoCodesFragment : Fragment() {
                     activePromos = emptyList()
                     pastPromos = emptyList()
                     renderCurrentTab()
-                    showToast(R.string.promo_load_failed)
+                    showPromoMessage(R.string.promo_load_failed, UiMessageType.ERROR)
                 }
         }
     }
@@ -249,7 +250,7 @@ class CustomerPromoCodesFragment : Fragment() {
 
     private fun applyPromo(promo: CustomerPromoUiModel) {
         if (CartStore.items.isEmpty()) {
-            showToast(R.string.promo_add_items_first)
+            showPromoMessage(R.string.promo_add_items_first, UiMessageType.WARNING)
             return
         }
 
@@ -264,7 +265,7 @@ class CustomerPromoCodesFragment : Fragment() {
                     when (validation) {
                         is CheckoutConsistencyRepository.PromoValidationResult.Valid -> {
                             CartStore.setPromo(validation.promoCode, validation.discount)
-                            showToast(R.string.promo_applied)
+                            showPromoMessage(R.string.promo_applied, UiMessageType.SUCCESS)
                             openCartScreen()
                         }
 
@@ -274,7 +275,7 @@ class CustomerPromoCodesFragment : Fragment() {
                     }
                 }
                 .onFailure {
-                    showToast(R.string.promo_unavailable)
+                    showPromoMessage(R.string.promo_unavailable, UiMessageType.ERROR)
                 }
         }
     }
@@ -284,11 +285,11 @@ class CustomerPromoCodesFragment : Fragment() {
     ) {
         when (reason) {
             CheckoutConsistencyRepository.PromoValidationFailureReason.NOT_ELIGIBLE -> {
-                showToast(R.string.promo_not_eligible_for_this_cart)
+                showPromoMessage(R.string.promo_not_eligible_for_this_cart, UiMessageType.ERROR)
             }
 
             CheckoutConsistencyRepository.PromoValidationFailureReason.UNAVAILABLE -> {
-                showToast(R.string.promo_unavailable)
+                showPromoMessage(R.string.promo_unavailable, UiMessageType.ERROR)
             }
         }
     }
@@ -316,8 +317,11 @@ class CustomerPromoCodesFragment : Fragment() {
         }
     }
 
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    private fun showPromoMessage(
+        messageRes: Int,
+        type: UiMessageType,
+    ) {
+        showUiMessage(messageRes, type)
     }
 
     private fun Int.dp(): Int {

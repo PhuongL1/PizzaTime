@@ -4,9 +4,12 @@ import android.os.Bundle
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessage
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.UiText
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerMemberQrBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
@@ -78,11 +81,11 @@ class CustomerMemberQrFragment : Fragment() {
 
     private fun setupActions() = with(binding) {
         historyCard.setOnClickListener {
-            showToast(getString(R.string.customer_member_qr_history_toast))
+            showMemberMessage(getString(R.string.customer_member_qr_history_toast))
         }
 
         rewardsCard.setOnClickListener {
-            showToast(getString(R.string.customer_member_qr_rewards_toast))
+            showMemberMessage(getString(R.string.customer_member_qr_rewards_toast))
         }
     }
 
@@ -93,7 +96,7 @@ class CustomerMemberQrFragment : Fragment() {
         }
 
         CustomerProfileFirestoreRepository.loadProfile(uid) { result ->
-            if (!isAdded) return@loadProfile
+            if (_binding == null || !isAdded) return@loadProfile
             result.onSuccess { profile ->
                 memberQrData = memberQrData.copy(
                     memberTitle = profile.fullName,
@@ -111,8 +114,9 @@ class CustomerMemberQrFragment : Fragment() {
         return NumberFormat.getNumberInstance(Locale.US).format(value)
     }
 
-    private fun showToast(message: String) {
-        Toast.makeText(requireContext(), message, Toast.LENGTH_SHORT).show()
+    private fun showMemberMessage(message: String) {
+        val text = UiText.Dynamic.from(message) ?: return
+        showUiMessage(UiMessage(text = text, type = UiMessageType.INFO))
     }
 
     override fun onDestroyView() {

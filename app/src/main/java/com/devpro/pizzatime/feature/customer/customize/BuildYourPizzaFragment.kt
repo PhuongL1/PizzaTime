@@ -6,10 +6,11 @@ import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentBuildYourPizzaBinding
 import com.devpro.pizzatime.databinding.ItemBuildPizzaCheeseBinding
 import com.devpro.pizzatime.databinding.ItemBuildPizzaSauceBinding
@@ -219,11 +220,7 @@ class BuildYourPizzaFragment : Fragment() {
 
     private fun setupActions(): Unit = with(binding) {
         btnAddToOrder.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.build_pizza_added_message),
-                Toast.LENGTH_SHORT,
-            ).show()
+        showUiMessage(R.string.build_pizza_added_message, UiMessageType.SUCCESS)
 
             // TODO: Sau này thay bằng CartRepository.addItem(...)
             // Fake UI hiện chỉ tính giá và show toast.

@@ -3,7 +3,6 @@ package com.devpro.pizzatime.feature.customer.notifications
 import android.os.Bundle
 import android.text.format.DateUtils
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
@@ -12,6 +11,8 @@ import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.notification.AppNotification
 import com.devpro.pizzatime.core.notification.NotificationDeepLink
 import com.devpro.pizzatime.core.notification.NotificationInboxStore
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCustomerNotificationsBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
@@ -138,7 +139,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.CUSTOMER_ORDER_TRACKING -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openOrderTracking(orderId)
                 }
@@ -147,7 +148,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.CUSTOMER_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openCustomerOrderDetail(orderId)
                 }
@@ -156,7 +157,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.STAFF_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openStaffOrderDetail(orderId)
                 }
@@ -165,7 +166,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.KITCHEN_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openKitchenOrderDetail(orderId)
                 }
@@ -174,7 +175,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.SHIPPER_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openShipperDeliveryDetail(orderId)
                 }
@@ -183,7 +184,7 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.ADMIN_ORDER_DETAIL -> {
                 val orderId = notification.orderId.orEmpty()
                 if (orderId.isBlank()) {
-                    Toast.makeText(requireContext(), R.string.notification_order_unavailable, Toast.LENGTH_SHORT).show()
+                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
                 } else {
                     openStaffOrderDetail(orderId)
                 }

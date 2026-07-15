@@ -962,6 +962,16 @@
     <string name="customer_favorites_view_login_required">Sign in to view favorites.</string>
     <string name="customer_favorites_product_unavailable">Product is no longer available.</string>
     <string name="feedback_action_failed">Could not complete this action.</string>
+    <string name="auth_google_signup_unavailable">Google sign-up is not available yet.</string>
+    <string name="auth_facebook_signup_unavailable">Facebook sign-up is not available yet.</string>
+    <string name="auth_register_success">Account created successfully.</string>
+    <string name="auth_register_failed">Could not create your account.</string>
+    <string name="pizza_detail_topping_selected">Selected %1$s.</string>
+    <string name="pizza_detail_topping_removed">Removed %1$s.</string>
+    <string name="pizza_detail_added_to_cart">Added %1$d %2$s to cart.</string>
+    <string name="pizza_detail_customize_unavailable">Additional customization is not available yet.</string>
+    <string name="order_tracking_item_unavailable">Order item details are not available yet.</string>
+    <string name="customer_account_logout_confirmation">Sign out of this account?</string>
     <string name="app_edition_mismatch">This account cannot use this app edition.</string>
     <string name="customer_favorites_cart_toast">Cart coming soon</string>
 

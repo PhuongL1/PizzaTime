@@ -8,6 +8,9 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import androidx.fragment.app.FragmentManager
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.lifecycleScope
+import androidx.lifecycle.repeatOnLifecycle
 import com.devpro.pizzatime.core.notification.AppForegroundState
 import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.NotificationDeepLinkCoordinator
@@ -17,6 +20,8 @@ import com.devpro.pizzatime.core.notification.NotificationSessionResolver
 import com.devpro.pizzatime.core.notification.NotificationStateStore
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
 import com.devpro.pizzatime.core.notification.PizzaTimeNotificationManager
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.ActivityMainBinding
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
 import com.devpro.pizzatime.feature.customer.cart.CartStore
@@ -25,6 +30,7 @@ import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.splash.SplashFragment
 import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
+import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
 
@@ -65,11 +71,20 @@ class MainActivity : AppCompatActivity() {
 
         binding = ActivityMainBinding.inflate(layoutInflater)
         setContentView(binding.root)
+        collectUiMessages()
 
         if (savedInstanceState == null) {
             supportFragmentManager.beginTransaction()
                 .replace(R.id.fragmentContainer, SplashFragment())
                 .commit()
+        }
+    }
+
+    private fun collectUiMessages() {
+        lifecycleScope.launch {
+            repeatOnLifecycle(Lifecycle.State.STARTED) {
+                AppUiMessageBus.messages.collect(::showUiMessage)
+            }
         }
     }
 

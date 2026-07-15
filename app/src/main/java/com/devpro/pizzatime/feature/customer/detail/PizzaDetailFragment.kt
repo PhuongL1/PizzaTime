@@ -1,18 +1,20 @@
 package com.devpro.pizzatime.feature.customer.detail
 
 import android.os.Bundle
+import android.util.Log
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.GridLayout
 import android.widget.TextView
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.core.view.setMargins
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.product.ProductOptionDefaults
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentPizzaDetailBinding
 import com.devpro.pizzatime.databinding.ItemExtraToppingBinding
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
@@ -243,11 +245,15 @@ class PizzaDetailFragment : Fragment() {
                 updateToppingState(itemBinding, isSelected)
                 updateAddToCartLabel()
 
-                Toast.makeText(
-                    requireContext(),
-                    if (isSelected) "Selected ${item.name}" else "Removed ${item.name}",
-                    Toast.LENGTH_SHORT,
-                ).show()
+                showUiMessage(
+                    textRes = if (isSelected) {
+                        R.string.pizza_detail_topping_selected
+                    } else {
+                        R.string.pizza_detail_topping_removed
+                    },
+                    type = UiMessageType.INFO,
+                    args = listOf(item.name),
+                )
             }
 
             val params = GridLayout.LayoutParams().apply {
@@ -337,15 +343,15 @@ class PizzaDetailFragment : Fragment() {
                 ),
             )
             updateCartBadge()
-            Toast.makeText(
-                requireContext(),
-                "Added $quantity ${pizzaDetail.name}",
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(
+                textRes = R.string.pizza_detail_added_to_cart,
+                type = UiMessageType.SUCCESS,
+                args = listOf(quantity, pizzaDetail.name),
+            )
         }
 
         binding.btnCustomizeToppings.setOnClickListener {
-            Toast.makeText(requireContext(), "Profile coming soon", Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.pizza_detail_customize_unavailable, UiMessageType.INFO)
         }
     }
 
@@ -367,11 +373,11 @@ class PizzaDetailFragment : Fragment() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid
         val productId = pizzaDetail.id
         if (uid == null) {
-            Toast.makeText(requireContext(), R.string.customer_favorites_login_required, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.customer_favorites_login_required, UiMessageType.WARNING)
             return
         }
         if (productId.isBlank()) {
-            Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+            showUiMessage(R.string.customer_favorites_update_failed, UiMessageType.ERROR)
             return
         }
 
@@ -382,18 +388,19 @@ class PizzaDetailFragment : Fragment() {
                 .onSuccess {
                     isFavorite = nextFavorite
                     bindFavoriteIcon()
-                    Toast.makeText(
-                        requireContext(),
-                        if (isFavorite) {
-                            getString(R.string.customer_favorites_saved_toast, pizzaDetail.name)
+                    showUiMessage(
+                        textRes = if (isFavorite) {
+                            R.string.customer_favorites_saved_toast
                         } else {
-                            getString(R.string.customer_favorites_removed_toast, pizzaDetail.name)
+                            R.string.customer_favorites_removed_toast
                         },
-                        Toast.LENGTH_SHORT,
-                    ).show()
+                        type = UiMessageType.SUCCESS,
+                        args = listOf(pizzaDetail.name),
+                    )
                 }
-                .onFailure {
-                    Toast.makeText(requireContext(), R.string.customer_favorites_update_failed, Toast.LENGTH_SHORT).show()
+                .onFailure { error ->
+                    Log.e(TAG, "Failed to update favorite productId=$productId", error)
+                    showUiMessage(R.string.customer_favorites_update_failed, UiMessageType.ERROR)
                 }
         }
 
@@ -566,6 +573,7 @@ class PizzaDetailFragment : Fragment() {
     }
 
     companion object {
+        private const val TAG = "PizzaDetail"
         private const val ARG_PRODUCT_ID = "product_id"
         private const val ARG_NAME = "name"
         private const val ARG_DESCRIPTION = "description"

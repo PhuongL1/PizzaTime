@@ -1,10 +1,14 @@
 package com.devpro.pizzatime.core.ui.message
 
+import android.app.Activity
 import android.content.Context
 import android.os.Looper
 import android.view.View
+import android.view.ViewGroup
 import androidx.annotation.ColorRes
+import androidx.annotation.StringRes
 import androidx.core.content.ContextCompat
+import androidx.core.view.children
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.google.android.material.snackbar.BaseTransientBottomBar
@@ -39,6 +43,49 @@ fun Fragment.showUiMessage(
     )
 }
 
+fun Activity.showUiMessage(message: UiMessage): Snackbar? {
+    val hostView = findViewById<View>(android.R.id.content)
+        ?.takeIf { it.isAttachedToWindow }
+        ?: return null
+    if (Looper.myLooper() != Looper.getMainLooper()) {
+        hostView.post {
+            if (hostView.isAttachedToWindow) {
+                hostView.renderUiMessage(
+                    message = message,
+                    anchorView = null,
+                    actionText = null,
+                    onAction = null,
+                )
+            }
+        }
+        return null
+    }
+    return hostView.renderUiMessage(
+        message = message,
+        anchorView = null,
+        actionText = null,
+        onAction = null,
+    )
+}
+
+fun Fragment.showUiMessage(
+    @StringRes textRes: Int,
+    type: UiMessageType = UiMessageType.INFO,
+    args: List<Any> = emptyList(),
+    anchorView: View? = null,
+): Snackbar? {
+    return showUiMessage(
+        message = UiMessage(
+            text = UiText.Resource(
+                resId = textRes,
+                args = args,
+            ),
+            type = type,
+        ),
+        anchorView = anchorView,
+    )
+}
+
 private fun View.renderUiMessage(
     message: UiMessage,
     anchorView: View?,
@@ -64,7 +111,7 @@ private fun View.renderUiMessage(
         .setTextColor(ContextCompat.getColor(context, R.color.pt_text_primary_dark_bg))
         .setActionTextColor(ContextCompat.getColor(context, R.color.pt_cream))
 
-    anchorView
+    (anchorView ?: findUiMessageAnchor())
         ?.takeIf { it.isAttachedToWindow && it.rootView === rootView }
         ?.let(snackbar::setAnchorView)
 
@@ -86,6 +133,17 @@ private fun View.renderUiMessage(
     )
     snackbar.show()
     return snackbar
+}
+
+internal fun View.findUiMessageAnchor(): View? {
+    if (isShown && id != View.NO_ID) {
+        val resourceName = runCatching { resources.getResourceEntryName(id) }.getOrNull()
+        if (resourceName?.endsWith("BottomNav", ignoreCase = true) == true) {
+            return this
+        }
+    }
+    if (this !is ViewGroup) return null
+    return children.firstNotNullOfOrNull { child -> child.findUiMessageAnchor() }
 }
 
 private fun View.createDetachListener(

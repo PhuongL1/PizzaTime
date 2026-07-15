@@ -5,11 +5,12 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.LinearLayout
-import android.widget.Toast
 import androidx.core.content.ContextCompat
 import androidx.core.view.isVisible
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.databinding.FragmentCustomerOrderHistoryBinding
 import com.devpro.pizzatime.databinding.ItemCustomerOrderHistoryCardBinding
@@ -209,7 +210,7 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
 
                 btnSecondary.setOnClickListener { openOrderTracking(order.orderId) }
-                btnPrimary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_reorder_toast) }
+                btnPrimary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_reorder_toast) }
             }
 
             CustomerOrderHistoryStatus.CANCELED -> {
@@ -218,8 +219,8 @@ class CustomerOrderHistoryFragment : Fragment() {
                 btnPrimary.setBackgroundResource(R.drawable.bg_customer_order_history_outline_button)
                 btnSecondary.setBackgroundResource(R.drawable.bg_customer_order_history_muted_outline_button)
 
-                btnSecondary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_support_toast) }
-                btnPrimary.setOnClickListener { showComingSoonToast(R.string.customer_order_history_try_again_toast) }
+                btnSecondary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_support_toast) }
+                btnPrimary.setOnClickListener { showUnavailableAction(R.string.customer_order_history_try_again_toast) }
             }
 
             CustomerOrderHistoryStatus.IN_PROGRESS -> {
@@ -254,7 +255,7 @@ class CustomerOrderHistoryFragment : Fragment() {
     private fun loadFirestoreOrders() {
         val uid = FirebaseAuth.getInstance().currentUser?.uid ?: return
         CustomerOrderFirestoreRepository.loadOrderHistory(uid) { result ->
-            if (!isAdded) return@loadOrderHistory
+            if (_binding == null || !isAdded) return@loadOrderHistory
             result.onSuccess { orders ->
                 firestoreOrders = orders
                 renderOrders()
@@ -263,8 +264,8 @@ class CustomerOrderHistoryFragment : Fragment() {
         }
     }
 
-    private fun showComingSoonToast(messageRes: Int) {
-        Toast.makeText(requireContext(), getString(messageRes), Toast.LENGTH_SHORT).show()
+    private fun showUnavailableAction(messageRes: Int) {
+        showUiMessage(messageRes, UiMessageType.INFO)
     }
 
     private fun formatPrice(value: Double): String {

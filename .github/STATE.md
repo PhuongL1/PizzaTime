@@ -14,6 +14,19 @@ review: 0/3
 qa: 0/3
 note: "none"
 
+### task-20260702-79d
+task: "Remove all production Toast usage with professional feedback"
+type: refactor
+phase: IN_REVIEW
+plan: "Complete customer, role, admin, and core Toast migrations in four gated commits"
+approach: "Use shared Snackbar feedback, inline validation, Material confirmations, empty states, and a lifecycle-collected foreground message bus while preserving background system notifications."
+files: "37 Toast-bearing Kotlin files, core UI message support, MainActivity, minimal resources, Toast audit"
+review: 1/3
+qa: 1/3
+review: 2/3
+qa: 2/3
+note: "79D1 scoped Toast search, Guest/Customer assembly, Customer unit tests, lint, and two diff reviews pass"
+
 ### task-20260605-1
 task: "Soạn giáo án Kotlin OOP 1 buổi cho người mới"
 type: docs

@@ -11,11 +11,12 @@ import android.os.Bundle
 import android.os.Handler
 import android.os.Looper
 import android.view.View
-import android.widget.Toast
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.core.content.ContextCompat
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentMapPickerBinding
 import org.osmdroid.config.Configuration
 import org.osmdroid.events.MapEventsReceiver
@@ -47,7 +48,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         if (granted) {
             locateCurrentPosition()
         } else {
-            showToast(R.string.map_picker_permission_required)
+            showLocationMessage(R.string.map_picker_permission_required, UiMessageType.WARNING)
         }
     }
 
@@ -149,11 +150,12 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             val lat = selectedLat
             val lng = selectedLng
             if (address.isBlank()) {
-                Toast.makeText(requireContext(), R.string.map_picker_address_required, Toast.LENGTH_SHORT).show()
+                edtMapAddress.error = getString(R.string.map_picker_address_required)
                 return@setOnClickListener
             }
+            edtMapAddress.error = null
             if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
-                Toast.makeText(requireContext(), R.string.map_picker_coordinates_required, Toast.LENGTH_SHORT).show()
+                showLocationMessage(R.string.map_picker_coordinates_required, UiMessageType.ERROR)
                 return@setOnClickListener
             }
             val safeLat = lat ?: return@setOnClickListener
@@ -187,13 +189,13 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
     @SuppressLint("MissingPermission")
     private fun locateCurrentPosition() {
         if (!hasLocationPermission()) {
-            showToast(R.string.map_picker_permission_required)
+            showLocationMessage(R.string.map_picker_permission_required, UiMessageType.WARNING)
             return
         }
 
         val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as? LocationManager
         if (locationManager == null) {
-            showToast(R.string.map_picker_current_unavailable)
+            showLocationMessage(R.string.map_picker_current_unavailable, UiMessageType.ERROR)
             return
         }
 
@@ -201,7 +203,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             runCatching { locationManager.isProviderEnabled(provider) }.getOrDefault(false)
         }
         if (enabledProviders.isEmpty()) {
-            showToast(R.string.map_picker_location_services_disabled)
+            showLocationMessage(R.string.map_picker_location_services_disabled, UiMessageType.WARNING)
             return
         }
 
@@ -246,13 +248,13 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
 
         if (!requested) {
             clearPendingLocationRequest(locationManager)
-            showToast(R.string.map_picker_current_unavailable)
+            showLocationMessage(R.string.map_picker_current_unavailable, UiMessageType.ERROR)
             return
         }
 
         timeoutRunnable = Runnable {
             clearPendingLocationRequest(locationManager)
-            showToast(R.string.map_picker_current_unavailable)
+            showLocationMessage(R.string.map_picker_current_unavailable, UiMessageType.ERROR)
         }.also { runnable ->
             timeoutHandler.postDelayed(runnable, LOCATION_TIMEOUT_MS)
         }
@@ -262,7 +264,6 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         val point = GeoPoint(location.latitude, location.longitude)
         setSelectedPoint(point)
         binding.mapView.controller.animateTo(point)
-        showToast(R.string.map_picker_current_selected)
     }
 
     private fun clearPendingLocationRequest(
@@ -285,8 +286,11 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         return context?.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
     }
 
-    private fun showToast(messageRes: Int) {
-        Toast.makeText(requireContext(), messageRes, Toast.LENGTH_SHORT).show()
+    private fun showLocationMessage(
+        messageRes: Int,
+        type: UiMessageType,
+    ) {
+        showUiMessage(messageRes, type)
     }
 
     override fun onResume() {

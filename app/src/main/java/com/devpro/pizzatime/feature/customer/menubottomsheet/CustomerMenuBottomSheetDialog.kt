@@ -3,11 +3,12 @@ package com.devpro.pizzatime.feature.customer.menubottomsheet
 import android.app.Dialog
 import android.os.Bundle
 import android.view.View
-import android.widget.Toast
 import androidx.core.view.isVisible
 import androidx.fragment.app.FragmentManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.notification.NotificationInboxStore
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.databinding.BottomSheetCustomerMenuBinding
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerFavorites
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerNotifications
@@ -79,11 +80,11 @@ class CustomerMenuBottomSheetDialog : BottomSheetDialogFragment(R.layout.bottom_
     }
 
     private fun showComingSoon(label: String) {
-        Toast.makeText(
-            requireContext(),
-            getString(R.string.customer_menu_selected_toast, label),
-            Toast.LENGTH_SHORT,
-        ).show()
+        AppUiMessageBus.publish(
+            textRes = R.string.customer_menu_selected_toast,
+            type = UiMessageType.INFO,
+            args = listOf(label),
+        )
         dismiss()
     }
 

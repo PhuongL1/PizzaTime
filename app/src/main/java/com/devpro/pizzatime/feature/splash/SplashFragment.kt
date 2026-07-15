@@ -6,13 +6,14 @@ import android.os.Looper
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.config.AppEdition
 import com.devpro.pizzatime.core.config.AppEditionConfig
 import com.devpro.pizzatime.core.notification.FcmTokenRegistrar
 import com.devpro.pizzatime.core.notification.OrderNotificationMonitor
+import com.devpro.pizzatime.core.ui.message.AppUiMessageBus
+import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.core.session.FakeSessionStore
 import com.devpro.pizzatime.databinding.FragmentSplashBinding
 import com.devpro.pizzatime.feature.auth.FirebaseAuthRepository
@@ -63,7 +64,7 @@ class SplashFragment : Fragment() {
         }
 
         FirebaseAuthRepository.loadCurrentUserProfile { result ->
-            if (!isAdded) return@loadCurrentUserProfile
+            if (_binding == null || !isAdded) return@loadCurrentUserProfile
             result
                 .onSuccess { user ->
                     if (!AppEditionConfig.isAllowedAuthRole(user.role)) {
@@ -88,11 +89,10 @@ class SplashFragment : Fragment() {
         FakeSessionStore.logout()
         CartStore.clearForLogout()
         if (showMismatchMessage) {
-            Toast.makeText(
-                requireContext(),
-                R.string.app_edition_mismatch,
-                Toast.LENGTH_SHORT,
-            ).show()
+            AppUiMessageBus.publish(
+                textRes = R.string.app_edition_mismatch,
+                type = UiMessageType.ERROR,
+            )
         }
         openStartDestinationForEdition()
     }

@@ -5,11 +5,12 @@ import android.text.Editable
 import android.text.TextWatcher
 import android.view.View
 import android.widget.TextView
-import android.widget.Toast
 import androidx.fragment.app.Fragment
 import androidx.recyclerview.widget.LinearLayoutManager
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
+import com.devpro.pizzatime.core.ui.message.UiMessageType
+import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentSupportFaqBinding
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
@@ -94,11 +95,7 @@ class SupportFaqFragment : Fragment(R.layout.fragment_support_faq) {
         }
 
         btnContactSupport.setOnClickListener {
-            Toast.makeText(
-                requireContext(),
-                getString(R.string.support_contact_support_toast),
-                Toast.LENGTH_SHORT,
-            ).show()
+            showUiMessage(R.string.support_contact_support_toast, UiMessageType.INFO)
         }
     }
 
