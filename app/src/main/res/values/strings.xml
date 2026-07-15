@@ -1191,6 +1191,8 @@
     <string name="map_picker_delivery_title">Pick Delivery Location</string>
     <string name="map_picker_address_hint">Address</string>
     <string name="map_picker_selected_coordinates">%1$.6f, %2$.6f</string>
+    <string name="map_picker_select_point_prompt">Select a point on the map.</string>
+    <string name="osm_attribution">© OpenStreetMap contributors</string>
     <string name="map_picker_use_location">USE THIS LOCATION</string>
     <string name="map_picker_use_current_location">USE CURRENT LOCATION</string>
     <string name="map_picker_address_required">Address is required.</string>

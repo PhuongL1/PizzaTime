@@ -18,12 +18,6 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentMapPickerBinding
-import org.osmdroid.config.Configuration
-import org.osmdroid.events.MapEventsReceiver
-import org.osmdroid.tileprovider.tilesource.TileSourceFactory
-import org.osmdroid.util.GeoPoint
-import org.osmdroid.views.overlay.MapEventsOverlay
-import org.osmdroid.views.overlay.Marker
 
 class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
 
@@ -33,9 +27,8 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             "FragmentMapPickerBinding is only valid between onViewCreated and onDestroyView."
         }
 
-    private var selectedLat: Double? = null
-    private var selectedLng: Double? = null
-    private var marker: Marker? = null
+    private var selectedCoordinate: DeliveryCoordinate? = null
+    private var mapController: OsmdroidMapController? = null
     private var pendingLocationListener: LocationListener? = null
     private val timeoutHandler = Handler(Looper.getMainLooper())
     private var timeoutRunnable: Runnable? = null
@@ -43,6 +36,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
     private val locationPermissionLauncher = registerForActivityResult(
         ActivityResultContracts.RequestMultiplePermissions(),
     ) { grants ->
+        if (_binding == null) return@registerForActivityResult
         val granted = grants[Manifest.permission.ACCESS_FINE_LOCATION] == true ||
             grants[Manifest.permission.ACCESS_COARSE_LOCATION] == true
         if (granted) {
@@ -56,17 +50,25 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         super.onViewCreated(view, savedInstanceState)
         _binding = FragmentMapPickerBinding.bind(view)
 
-        Configuration.getInstance().userAgentValue = requireContext().packageName
-
         val mode = arguments?.getString(ARG_MODE).orEmpty()
         val titleRes = if (mode == MODE_STORE_PICKUP) {
             R.string.map_picker_store_title
         } else {
             R.string.map_picker_delivery_title
         }
-        val initialAddress = arguments?.getString(ARG_INITIAL_ADDRESS).orEmpty()
-        selectedLat = arguments?.getDouble(ARG_INITIAL_LAT)?.takeIf { it.isValidLatitude() }
-        selectedLng = arguments?.getDouble(ARG_INITIAL_LNG)?.takeIf { it.isValidLongitude() }
+        val initialAddress = savedInstanceState?.getString(STATE_ADDRESS)
+            ?: arguments?.getString(ARG_INITIAL_ADDRESS).orEmpty()
+        selectedCoordinate = if (savedInstanceState != null) {
+            DeliveryCoordinate.from(
+                latitude = savedInstanceState.getDoubleOrNull(STATE_LAT),
+                longitude = savedInstanceState.getDoubleOrNull(STATE_LNG),
+            )
+        } else {
+            DeliveryCoordinate.from(
+                latitude = arguments?.getDouble(ARG_INITIAL_LAT),
+                longitude = arguments?.getDouble(ARG_INITIAL_LNG),
+            )
+        }
 
         binding.tvMapPickerTitle.setText(titleRes)
         binding.edtMapAddress.setText(initialAddress)
@@ -74,57 +76,33 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         setupActions()
     }
 
-    private fun setupMap() = with(binding.mapView) {
-        setTileSource(TileSourceFactory.MAPNIK)
-        setMultiTouchControls(true)
-        minZoomLevel = MIN_ZOOM
-        maxZoomLevel = MAX_ZOOM
-
-        val startPoint = GeoPoint(
-            selectedLat ?: DEFAULT_LAT,
-            selectedLng ?: DEFAULT_LNG,
-        )
-        controller.setZoom(DEFAULT_ZOOM)
-        controller.setCenter(startPoint)
-        if (selectedLat.isValidLatitude() && selectedLng.isValidLongitude()) {
-            setSelectedPoint(startPoint)
-        } else {
-            binding.tvSelectedCoordinate.text = getString(R.string.location_coordinates_missing)
+    private fun setupMap() {
+        val controller = OsmdroidMapController(binding.mapView).also {
+            mapController = it
         }
-
-        overlays.add(
-            MapEventsOverlay(
-                object : MapEventsReceiver {
-                    override fun singleTapConfirmedHelper(point: GeoPoint): Boolean {
-                        setSelectedPoint(point)
-                        return true
-                    }
-
-                    override fun longPressHelper(point: GeoPoint): Boolean = false
-                },
-            ),
-        )
+        val initialCoordinate = selectedCoordinate
+        if (initialCoordinate != null) {
+            setSelectedPoint(initialCoordinate)
+            controller.center(initialCoordinate)
+        } else {
+            controller.showWorld()
+            binding.tvSelectedCoordinate.setText(R.string.map_picker_select_point_prompt)
+        }
+        controller.addTapListener(::setSelectedPoint)
     }
 
-    private fun setSelectedPoint(point: GeoPoint) {
-        selectedLat = point.latitude
-        selectedLng = point.longitude
-        updateMarker(point)
+    private fun setSelectedPoint(coordinate: DeliveryCoordinate) {
+        if (_binding == null) return
+        selectedCoordinate = coordinate
+        mapController?.replaceMarker(
+            slot = OsmdroidMapController.MarkerSlot.SELECTION,
+            coordinate = coordinate,
+        )
         binding.tvSelectedCoordinate.text = getString(
             R.string.map_picker_selected_coordinates,
-            point.latitude,
-            point.longitude,
+            coordinate.latitude,
+            coordinate.longitude,
         )
-    }
-
-    private fun updateMarker(point: GeoPoint) = with(binding.mapView) {
-        val currentMarker = marker ?: Marker(this).also { newMarker ->
-            marker = newMarker
-            overlays.add(newMarker)
-        }
-        currentMarker.position = point
-        currentMarker.setAnchor(Marker.ANCHOR_CENTER, Marker.ANCHOR_BOTTOM)
-        invalidate()
     }
 
     private fun setupActions() = with(binding) {
@@ -147,27 +125,25 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
 
         btnUseLocation.setOnClickListener {
             val address = edtMapAddress.text.toString().trim()
-            val lat = selectedLat
-            val lng = selectedLng
+            val coordinate = selectedCoordinate
             if (address.isBlank()) {
                 edtMapAddress.error = getString(R.string.map_picker_address_required)
                 return@setOnClickListener
             }
             edtMapAddress.error = null
-            if (!lat.isValidLatitude() || !lng.isValidLongitude()) {
+            if (coordinate == null) {
                 showLocationMessage(R.string.map_picker_coordinates_required, UiMessageType.ERROR)
                 return@setOnClickListener
             }
-            val safeLat = lat ?: return@setOnClickListener
-            val safeLng = lng ?: return@setOnClickListener
+            btnUseLocation.isEnabled = false
 
             parentFragmentManager.setFragmentResult(
                 REQUEST_KEY,
                 Bundle().apply {
                     putString(KEY_MODE, arguments?.getString(ARG_MODE).orEmpty())
                     putString(KEY_ADDRESS, address)
-                    putDouble(KEY_LAT, safeLat)
-                    putDouble(KEY_LNG, safeLng)
+                    putDouble(KEY_LAT, coordinate.latitude)
+                    putDouble(KEY_LNG, coordinate.longitude)
                 },
             )
             parentFragmentManager.popBackStack()
@@ -175,7 +151,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
     }
 
     private fun hasLocationPermission(): Boolean {
-        val context = requireContext()
+        val context = context ?: return false
         return ContextCompat.checkSelfPermission(
             context,
             Manifest.permission.ACCESS_FINE_LOCATION,
@@ -193,7 +169,8 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             return
         }
 
-        val locationManager = requireContext().getSystemService(Context.LOCATION_SERVICE) as? LocationManager
+        val safeContext = context ?: return
+        val locationManager = safeContext.getSystemService(Context.LOCATION_SERVICE) as? LocationManager
         if (locationManager == null) {
             showLocationMessage(R.string.map_picker_current_unavailable, UiMessageType.ERROR)
             return
@@ -211,6 +188,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
             .mapNotNull { provider ->
                 runCatching { locationManager.getLastKnownLocation(provider) }.getOrNull()
             }
+            .filter(::isUsableLocation)
             .maxByOrNull { it.time }
 
         if (lastKnownLocation != null) {
@@ -234,7 +212,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         }
         pendingLocationListener = listener
 
-        val requested = providers.any { provider ->
+        val requested = providers.map { provider ->
             runCatching {
                 locationManager.requestLocationUpdates(
                     provider,
@@ -244,7 +222,7 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
                     Looper.getMainLooper(),
                 )
             }.isSuccess
-        }
+        }.any { it }
 
         if (!requested) {
             clearPendingLocationRequest(locationManager)
@@ -261,9 +239,21 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
     }
 
     private fun applyCurrentLocation(location: Location) {
-        val point = GeoPoint(location.latitude, location.longitude)
-        setSelectedPoint(point)
-        binding.mapView.controller.animateTo(point)
+        if (_binding == null) return
+        val coordinate = DeliveryCoordinate.from(location.latitude, location.longitude)
+        if (coordinate == null) {
+            showLocationMessage(R.string.map_picker_current_unavailable, UiMessageType.ERROR)
+            return
+        }
+        setSelectedPoint(coordinate)
+        mapController?.center(coordinate, animate = true)
+    }
+
+    private fun isUsableLocation(location: Location): Boolean {
+        val ageMillis = System.currentTimeMillis() - location.time
+        return DeliveryCoordinate.from(location.latitude, location.longitude) != null &&
+            location.time > 0L &&
+            ageMillis in 0..MAX_LAST_KNOWN_AGE_MS
     }
 
     private fun clearPendingLocationRequest(
@@ -290,23 +280,38 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         messageRes: Int,
         type: UiMessageType,
     ) {
+        if (!isAdded || _binding == null) return
         showUiMessage(messageRes, type)
+    }
+
+    private fun Bundle.getDoubleOrNull(key: String): Double? {
+        return if (containsKey(key)) getDouble(key) else null
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_ADDRESS, _binding?.edtMapAddress?.text?.toString().orEmpty())
+        selectedCoordinate?.let { coordinate ->
+            outState.putDouble(STATE_LAT, coordinate.latitude)
+            outState.putDouble(STATE_LNG, coordinate.longitude)
+        }
     }
 
     override fun onResume() {
         super.onResume()
-        binding.mapView.onResume()
+        mapController?.onResume()
     }
 
     override fun onPause() {
         clearPendingLocationRequest()
-        binding.mapView.onPause()
+        mapController?.onPause()
         super.onPause()
     }
 
     override fun onDestroyView() {
         clearPendingLocationRequest()
-        binding.mapView.onDetach()
+        mapController?.destroy()
+        mapController = null
         _binding = null
         super.onDestroyView()
     }
@@ -324,12 +329,11 @@ class MapPickerFragment : Fragment(R.layout.fragment_map_picker) {
         private const val ARG_INITIAL_ADDRESS = "arg_initial_address"
         private const val ARG_INITIAL_LAT = "arg_initial_lat"
         private const val ARG_INITIAL_LNG = "arg_initial_lng"
-        private const val DEFAULT_LAT = 21.0278
-        private const val DEFAULT_LNG = 105.8342
-        private const val DEFAULT_ZOOM = 15.0
-        private const val MIN_ZOOM = 3.0
-        private const val MAX_ZOOM = 20.0
+        private const val STATE_ADDRESS = "state_address"
+        private const val STATE_LAT = "state_lat"
+        private const val STATE_LNG = "state_lng"
         private const val LOCATION_TIMEOUT_MS = 10_000L
+        private const val MAX_LAST_KNOWN_AGE_MS = 2 * 60 * 1000L
         private val LOCATION_PROVIDERS = listOf(
             LocationManager.GPS_PROVIDER,
             LocationManager.NETWORK_PROVIDER,
