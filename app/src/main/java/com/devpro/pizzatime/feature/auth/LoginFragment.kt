@@ -93,7 +93,7 @@ class LoginFragment : Fragment() {
                         args = listOf(user.displayName),
                     )
 
-                    FcmTokenRegistrar.registerCurrentToken()
+                    FcmTokenRegistrar.registerCurrentToken(requireContext().applicationContext)
                     openHomeByRole(user.role)
                 }
                 .onFailure { error ->

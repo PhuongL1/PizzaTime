@@ -1,7 +1,6 @@
 package com.devpro.pizzatime
 
 import android.Manifest
-import android.app.AlertDialog
 import android.os.Build
 import android.os.Bundle
 import androidx.appcompat.app.AppCompatActivity
@@ -30,6 +29,7 @@ import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.splash.SplashFragment
 import com.devpro.pizzatime.feature.staff.dashboard.StaffDashboardFragment
+import com.google.android.material.dialog.MaterialAlertDialogBuilder
 import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity() {
@@ -37,7 +37,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var binding: ActivityMainBinding
     private val notificationPermissionLauncher =
         registerForActivityResult(androidx.activity.result.contract.ActivityResultContracts.RequestPermission()) {
-            FcmTokenRegistrar.registerCurrentToken()
+            FcmTokenRegistrar.registerCurrentToken(applicationContext)
         }
 
     private val fragmentLifecycleCallbacks = object : FragmentManager.FragmentLifecycleCallbacks() {
@@ -63,7 +63,6 @@ class MainActivity : AppCompatActivity() {
         AppForegroundState.init()
         NotificationInboxStore.init(applicationContext)
         NotificationStateStore.init(applicationContext)
-        FcmTokenRegistrar.init(applicationContext)
         PizzaTimeNotificationManager.init(applicationContext)
         OrderNotificationMonitor.init(applicationContext)
         NotificationDeepLinkCoordinator.captureIntent(applicationContext, intent)
@@ -101,12 +100,6 @@ class MainActivity : AppCompatActivity() {
     override fun onResume() {
         super.onResume()
         NotificationInboxStore.refreshForCurrentAccount()
-        OrderNotificationMonitor.setForegroundActivity(this)
-    }
-
-    override fun onPause() {
-        OrderNotificationMonitor.setForegroundActivity(null)
-        super.onPause()
     }
 
     override fun onDestroy() {
@@ -133,7 +126,7 @@ class MainActivity : AppCompatActivity() {
         }
 
         markPermissionPrompted(scope.userId)
-        AlertDialog.Builder(this)
+        MaterialAlertDialogBuilder(this)
             .setMessage(R.string.notification_permission_rationale)
             .setNegativeButton(android.R.string.cancel, null)
             .setPositiveButton(android.R.string.ok) { _, _ ->

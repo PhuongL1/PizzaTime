@@ -53,6 +53,8 @@ data class NotificationScope(
 
 data class NotificationRoutingRequest(
     val notificationId: String,
+    val applicationId: String,
+    val recipientUserId: String,
     val recipientRole: UserRole,
     val deepLinkType: NotificationDeepLink,
     val orderId: String?,
@@ -70,6 +72,9 @@ object NotificationDeepLinkContract {
     const val EXTRA_ORDER_ID = "EXTRA_ORDER_ID"
     const val EXTRA_REVIEW_ID = "EXTRA_REVIEW_ID"
     const val EXTRA_NOTIFICATION_ID = "EXTRA_NOTIFICATION_ID"
+    const val EXTRA_NOTIFICATION_APPLICATION_ID = "EXTRA_NOTIFICATION_APPLICATION_ID"
+    const val EXTRA_NOTIFICATION_RECIPIENT_USER_ID = "EXTRA_NOTIFICATION_RECIPIENT_USER_ID"
+    const val EXTRA_NOTIFICATION_RECIPIENT_ROLE = "EXTRA_NOTIFICATION_RECIPIENT_ROLE"
 }
 
 object NotificationDefaults {

@@ -49,7 +49,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
                         bindAndSetup(order)
                     }
                     .onFailure { error ->
-                        Log.e(TAG, "Failed to load staff orderId=$orderId", error)
+                        Log.e(TAG, "Failed to load staff order", error)
                         AppUiMessageBus.publish(
                             R.string.notification_order_unavailable,
                             UiMessageType.ERROR,
@@ -299,7 +299,7 @@ class StaffOrderDetailFragment : Fragment(R.layout.fragment_staff_order_detail) 
                     parentFragmentManager.popBackStack()
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to cancel staff orderId=$orderId", error)
+                    Log.e(TAG, "Failed to cancel staff order", error)
                     isCancellingOrder = false
                     btnCancelOrder.isEnabled = true
                     showUiMessage(R.string.staff_order_detail_cancel_failed, UiMessageType.ERROR)

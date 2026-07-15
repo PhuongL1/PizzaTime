@@ -45,7 +45,7 @@ object CustomerProductReviewFirestoreRepository {
                         .addOnFailureListener { error ->
                             Log.e(
                                 TAG,
-                                "loadOrderRatings failed orderId=$orderId resolvedOrderId=${orderSnapshot.id} customerId=$customerId",
+                                "Could not load order ratings",
                                 error,
                             )
                             onResult(Result.failure(error))
@@ -54,7 +54,7 @@ object CustomerProductReviewFirestoreRepository {
                 .onFailure { error ->
                     Log.e(
                         TAG,
-                        "loadOrderRatings could not resolve orderId=$orderId customerId=$customerId",
+                        "Could not resolve order for ratings",
                         error,
                     )
                     onResult(Result.failure(error))
@@ -76,7 +76,7 @@ object CustomerProductReviewFirestoreRepository {
                 val rating = entry.value
                 if (productId.isBlank() || rating !in 1..5) {
                     if (productId.isBlank()) {
-                        Log.w(TAG, "submitOrderRatings skipped blank productId orderId=$rawOrderId customerId=$customerId")
+                        Log.w(TAG, "Order rating skipped because a product identifier is missing")
                     }
                     null
                 } else {
@@ -103,7 +103,7 @@ object CustomerProductReviewFirestoreRepository {
                         val error = IllegalStateException("Delivered order validation failed.")
                         Log.e(
                             TAG,
-                            "submitOrderRatings validation failed orderId=$rawOrderId normalizedOrderId=$normalizedOrderId resolvedOrderId=${orderSnapshot.id} customerId=$customerId orderCustomerId=$orderCustomerId status=$orderStatus productIds=${sanitizedRatings.keys.sorted()}",
+                            "Order rating validation failed",
                             error,
                         )
                         onResult(Result.failure(error))
@@ -133,15 +133,13 @@ object CustomerProductReviewFirestoreRepository {
                         .addOnSuccessListener {
                             updateProductAggregatesBestEffort(
                                 productIds = sanitizedRatings.keys.toList(),
-                                resolvedOrderId = orderSnapshot.id,
-                                customerId = customerId,
                             )
                             onResult(Result.success(Unit))
                         }
                         .addOnFailureListener { error ->
                             Log.e(
                                 TAG,
-                                "submitOrderRatings failed orderId=$rawOrderId normalizedOrderId=$normalizedOrderId resolvedOrderId=${orderSnapshot.id} customerId=$customerId productIds=${sanitizedRatings.keys.sorted()}",
+                                "Could not submit order ratings",
                                 error,
                             )
                             onResult(Result.failure(error))
@@ -150,7 +148,7 @@ object CustomerProductReviewFirestoreRepository {
                 .onFailure { error ->
                     Log.e(
                         TAG,
-                        "submitOrderRatings failed orderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId productIds=${sanitizedRatings.keys.sorted()}",
+                        "Could not resolve order before submitting ratings",
                         error,
                     )
                     onResult(Result.failure(error))
@@ -160,23 +158,13 @@ object CustomerProductReviewFirestoreRepository {
 
     private fun updateProductAggregatesBestEffort(
         productIds: List<String>,
-        resolvedOrderId: String,
-        customerId: String,
     ) {
         productIds.distinct().forEach { productId ->
-            refreshProductAggregate(
-                productId = productId,
-                resolvedOrderId = resolvedOrderId,
-                customerId = customerId,
-            )
+            refreshProductAggregate(productId)
         }
     }
 
-    private fun refreshProductAggregate(
-        productId: String,
-        resolvedOrderId: String,
-        customerId: String,
-    ) {
+    private fun refreshProductAggregate(productId: String) {
         firestore.collection("productReviews")
             .whereEqualTo("productId", productId)
             .get()
@@ -196,7 +184,7 @@ object CustomerProductReviewFirestoreRepository {
                         if (!productSnapshot.exists()) {
                             Log.w(
                                 TAG,
-                                "refreshProductAggregate skipped missing product productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                                "Product rating aggregate skipped because product is unavailable",
                             )
                             return@addOnSuccessListener
                         }
@@ -212,7 +200,7 @@ object CustomerProductReviewFirestoreRepository {
                         ).addOnFailureListener { error ->
                             Log.e(
                                 TAG,
-                                "refreshProductAggregate failed productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                                "Could not update product rating aggregate",
                                 error,
                             )
                         }
@@ -220,7 +208,7 @@ object CustomerProductReviewFirestoreRepository {
                     .addOnFailureListener { error ->
                         Log.e(
                             TAG,
-                            "refreshProductAggregate could not read product productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                            "Could not read product for rating aggregate",
                             error,
                         )
                     }
@@ -228,7 +216,7 @@ object CustomerProductReviewFirestoreRepository {
             .addOnFailureListener { error ->
                 Log.e(
                     TAG,
-                    "refreshProductAggregate could not read reviews productId=$productId resolvedOrderId=$resolvedOrderId customerId=$customerId",
+                    "Could not read product reviews for aggregate",
                     error,
                 )
             }
@@ -270,7 +258,7 @@ object CustomerProductReviewFirestoreRepository {
                 .addOnFailureListener { error ->
                     Log.e(
                         TAG,
-                        "resolveOrderDocument direct lookup failed candidate=$candidate rawOrderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId",
+                        "Direct order lookup failed while resolving ratings",
                         error,
                     )
                     tryDirect(index + 1)
@@ -303,7 +291,7 @@ object CustomerProductReviewFirestoreRepository {
                 val error = IllegalStateException("Delivered order not found.")
                 Log.e(
                     TAG,
-                    "resolveOrderDocument failed rawOrderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId",
+                    "Order lookup failed while resolving ratings",
                     error,
                 )
                 onResult(Result.failure(error))
@@ -326,7 +314,7 @@ object CustomerProductReviewFirestoreRepository {
                 .addOnFailureListener { error ->
                     Log.e(
                         TAG,
-                        "resolveOrderDocument fallback failed field=$field value=$value rawOrderId=$rawOrderId normalizedOrderId=$normalizedOrderId customerId=$customerId",
+                        "Fallback order lookup failed while resolving ratings",
                         error,
                     )
                     tryLookup(index + 1)

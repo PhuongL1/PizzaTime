@@ -4,9 +4,7 @@ import android.content.Context
 import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
-import com.google.firebase.Timestamp
 import com.google.firebase.firestore.DocumentSnapshot
-import java.util.Locale
 
 data class OrderHistoryEvent(
     val status: String,
@@ -59,10 +57,9 @@ object NotificationEventFactory {
             if (status.isBlank()) {
                 return@mapNotNull null
             }
-            val timestamp = map["createdAt"] as? Timestamp
             OrderHistoryEvent(
                 status = status,
-                createdAtMillis = timestamp.toEpochMillis(),
+                createdAtMillis = notificationEpochMillis(map["createdAt"]),
             )
         }.sortedBy { event -> event.createdAtMillis }
     }
@@ -99,7 +96,63 @@ object NotificationEventFactory {
         if (reviewId.isBlank()) {
             return null
         }
-        val orderId = document.getString("orderId").orEmpty().ifBlank { null }
+        return buildProductReviewNotification(
+            context = context,
+            scope = scope,
+            reviewId = reviewId,
+            orderId = document.getString("orderId").orEmpty().ifBlank { null },
+            productName = productName,
+            createdAtMillis = notificationEpochMillis(document.get("createdAt")),
+        )
+    }
+
+    fun createFcmNotification(
+        context: Context,
+        scope: NotificationScope,
+        data: Map<String, String>,
+    ): AppNotification? {
+        val payload = parseNotificationFcmPayload(data, scope) ?: return null
+        if (payload.type == NotificationType.ADMIN_PRODUCT_REVIEW) {
+            return buildProductReviewNotification(
+                context = context,
+                scope = scope,
+                reviewId = payload.reviewId ?: return null,
+                orderId = payload.orderId,
+                productName = payload.productName,
+                createdAtMillis = payload.eventMillis,
+            )
+        }
+
+        val orderId = payload.orderId ?: return null
+        val status = payload.orderStatus ?: return null
+        val orderCode = OrderCodeGenerator.displayOrderCode(
+            orderCode = payload.orderCode,
+            orderId = orderId,
+        )
+        return buildOrderNotification(
+            context = context,
+            scope = scope,
+            orderId = orderId,
+            orderCode = orderCode,
+            event = OrderHistoryEvent(
+                status = status,
+                createdAtMillis = payload.eventMillis,
+            ),
+            currentStatus = status,
+            reason = payload.cancellationReason,
+        )?.takeIf { notification ->
+            notification.type == payload.type && notification.dedupeKey == payload.dedupeKey
+        }
+    }
+
+    private fun buildProductReviewNotification(
+        context: Context,
+        scope: NotificationScope,
+        reviewId: String,
+        orderId: String?,
+        productName: String?,
+        createdAtMillis: Long,
+    ): AppNotification {
         val title = context.getString(R.string.notification_admin_product_review_title)
         val body = productName
             ?.trim()
@@ -110,8 +163,8 @@ object NotificationEventFactory {
             ?: context.getString(R.string.notification_admin_product_review_body_generic)
 
         return AppNotification(
-            id = "review:$reviewId",
-            dedupeKey = "review:$reviewId",
+            id = canonicalReviewNotificationDedupeKey(reviewId),
+            dedupeKey = canonicalReviewNotificationDedupeKey(reviewId),
             recipientRole = scope.role,
             recipientUserId = scope.userId,
             type = NotificationType.ADMIN_PRODUCT_REVIEW,
@@ -119,18 +172,14 @@ object NotificationEventFactory {
             body = body,
             orderId = orderId,
             reviewId = reviewId,
-            createdAtMillis = document.getTimestamp("createdAt").toEpochMillis(),
+            createdAtMillis = createdAtMillis,
             isRead = false,
             deepLinkType = NotificationDeepLink.ADMIN_REVIEW_DETAIL,
         )
     }
 
     fun normalizeStatus(status: String?): String {
-        return when (status.orEmpty().trim().uppercase(Locale.US)) {
-            "READY" -> "READY_FOR_DELIVERY"
-            "READY_TO_DELIVER" -> "READY_FOR_DELIVERY"
-            else -> status.orEmpty().trim().uppercase(Locale.US)
-        }
+        return normalizeNotificationStatus(status)
     }
 
     private fun buildOrderNotification(
@@ -169,15 +218,14 @@ object NotificationEventFactory {
             UserRole.GUEST -> null
         } ?: return null
 
-        val type = notificationType(scope.role, event.status) ?: return null
-        val deepLink = deepLinkType(scope.role, event.status)
-        val dedupeKey = when (scope.role) {
-            UserRole.STAFF ->
-                "staff:new-order:$orderId:${event.createdAtMillis}"
-
-            else ->
-                "order:$orderId:status:${event.status}:${event.createdAtMillis}"
-        }
+        val type = notificationTypeForOrderTransition(scope.role, event.status) ?: return null
+        val deepLink = notificationDeepLinkForOrder(scope.role, event.status)
+        val dedupeKey = canonicalOrderNotificationDedupeKey(
+            role = scope.role,
+            orderId = orderId,
+            status = event.status,
+            eventMillis = event.createdAtMillis,
+        )
 
         if (scope.role == UserRole.STAFF && currentStatus != "PENDING") {
             return null
@@ -262,54 +310,4 @@ object NotificationEventFactory {
         }
     }
 
-    private fun notificationType(
-        role: UserRole,
-        status: String,
-    ): NotificationType? {
-        return when (role) {
-            UserRole.CUSTOMER -> when (status) {
-                "CONFIRMED" -> NotificationType.CUSTOMER_ORDER_CONFIRMED
-                "PREPARING", "BAKING" -> NotificationType.CUSTOMER_ORDER_PREPARING
-                "READY_FOR_DELIVERY" -> NotificationType.CUSTOMER_ORDER_READY
-                "ASSIGNED_TO_SHIPPER" -> NotificationType.CUSTOMER_ORDER_STATUS_UPDATED
-                "DELIVERING" -> NotificationType.CUSTOMER_DELIVERY_STARTED
-                "DELIVERED" -> NotificationType.CUSTOMER_ORDER_DELIVERED
-                "CANCELLED" -> NotificationType.CUSTOMER_ORDER_CANCELLED
-                else -> null
-            }
-
-            UserRole.STAFF -> if (status == "PENDING") NotificationType.STAFF_NEW_ORDER else null
-            UserRole.KITCHEN -> if (status == "CONFIRMED") NotificationType.KITCHEN_CONFIRMED_ORDER else null
-            UserRole.SHIPPER -> if (status == "READY_FOR_DELIVERY") NotificationType.SHIPPER_READY_ORDER else null
-            UserRole.ADMIN -> when (status) {
-                "DELIVERED" -> NotificationType.ADMIN_ORDER_DELIVERED
-                "CANCELLED" -> NotificationType.ADMIN_ORDER_CANCELLED
-                else -> null
-            }
-
-            UserRole.GUEST -> null
-        }
-    }
-
-    private fun deepLinkType(
-        role: UserRole,
-        status: String,
-    ): NotificationDeepLink {
-        return when (role) {
-            UserRole.CUSTOMER -> when (status) {
-                "DELIVERED", "CANCELLED" -> NotificationDeepLink.CUSTOMER_ORDER_DETAIL
-                else -> NotificationDeepLink.CUSTOMER_ORDER_TRACKING
-            }
-
-            UserRole.STAFF -> NotificationDeepLink.STAFF_ORDER_DETAIL
-            UserRole.KITCHEN -> NotificationDeepLink.KITCHEN_ORDER_DETAIL
-            UserRole.SHIPPER -> NotificationDeepLink.SHIPPER_ORDER_DETAIL
-            UserRole.ADMIN -> NotificationDeepLink.ADMIN_ORDER_DETAIL
-            UserRole.GUEST -> NotificationDeepLink.NONE
-        }
-    }
-
-    private fun Timestamp?.toEpochMillis(): Long {
-        return this?.toDate()?.time ?: 0L
-    }
 }

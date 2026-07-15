@@ -13,6 +13,7 @@ import com.devpro.pizzatime.R
 import com.devpro.pizzatime.core.image.loadProductImage
 import com.devpro.pizzatime.core.notification.AppNotification
 import com.devpro.pizzatime.core.notification.NotificationDeepLink
+import com.devpro.pizzatime.core.notification.NotificationDeepLinkCoordinator
 import com.devpro.pizzatime.core.notification.NotificationInboxStore
 import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.core.ui.message.showUiMessage
@@ -21,12 +22,6 @@ import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRep
 import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavTab
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.staff.navigation.openCustomerAccount
-import com.devpro.pizzatime.feature.staff.navigation.openCustomerOrderDetail
-import com.devpro.pizzatime.feature.staff.navigation.openKitchenOrderDetail
-import com.devpro.pizzatime.feature.staff.navigation.openManageOrders
-import com.devpro.pizzatime.feature.staff.navigation.openOrderTracking
-import com.devpro.pizzatime.feature.staff.navigation.openShipperDeliveryDetail
-import com.devpro.pizzatime.feature.staff.navigation.openStaffOrderDetail
 import com.google.firebase.auth.FirebaseAuth
 import kotlinx.coroutines.launch
 
@@ -134,72 +129,13 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
     }
 
     private fun openNotification(notification: CustomerNotificationUiModel) {
-        NotificationInboxStore.markRead(notification.id)
-        when (notification.deepLinkType) {
-            NotificationDeepLink.CUSTOMER_ORDER_TRACKING -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
-                } else {
-                    openOrderTracking(orderId)
-                }
-            }
-
-            NotificationDeepLink.CUSTOMER_ORDER_DETAIL -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
-                } else {
-                    openCustomerOrderDetail(orderId)
-                }
-            }
-
-            NotificationDeepLink.STAFF_ORDER_DETAIL -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
-                } else {
-                    openStaffOrderDetail(orderId)
-                }
-            }
-
-            NotificationDeepLink.KITCHEN_ORDER_DETAIL -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
-                } else {
-                    openKitchenOrderDetail(orderId)
-                }
-            }
-
-            NotificationDeepLink.SHIPPER_ORDER_DETAIL -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
-                } else {
-                    openShipperDeliveryDetail(orderId)
-                }
-            }
-
-            NotificationDeepLink.ADMIN_ORDER_DETAIL -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    showUiMessage(R.string.notification_order_unavailable, UiMessageType.ERROR)
-                } else {
-                    openStaffOrderDetail(orderId)
-                }
-            }
-
-            NotificationDeepLink.ADMIN_REVIEW_DETAIL -> {
-                val orderId = notification.orderId.orEmpty()
-                if (orderId.isBlank()) {
-                    openManageOrders()
-                } else {
-                    openStaffOrderDetail(orderId)
-                }
-            }
-
-            NotificationDeepLink.NONE -> Unit
+        val opened = NotificationDeepLinkCoordinator.openInboxNotification(
+            context = requireContext().applicationContext,
+            fragmentManager = parentFragmentManager,
+            notificationId = notification.id,
+        )
+        if (!opened) {
+            showUiMessage(R.string.notification_destination_unavailable, UiMessageType.WARNING)
         }
     }
 
@@ -209,7 +145,11 @@ class CustomerNotificationsFragment : Fragment(R.layout.fragment_customer_notifi
             NotificationDeepLink.CUSTOMER_ORDER_DETAIL,
             -> Triple(R.drawable.ic_bag, R.drawable.bg_customer_notifications_icon_warm, R.color.pt_copper)
 
-            else -> Triple(R.drawable.customer_menu_icon_notifications, R.drawable.bg_customer_notifications_icon_neutral, R.color.pt_text_primary)
+            else -> Triple(
+                R.drawable.customer_menu_icon_notifications,
+                R.drawable.bg_customer_notifications_icon_neutral,
+                R.color.pt_text_primary,
+            )
         }
         return CustomerNotificationUiModel(
             id = id,

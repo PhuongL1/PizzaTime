@@ -69,7 +69,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                         setupActions(detail)
                     }
                     .onFailure { error ->
-                        Log.e(TAG, "Failed to load shipper orderId=$orderId", error)
+                        Log.e(TAG, "Failed to load shipper order", error)
                         AppUiMessageBus.publish(
                             R.string.notification_order_unavailable,
                             UiMessageType.ERROR,
@@ -264,7 +264,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                     )
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to update shipper orderId=$orderId to $nextStatus", error)
+                    Log.e(TAG, "Failed to update shipper order to $nextStatus", error)
                     isUpdatingStatus = false
                     renderActionButton(firestoreStatus)
                     showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)

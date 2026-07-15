@@ -42,7 +42,7 @@ class OrderSuccessFragment : Fragment(R.layout.fragment_order_success) {
                     bindOrderSuccess(uiModel)
                 }
                 .onFailure { error ->
-                    Log.w(TAG, "Could not load order success for orderId=$requestedOrderId", error)
+                    Log.w(TAG, "Could not load order success", error)
                 }
         }
     }

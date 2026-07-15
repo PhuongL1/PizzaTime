@@ -1211,6 +1211,9 @@
     <string name="shipper_complete_delivery_confirm">Complete Order</string>
     <string name="notification_permission_rationale">Allow notifications to receive order updates.</string>
     <string name="notification_order_unavailable">This order is no longer available.</string>
+    <string name="notification_destination_unavailable">This notification is not available for this account.</string>
+    <string name="notification_public_title">PizzaTime update</string>
+    <string name="notification_public_body">Open PizzaTime to view this update.</string>
     <string name="notification_channel_orders_name">Order updates</string>
     <string name="notification_channel_orders_description">Order and delivery updates from PizzaTime.</string>
     <string name="notification_channel_reviews_name">Reviews</string>

@@ -7,6 +7,7 @@ import android.app.PendingIntent
 import android.content.Context
 import android.content.Intent
 import android.media.RingtoneManager
+import android.net.Uri
 import android.os.Build
 import android.util.Log
 import androidx.core.app.NotificationCompat
@@ -38,11 +39,19 @@ object PizzaTimeNotificationManager {
     ): Boolean {
         val appContext = context.applicationContext
         ensureChannels(appContext)
+        val scope = NotificationSessionResolver.scopeForNotification(notification) ?: return false
         if (!NotificationPermissionHelper.canPostSystemNotifications(appContext)) {
             Log.d(TAG, "Notification permission disabled")
             return false
         }
 
+        val publicNotification = NotificationCompat.Builder(appContext, channelIdFor(notification.type))
+            .setSmallIcon(R.drawable.ic_notification_pizza)
+            .setContentTitle(appContext.getString(R.string.notification_public_title))
+            .setContentText(appContext.getString(R.string.notification_public_body))
+            .setCategory(NotificationCompat.CATEGORY_STATUS)
+            .setVisibility(NotificationCompat.VISIBILITY_PUBLIC)
+            .build()
         val builder = NotificationCompat.Builder(appContext, channelIdFor(notification.type))
             .setSmallIcon(R.drawable.ic_notification_pizza)
             .setContentTitle(notification.title)
@@ -53,11 +62,20 @@ object PizzaTimeNotificationManager {
             .setAutoCancel(true)
             .setOnlyAlertOnce(true)
             .setVisibility(NotificationCompat.VISIBILITY_PRIVATE)
-            .setContentIntent(buildPendingIntent(appContext, notification))
+            .setPublicVersion(publicNotification)
+            .setWhen(notification.createdAtMillis)
+            .setShowWhen(true)
+            .setGroup(systemNotificationGroupKey(scope))
+            .setContentIntent(buildPendingIntent(appContext, scope, notification))
 
-        NotificationManagerCompat.from(appContext)
-            .notify(notificationId(notification.dedupeKey), builder.build())
-        return true
+        return runCatching {
+            NotificationManagerCompat.from(appContext)
+                .notify(systemNotificationId(scope, notification.dedupeKey), builder.build())
+            true
+        }.getOrElse { error ->
+            Log.w(TAG, "System notification delivery failed", error)
+            false
+        }
     }
 
     fun showForegroundMessage(notification: AppNotification) {
@@ -111,10 +129,17 @@ object PizzaTimeNotificationManager {
 
     private fun buildPendingIntent(
         context: Context,
+        scope: NotificationScope,
         notification: AppNotification,
     ): PendingIntent {
+        val requestCode = systemNotificationId(scope, notification.dedupeKey)
         val intent = Intent(context, MainActivity::class.java).apply {
             flags = Intent.FLAG_ACTIVITY_CLEAR_TOP or Intent.FLAG_ACTIVITY_SINGLE_TOP
+            data = Uri.Builder()
+                .scheme("pizzatime-notification")
+                .authority("open")
+                .appendPath(systemNotificationIntentToken(scope, notification.dedupeKey))
+                .build()
             putExtra(
                 NotificationDeepLinkContract.EXTRA_NOTIFICATION_DEEP_LINK,
                 notification.deepLinkType.name,
@@ -122,11 +147,14 @@ object PizzaTimeNotificationManager {
             putExtra(NotificationDeepLinkContract.EXTRA_ORDER_ID, notification.orderId)
             putExtra(NotificationDeepLinkContract.EXTRA_REVIEW_ID, notification.reviewId)
             putExtra(NotificationDeepLinkContract.EXTRA_NOTIFICATION_ID, notification.id)
+            putExtra(NotificationDeepLinkContract.EXTRA_NOTIFICATION_APPLICATION_ID, scope.applicationId)
+            putExtra(NotificationDeepLinkContract.EXTRA_NOTIFICATION_RECIPIENT_USER_ID, scope.userId)
+            putExtra(NotificationDeepLinkContract.EXTRA_NOTIFICATION_RECIPIENT_ROLE, scope.role.name)
         }
 
         return PendingIntent.getActivity(
             context,
-            notificationId(notification.dedupeKey),
+            requestCode,
             intent,
             PendingIntent.FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE,
         )
@@ -139,12 +167,6 @@ object PizzaTimeNotificationManager {
             -> REVIEW_CHANNEL_ID
 
             else -> ORDER_CHANNEL_ID
-        }
-    }
-
-    private fun notificationId(dedupeKey: String): Int {
-        return dedupeKey.hashCode().let { value ->
-            if (value == Int.MIN_VALUE) Int.MAX_VALUE else kotlin.math.abs(value)
         }
     }
 

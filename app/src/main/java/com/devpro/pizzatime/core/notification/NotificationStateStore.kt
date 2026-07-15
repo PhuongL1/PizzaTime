@@ -1,17 +1,23 @@
 package com.devpro.pizzatime.core.notification
 
 import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import org.json.JSONArray
 import org.json.JSONObject
 
 object NotificationStateStore {
 
-    private lateinit var appContext: Context
+    private lateinit var preferences: SharedPreferences
 
+    @Synchronized
     fun init(context: Context) {
-        appContext = context.applicationContext
+        if (!::preferences.isInitialized) {
+            preferences = context.applicationContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+        }
     }
 
+    @Synchronized
     fun hasDedupeKey(
         scope: NotificationScope,
         dedupeKey: String,
@@ -19,6 +25,7 @@ object NotificationStateStore {
         return readDedupeKeys(scope).contains(dedupeKey)
     }
 
+    @Synchronized
     fun recordDedupeKey(
         scope: NotificationScope,
         dedupeKey: String,
@@ -29,6 +36,7 @@ object NotificationStateStore {
         writeStringArray(scope.dedupeKeyKey(), keys.take(NotificationDefaults.MAX_DEDUPE_KEYS))
     }
 
+    @Synchronized
     fun getOrderState(
         scope: NotificationScope,
         orderId: String,
@@ -36,6 +44,7 @@ object NotificationStateStore {
         return readOrderStates(scope)[orderId]
     }
 
+    @Synchronized
     fun putOrderState(
         scope: NotificationScope,
         orderId: String,
@@ -46,6 +55,7 @@ object NotificationStateStore {
         writeOrderStates(scope, states)
     }
 
+    @Synchronized
     fun putOrderStates(
         scope: NotificationScope,
         states: Map<String, OrderNotificationState>,
@@ -53,10 +63,12 @@ object NotificationStateStore {
         writeOrderStates(scope, states)
     }
 
+    @Synchronized
     fun lastOrdersSyncAt(scope: NotificationScope): Long {
         return prefs().getLong(scope.ordersSyncKey(), 0L)
     }
 
+    @Synchronized
     fun setLastOrdersSyncAt(
         scope: NotificationScope,
         value: Long,
@@ -64,10 +76,12 @@ object NotificationStateStore {
         prefs().edit().putLong(scope.ordersSyncKey(), value).apply()
     }
 
+    @Synchronized
     fun lastProductReviewSyncAt(scope: NotificationScope): Long {
         return prefs().getLong(scope.productReviewSyncKey(), 0L)
     }
 
+    @Synchronized
     fun setLastProductReviewSyncAt(
         scope: NotificationScope,
         value: Long,
@@ -90,7 +104,10 @@ object NotificationStateStore {
                     }
                 }
             }
-        }.getOrDefault(emptyList())
+        }.getOrElse { error ->
+            Log.w(TAG, "Persisted dedupe metadata decode failed", error)
+            emptyList()
+        }
     }
 
     private fun writeStringArray(
@@ -125,7 +142,10 @@ object NotificationStateStore {
                     )
                 }
             }
-        }.getOrDefault(emptyMap())
+        }.getOrElse { error ->
+            Log.w(TAG, "Persisted order state decode failed", error)
+            emptyMap()
+        }
     }
 
     private fun writeOrderStates(
@@ -162,7 +182,8 @@ object NotificationStateStore {
         return "notification_review_sync_${applicationId}_${userId}_${role.name.lowercase()}"
     }
 
-    private fun prefs() = appContext.getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE)
+    private fun prefs() = preferences
 
     private const val PREFS_NAME = "pizza_time_notification_state"
+    private const val TAG = "NotificationStateStore"
 }

@@ -17,7 +17,7 @@ import com.google.firebase.auth.FirebaseAuth
 
 fun Fragment.restoreSessionAndOpenRoleHome(user: AuthUserUiModel): Boolean {
     if (!AppEditionConfig.isAllowedAuthRole(user.role)) {
-        FcmTokenRegistrar.clearCurrentDeviceToken()
+        FcmTokenRegistrar.clearCurrentDeviceToken(requireContext().applicationContext)
         FirebaseAuth.getInstance().signOut()
         OrderNotificationMonitor.stop()
         FakeSessionStore.logout()

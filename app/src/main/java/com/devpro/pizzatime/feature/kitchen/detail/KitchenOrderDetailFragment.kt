@@ -47,7 +47,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     bindOrder(order)
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to load kitchen orderId=$orderId", error)
+                    Log.e(TAG, "Failed to load kitchen order", error)
                     AppUiMessageBus.publish(
                         R.string.notification_order_unavailable,
                         UiMessageType.ERROR,
@@ -264,7 +264,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     )
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to update kitchen orderId=${currentOrder.orderId}", error)
+                    Log.e(TAG, "Failed to update kitchen order", error)
                     showUiMessage(R.string.kitchen_order_detail_update_failed, UiMessageType.ERROR)
                 }
         }
@@ -292,7 +292,7 @@ class KitchenOrderDetailFragment : Fragment(R.layout.fragment_kitchen_order_deta
                     parentFragmentManager.popBackStack()
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Could not cancel kitchen order $orderId", error)
+                    Log.e(TAG, "Could not cancel kitchen order", error)
                     binding.btnCancelOrder.isEnabled = true
                     showUiMessage(R.string.kitchen_order_detail_cancel_failed, UiMessageType.ERROR)
                 }

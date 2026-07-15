@@ -83,7 +83,7 @@ class SplashFragment : Fragment() {
     }
 
     private fun signOutAndOpenStartDestination(showMismatchMessage: Boolean) {
-        FcmTokenRegistrar.clearCurrentDeviceToken()
+        FcmTokenRegistrar.clearCurrentDeviceToken(requireContext().applicationContext)
         FirebaseAuth.getInstance().signOut()
         OrderNotificationMonitor.stop()
         FakeSessionStore.logout()

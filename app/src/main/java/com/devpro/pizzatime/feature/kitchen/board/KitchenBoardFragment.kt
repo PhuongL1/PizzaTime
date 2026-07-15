@@ -200,7 +200,7 @@ class KitchenBoardFragment : Fragment() {
                     showUiMessage(messageRes, UiMessageType.SUCCESS)
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to update kitchen orderId=$orderId to $nextStatus", error)
+                    Log.e(TAG, "Failed to update kitchen order to $nextStatus", error)
                     showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
                 }
         }

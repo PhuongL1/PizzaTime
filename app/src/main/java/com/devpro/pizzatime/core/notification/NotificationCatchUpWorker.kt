@@ -20,10 +20,18 @@ class NotificationCatchUpWorker(
         AppForegroundState.init()
         NotificationInboxStore.init(applicationContext)
         NotificationStateStore.init(applicationContext)
-        NotificationDispatcher.init(applicationContext)
         PizzaTimeNotificationManager.init(applicationContext)
 
+        val scheduledScope = notificationScopeFromWorkInput(
+            applicationId = inputData.getString(NotificationWorkScheduler.INPUT_APPLICATION_ID),
+            userId = inputData.getString(NotificationWorkScheduler.INPUT_USER_ID),
+            roleName = inputData.getString(NotificationWorkScheduler.INPUT_ROLE),
+        ) ?: return Result.success()
         val scope = NotificationSessionResolver.currentScope() ?: return Result.success()
+        if (!shouldRunNotificationWork(scheduledScope, scope)) {
+            Log.d(TAG, "Skipped stale account work")
+            return Result.success()
+        }
         return runCatching {
             processOrders(scope)
             if (scope.role == com.devpro.pizzatime.core.session.UserRole.ADMIN) {
@@ -51,19 +59,21 @@ class NotificationCatchUpWorker(
         val snapshot = Tasks.await(orderQuery(scope))
         val documents = snapshot.documents
         val lastSyncAt = NotificationStateStore.lastOrdersSyncAt(scope)
-        if (lastSyncAt <= 0L) {
+        if (shouldSeedNotificationState(lastSyncAt)) {
             seedOrderState(scope, documents)
             return
         }
 
         var newestSeen = lastSyncAt
         documents.forEach { document ->
-            val updatedAt = document.getTimestamp("updatedAt").toEpochMillis()
+            val updatedAt = notificationEpochMillis(document.get("updatedAt"))
             newestSeen = maxOf(newestSeen, updatedAt)
             val previousState = NotificationStateStore.getOrderState(scope, document.id)
             val previousHistoryAt = previousState?.latestHistoryAtMillis ?: 0L
-            val historyEvents = NotificationEventFactory.historyEvents(document)
-                .filter { event -> event.createdAtMillis > previousHistoryAt }
+            val historyEvents = notificationHistoryEventsAfter(
+                events = NotificationEventFactory.historyEvents(document),
+                lastSeenMillis = previousHistoryAt,
+            )
 
             NotificationEventFactory.createOrderNotifications(
                 context = applicationContext,
@@ -71,7 +81,7 @@ class NotificationCatchUpWorker(
                 document = document,
                 historyEvents = historyEvents,
             ).forEach { notification ->
-                NotificationDispatcher.dispatch(notification, TAG)
+                NotificationDispatcher.dispatch(applicationContext, notification, TAG)
             }
 
             NotificationStateStore.putOrderState(
@@ -91,15 +101,17 @@ class NotificationCatchUpWorker(
         val snapshot = Tasks.await(firestore.collection("productReviews").get())
         val lastSyncAt = NotificationStateStore.lastProductReviewSyncAt(scope)
         val documents = snapshot.documents
-        if (lastSyncAt <= 0L) {
-            val newest = documents.maxOfOrNull { doc -> doc.getTimestamp("createdAt").toEpochMillis() } ?: 0L
+        if (shouldSeedNotificationState(lastSyncAt)) {
+            val newest = documents.maxOfOrNull { doc ->
+                notificationEpochMillis(doc.get("createdAt"))
+            } ?: 0L
             NotificationStateStore.setLastProductReviewSyncAt(scope, newest)
             return
         }
 
         var newestSeen = lastSyncAt
         documents.forEach { document ->
-            val createdAt = document.getTimestamp("createdAt").toEpochMillis()
+            val createdAt = notificationEpochMillis(document.get("createdAt"))
             newestSeen = maxOf(newestSeen, createdAt)
             if (createdAt <= lastSyncAt) {
                 return@forEach
@@ -113,7 +125,7 @@ class NotificationCatchUpWorker(
                     productName = productName,
                 )
             }.getOrNull() ?: return@forEach
-            NotificationDispatcher.dispatch(notification, TAG)
+            NotificationDispatcher.dispatch(applicationContext, notification, TAG)
         }
         NotificationStateStore.setLastProductReviewSyncAt(scope, newestSeen)
     }
@@ -123,7 +135,7 @@ class NotificationCatchUpWorker(
         documents: List<DocumentSnapshot>,
     ) {
         val states = documents.associate { document ->
-            val updatedAt = document.getTimestamp("updatedAt").toEpochMillis()
+            val updatedAt = notificationEpochMillis(document.get("updatedAt"))
             document.id to OrderNotificationState(
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                 updatedAtMillis = updatedAt,
@@ -132,7 +144,7 @@ class NotificationCatchUpWorker(
         }
         NotificationStateStore.putOrderStates(scope, states)
         val newest = documents.maxOfOrNull { document ->
-            document.getTimestamp("updatedAt").toEpochMillis()
+            notificationEpochMillis(document.get("updatedAt"))
         } ?: System.currentTimeMillis()
         NotificationStateStore.setLastOrdersSyncAt(scope, newest)
     }
@@ -153,10 +165,6 @@ class NotificationCatchUpWorker(
             val product = Tasks.await(firestore.collection("products").document(productId).get())
             product.getString("name")?.trim()?.takeIf { it.isNotBlank() }
         }.getOrNull()
-    }
-
-    private fun com.google.firebase.Timestamp?.toEpochMillis(): Long {
-        return this?.toDate()?.time ?: 0L
     }
 
     companion object {

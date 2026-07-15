@@ -70,9 +70,9 @@ object NotificationInboxStore {
     }
 
     @Synchronized
-    fun addOrUpdate(notification: AppNotification) {
-        if (!::preferences.isInitialized) return
-        val scope = NotificationSessionResolver.scopeForNotification(notification) ?: return
+    fun addOrUpdate(notification: AppNotification): Boolean {
+        if (!::preferences.isInitialized) return false
+        val scope = NotificationSessionResolver.scopeForNotification(notification) ?: return false
         val key = scope.storageKey()
         val items = loadForScope(scope).toMutableList()
         val existingIndex = items.indexOfFirst { item ->
@@ -80,7 +80,9 @@ object NotificationInboxStore {
         }
 
         if (existingIndex >= 0) {
-            items[existingIndex] = notification
+            items[existingIndex] = notification.copy(
+                isRead = items[existingIndex].isRead,
+            )
         } else {
             items += notification
         }
@@ -94,15 +96,29 @@ object NotificationInboxStore {
         if (activeScopeKey == key) {
             publishActiveNotifications(trimmed)
         }
+        return true
     }
 
     @Synchronized
-    fun markRead(notificationId: String) {
-        val scope = activeScope() ?: return
-        val updatedItems = markNotificationRead(loadForScope(scope), notificationId)
+    fun markRead(notificationId: String): Boolean {
+        val scope = activeScope() ?: return false
+        return markRead(scope, notificationId)
+    }
+
+    @Synchronized
+    fun markRead(
+        expectedScope: NotificationScope,
+        notificationId: String,
+    ): Boolean {
+        val scope = activeScope() ?: return false
+        if (scope != expectedScope) return false
+        val currentItems = loadForScope(scope)
+        if (currentItems.none { notification -> notification.id == notificationId }) return false
+        val updatedItems = markNotificationRead(currentItems, notificationId)
         cache[scope.storageKey()] = updatedItems
         saveScope(scope, updatedItems)
         publishActiveNotifications(updatedItems)
+        return true
     }
 
     @Synchronized
@@ -121,8 +137,19 @@ object NotificationInboxStore {
     }
 
     @Synchronized
-    fun containsDedupeKey(dedupeKey: String): Boolean {
-        return activeNotifications().any { notification -> notification.dedupeKey == dedupeKey }
+    fun containsDedupeKey(
+        expectedScope: NotificationScope,
+        dedupeKey: String,
+    ): Boolean {
+        val scope = activeScope() ?: return false
+        if (scope != expectedScope) return false
+        return loadForScope(scope).any { notification -> notification.dedupeKey == dedupeKey }
+    }
+
+    @Synchronized
+    fun findActiveNotification(notificationId: String): AppNotification? {
+        val scope = activeScope() ?: return null
+        return loadForScope(scope).firstOrNull { notification -> notification.id == notificationId }
     }
 
     private fun activeScope(): NotificationScope? {
@@ -132,11 +159,6 @@ object NotificationInboxStore {
             refreshForCurrentAccount()
         }
         return scope
-    }
-
-    private fun activeNotifications(): List<AppNotification> {
-        val scopeKey = activeScopeKey ?: return emptyList()
-        return cache[scopeKey].orEmpty()
     }
 
     private fun loadForScope(scope: NotificationScope): List<AppNotification> {

@@ -92,7 +92,7 @@ class StaffDashboardFragment : Fragment(R.layout.fragment_staff_dashboard) {
                     renderOrders()
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to confirm staff orderId=${order.orderId}", error)
+                    Log.e(TAG, "Failed to confirm staff order", error)
                     showUiMessage(R.string.feedback_action_failed, UiMessageType.ERROR)
                 }
         }

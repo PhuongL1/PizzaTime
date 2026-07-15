@@ -39,7 +39,7 @@ class WelcomeFragment : BaseFragment<FragmentWelcomeBinding>(
     }
 
     private fun continueAsGuest() {
-        FcmTokenRegistrar.clearCurrentDeviceToken()
+        FcmTokenRegistrar.clearCurrentDeviceToken(requireContext().applicationContext)
         FirebaseAuth.getInstance().signOut()
         OrderNotificationMonitor.stop()
         FakeSessionStore.logout()

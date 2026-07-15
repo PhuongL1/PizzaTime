@@ -22,6 +22,7 @@ import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopB
 import com.devpro.pizzatime.feature.customer.common.navigation.updatePizzaFlowCartBadge
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.staff.navigation.openCartScreen
+import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ListenerRegistration
 import java.util.Locale
@@ -77,12 +78,26 @@ class OrderTrackingFragment : Fragment() {
 
     @SuppressLint("SetTextI18n")
     private fun loadOrderFromFirestore(orderId: String) {
+        val customerId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+        if (customerId.isBlank()) {
+            AppUiMessageBus.publish(
+                textRes = R.string.notification_destination_unavailable,
+                type = UiMessageType.WARNING,
+            )
+            parentFragmentManager.popBackStack()
+            return
+        }
         listenerRegistration = FirebaseFirestore.getInstance()
             .collection("orders")
             .document(orderId)
             .addSnapshotListener { snapshot, error ->
                 if (_binding == null) return@addSnapshotListener
-                if (error != null || snapshot == null || !snapshot.exists()) {
+                if (
+                    error != null ||
+                    snapshot == null ||
+                    !snapshot.exists() ||
+                    snapshot.getString("customerId") != customerId
+                ) {
                     AppUiMessageBus.publish(
                         textRes = R.string.notification_order_unavailable,
                         type = UiMessageType.ERROR,
@@ -213,7 +228,9 @@ class OrderTrackingFragment : Fragment() {
                     ContextCompat.getColor(requireContext(), R.color.pt_text_primary)
                 )
                 itemBinding.topLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_copper))
-                itemBinding.bottomLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_border_warm))
+                itemBinding.bottomLine.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.pt_border_warm),
+                )
             }
 
             TrackingStepState.PENDING -> {
@@ -226,7 +243,9 @@ class OrderTrackingFragment : Fragment() {
                     ContextCompat.getColor(requireContext(), R.color.pt_text_muted)
                 )
                 itemBinding.topLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_border_warm))
-                itemBinding.bottomLine.setBackgroundColor(ContextCompat.getColor(requireContext(), R.color.pt_border_warm))
+                itemBinding.bottomLine.setBackgroundColor(
+                    ContextCompat.getColor(requireContext(), R.color.pt_border_warm),
+                )
             }
         }
     }

@@ -50,18 +50,10 @@ object NotificationSessionResolver {
     fun scopeForNotification(
         notification: AppNotification,
     ): NotificationScope? {
-        if (AppEditionConfig.isGuestEdition) {
-            return null
+        val currentScope = currentScope() ?: return null
+        val recipientUserId = notification.recipientUserId?.trim().orEmpty()
+        return currentScope.takeIf { scope ->
+            recipientUserId == scope.userId && notification.recipientRole == scope.role
         }
-        val userId = notification.recipientUserId?.trim().orEmpty()
-        if (userId.isBlank()) {
-            return currentScope()
-        }
-
-        return NotificationScope(
-            applicationId = BuildConfig.APPLICATION_ID,
-            userId = userId,
-            role = notification.recipientRole,
-        )
     }
 }

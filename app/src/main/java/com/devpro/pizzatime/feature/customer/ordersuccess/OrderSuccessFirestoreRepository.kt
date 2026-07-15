@@ -25,7 +25,7 @@ object OrderSuccessFirestoreRepository {
                     val heroCandidate = orderDoc.toHeroCandidate()
                     loadHeroImageUrl(heroCandidate) { heroImageUrl ->
                         if (heroCandidate == null) {
-                            Log.w(TAG, "Order has no items for orderId=${orderDoc.id}")
+                            Log.w(TAG, "Order has no items")
                         } else if (heroImageUrl.isBlank()) {
                             Log.w(
                                 TAG,

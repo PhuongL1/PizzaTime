@@ -91,8 +91,10 @@ class CustomerOrderDetailFragment : Fragment() {
         currentOrderId = orderId
         existingRatings = emptyMap()
         isRealOrderLoaded = false
-        if (isFirestoreOrderId(orderId)) {
-            CustomerOrderFirestoreRepository.loadOrderDetail(orderId) { result ->
+        val isNotificationDestination = arguments?.getBoolean(ARG_NOTIFICATION_DESTINATION) == true
+        if (isNotificationDestination || isFirestoreOrderId(orderId)) {
+            val customerId = FirebaseAuth.getInstance().currentUser?.uid.orEmpty()
+            CustomerOrderFirestoreRepository.loadOrderDetail(orderId, customerId) { result ->
                 if (_binding == null || !isAdded) return@loadOrderDetail
                 result
                     .onSuccess { detail ->
@@ -102,9 +104,9 @@ class CustomerOrderDetailFragment : Fragment() {
                         loadRatingState(detail)
                     }
                     .onFailure { error ->
-                        Log.e(TAG, "Failed to load customer orderId=$orderId", error)
+                        Log.e(TAG, "Failed to load customer order", error)
                         AppUiMessageBus.publish(
-                            textRes = if (error.message?.contains("not found", ignoreCase = true) == true) {
+                            textRes = if (error is NoSuchElementException) {
                                 R.string.notification_order_unavailable
                             } else {
                                 R.string.customer_order_detail_load_failed
@@ -496,7 +498,7 @@ class CustomerOrderDetailFragment : Fragment() {
                     loadOrder(currentOrderId)
                 }
                 .onFailure { error ->
-                    Log.e(TAG, "Failed to cancel customer orderId=$currentOrderId", error)
+                    Log.e(TAG, "Failed to cancel customer order", error)
                     isCancellingOrder = false
                     binding.btnCancelOrder.isEnabled = true
                     showUiMessage(R.string.customer_order_detail_cancel_failed, UiMessageType.ERROR)
@@ -628,14 +630,19 @@ class CustomerOrderDetailFragment : Fragment() {
     companion object {
         private const val TAG = "CustomerOrderDetail"
         private const val ARG_ORDER_ID = "arg_order_id"
+        private const val ARG_NOTIFICATION_DESTINATION = "arg_notification_destination"
         private const val DEFAULT_ORDER_ID = "PT-9821"
         private val ORDER_CODE_KEY_REGEX = Regex("[a-z]{2}-\\d{4}")
         private const val STAR_CHAR = "★"
 
-        fun newInstance(orderId: String): CustomerOrderDetailFragment {
+        fun newInstance(
+            orderId: String,
+            isNotificationDestination: Boolean = false,
+        ): CustomerOrderDetailFragment {
             return CustomerOrderDetailFragment().apply {
                 arguments = Bundle().apply {
                     putString(ARG_ORDER_ID, orderId)
+                    putBoolean(ARG_NOTIFICATION_DESTINATION, isNotificationDestination)
                 }
             }
         }

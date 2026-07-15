@@ -100,7 +100,7 @@ fun Fragment.clearAppBackStack() {
 }
 
 fun Fragment.signOutAndOpenLogin() {
-    FcmTokenRegistrar.clearCurrentDeviceToken()
+    FcmTokenRegistrar.clearCurrentDeviceToken(requireContext().applicationContext)
     FirebaseAuth.getInstance().signOut()
     OrderNotificationMonitor.stop()
     FakeSessionStore.logout()
@@ -290,9 +290,12 @@ fun Fragment.openBuildYourPizza(addToBackStack: Boolean = true) {
         addToBackStack = addToBackStack,
     )
 }
-fun Fragment.openCustomerOrderDetail(orderId: String) {
+fun Fragment.openCustomerOrderDetail(
+    orderId: String,
+    isNotificationDestination: Boolean = false,
+) {
     replaceStaffFlowFragment(
-        fragment = CustomerOrderDetailFragment.newInstance(orderId),
+        fragment = CustomerOrderDetailFragment.newInstance(orderId, isNotificationDestination),
         addToBackStack = true,
     )
 }

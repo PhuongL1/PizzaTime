@@ -40,13 +40,18 @@ object CustomerOrderFirestoreRepository {
 
     fun loadOrderDetail(
         orderId: String,
+        customerId: String,
         onResult: (Result<CustomerOrderDetailUiModel>) -> Unit,
     ) {
+        if (customerId.isBlank()) {
+            onResult(Result.failure(IllegalStateException("Authenticated customer required")))
+            return
+        }
         firestore.collection("orders").document(orderId)
             .get()
             .addOnSuccessListener { doc ->
-                if (!doc.exists()) {
-                    onResult(Result.failure(Exception("Order $orderId not found")))
+                if (!doc.exists() || doc.getString("customerId") != customerId) {
+                    onResult(Result.failure(NoSuchElementException("Customer order unavailable")))
                     return@addOnSuccessListener
                 }
                 enrichOrderDetailImages(doc.toOrderDetail()) { detail ->

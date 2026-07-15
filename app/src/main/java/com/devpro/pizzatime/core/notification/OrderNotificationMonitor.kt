@@ -26,11 +26,8 @@ object OrderNotificationMonitor {
         AppForegroundState.init()
         NotificationInboxStore.init(applicationContext)
         NotificationStateStore.init(applicationContext)
-        NotificationDispatcher.init(applicationContext)
         PizzaTimeNotificationManager.init(applicationContext)
     }
-
-    fun setForegroundActivity(activity: android.app.Activity?) = Unit
 
     fun start(role: UserRole) {
         val context = appContext ?: return
@@ -51,7 +48,7 @@ object OrderNotificationMonitor {
         loggedMissingOrderReviewSource = false
 
         NotificationWorkScheduler.schedule(context, scope)
-        FcmTokenRegistrar.registerCurrentToken()
+        FcmTokenRegistrar.registerCurrentToken(context)
         startOrderListener(scope)
         if (scope.role == UserRole.ADMIN) {
             startProductReviewListener(scope)
@@ -117,7 +114,7 @@ object OrderNotificationMonitor {
                 val currentSnapshot = snapshot ?: return@addSnapshotListener
                 if (!reviewsInitialSnapshotComplete) {
                     val newest = currentSnapshot.documents.maxOfOrNull { document ->
-                        document.getTimestamp("createdAt").toEpochMillis()
+                        notificationEpochMillis(document.get("createdAt"))
                     } ?: System.currentTimeMillis()
                     NotificationStateStore.setLastProductReviewSyncAt(scope, newest)
                     reviewsInitialSnapshotComplete = true
@@ -141,13 +138,13 @@ object OrderNotificationMonitor {
         val states = documents.associate { document ->
             document.id to OrderNotificationState(
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
-                updatedAtMillis = document.getTimestamp("updatedAt").toEpochMillis(),
+                updatedAtMillis = notificationEpochMillis(document.get("updatedAt")),
                 latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
             )
         }
         NotificationStateStore.putOrderStates(scope, states)
         val newest = documents.maxOfOrNull { document ->
-            document.getTimestamp("updatedAt").toEpochMillis()
+            notificationEpochMillis(document.get("updatedAt"))
         } ?: System.currentTimeMillis()
         NotificationStateStore.setLastOrdersSyncAt(scope, newest)
     }
@@ -158,8 +155,10 @@ object OrderNotificationMonitor {
     ) {
         val previousState = NotificationStateStore.getOrderState(scope, document.id)
         val previousHistoryAt = previousState?.latestHistoryAtMillis ?: 0L
-        val historyEvents = NotificationEventFactory.historyEvents(document)
-            .filter { event -> event.createdAtMillis > previousHistoryAt }
+        val historyEvents = notificationHistoryEventsAfter(
+            events = NotificationEventFactory.historyEvents(document),
+            lastSeenMillis = previousHistoryAt,
+        )
 
         NotificationEventFactory.createOrderNotifications(
             context = appContext ?: return,
@@ -168,10 +167,10 @@ object OrderNotificationMonitor {
             historyEvents = historyEvents,
         ).forEach { notification ->
             Log.d(TAG, "Event detected role=${scope.role.name} type=${notification.type.name}")
-            NotificationDispatcher.dispatch(notification, TAG)
+            NotificationDispatcher.dispatch(appContext ?: return, notification, TAG)
         }
 
-        val updatedAt = document.getTimestamp("updatedAt").toEpochMillis()
+        val updatedAt = notificationEpochMillis(document.get("updatedAt"))
         NotificationStateStore.putOrderState(
             scope = scope,
             orderId = document.id,
@@ -191,7 +190,7 @@ object OrderNotificationMonitor {
         scope: NotificationScope,
         document: DocumentSnapshot,
     ) {
-        val createdAt = document.getTimestamp("createdAt").toEpochMillis()
+        val createdAt = notificationEpochMillis(document.get("createdAt"))
         if (createdAt <= NotificationStateStore.lastProductReviewSyncAt(scope)) {
             return
         }
@@ -213,7 +212,7 @@ object OrderNotificationMonitor {
                         productName = productName,
                     )
                 }.getOrNull() ?: return@addOnSuccessListener
-                NotificationDispatcher.dispatch(notification, TAG)
+                NotificationDispatcher.dispatch(appContext ?: return@addOnSuccessListener, notification, TAG)
                 NotificationStateStore.setLastProductReviewSyncAt(scope, createdAt)
             }
             .addOnFailureListener { error ->
@@ -226,7 +225,7 @@ object OrderNotificationMonitor {
                         productName = null,
                     )
                 }.getOrNull() ?: return@addOnFailureListener
-                NotificationDispatcher.dispatch(notification, TAG)
+                NotificationDispatcher.dispatch(appContext ?: return@addOnFailureListener, notification, TAG)
                 NotificationStateStore.setLastProductReviewSyncAt(scope, createdAt)
             }
     }
@@ -241,10 +240,6 @@ object OrderNotificationMonitor {
         } else {
             Log.w(TAG, "Listener failed source=$source role=${role.name}", error)
         }
-    }
-
-    private fun com.google.firebase.Timestamp?.toEpochMillis(): Long {
-        return this?.toDate()?.time ?: 0L
     }
 
     private const val TAG = "NotificationMonitor"

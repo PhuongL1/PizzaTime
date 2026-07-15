@@ -14,32 +14,36 @@ object FcmTokenRegistrar {
 
     private val auth: FirebaseAuth = FirebaseAuth.getInstance()
     private val firestore: FirebaseFirestore = FirebaseFirestore.getInstance()
-    private var appContext: Context? = null
 
-    fun init(context: Context) {
-        appContext = context.applicationContext
-    }
-
-    fun registerCurrentToken() {
+    fun registerCurrentToken(context: Context) {
         val uid = auth.currentUser?.uid ?: return
         FirebaseMessaging.getInstance().token
             .addOnSuccessListener { token ->
-                saveTokenForUser(uid, token)
+                saveTokenForUser(context.applicationContext, uid, token)
             }
     }
 
-    fun saveTokenForCurrentUser(token: String) {
+    fun saveTokenForCurrentUser(
+        context: Context,
+        token: String,
+    ) {
         val uid = auth.currentUser?.uid ?: return
-        saveTokenForUser(uid, token)
+        saveTokenForUser(context.applicationContext, uid, token)
     }
 
-    fun saveTokenForUser(uid: String, token: String) {
-        val context = appContext ?: return
+    private fun saveTokenForUser(
+        context: Context,
+        uid: String,
+        token: String,
+    ) {
         if (uid.isBlank() || token.isBlank()) {
             return
         }
 
-        val role = NotificationSessionResolver.currentRole()
+        val scope = NotificationSessionResolver.currentScope() ?: return
+        if (auth.currentUser?.uid != uid || scope.userId != uid) {
+            return
+        }
         val installationId = installationId(context)
         firestore.collection("users").document(uid)
             .collection("devices")
@@ -48,27 +52,27 @@ object FcmTokenRegistrar {
                 mapOf(
                     "fcmToken" to token,
                     "appEdition" to AppEditionConfig.current.name,
-                    "applicationId" to context.packageName,
-                    "role" to role.name,
+                    "applicationId" to scope.applicationId,
+                    "role" to scope.role.name,
                     "installationId" to installationId,
                     "notificationsEnabled" to NotificationPermissionHelper.areNotificationsEnabled(context),
                     "updatedAt" to FieldValue.serverTimestamp(),
                 ),
             )
             .addOnSuccessListener {
-                Log.d(TAG, "Token saved uid=$uid tokenSuffix=${token.takeLast(8)}")
+                Log.d(TAG, "Token registration updated")
             }
             .addOnFailureListener { error ->
-                Log.w(TAG, "Token save failed uid=$uid", error)
+                Log.w(TAG, "Token registration failed", error)
             }
     }
 
-    fun clearCurrentDeviceToken() {
-        val context = appContext ?: return
+    fun clearCurrentDeviceToken(context: Context) {
         val uid = auth.currentUser?.uid ?: return
+        val appContext = context.applicationContext
         firestore.collection("users").document(uid)
             .collection("devices")
-            .document(installationId(context))
+            .document(installationId(appContext))
             .delete()
     }
 
