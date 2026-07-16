@@ -24,6 +24,7 @@ import com.devpro.pizzatime.feature.customer.common.bottomnav.CustomerBottomNavT
 import com.devpro.pizzatime.feature.customer.common.navigation.bindCustomerBottomNav
 import com.devpro.pizzatime.feature.customer.common.navigation.bindPizzaFlowTopBar
 import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.staff.navigation.openDemoPayment
 import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderFirestoreRepository
 import com.devpro.pizzatime.feature.customer.rating.CustomerProductReviewFirestoreRepository
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPresentation
@@ -175,6 +176,15 @@ class CustomerOrderDetailFragment : Fragment() {
         }
 
         btnCancelOrder.isVisible = detail.canCancel && isFirestoreOrderId(detail.orderId)
+        btnSupport.text = getString(
+            if (detail.continuePaymentRequiresNewAttempt) {
+                R.string.customer_order_detail_create_new_payment
+            } else if (detail.canContinuePayment) {
+                R.string.customer_order_detail_continue_payment
+            } else {
+                R.string.customer_order_detail_support
+            },
+        )
         bindReceiptAction(detail)
     }
 
@@ -297,7 +307,12 @@ class CustomerOrderDetailFragment : Fragment() {
         }
 
         btnSupport.setOnClickListener {
-            showUiMessage(R.string.customer_order_detail_support_message, UiMessageType.INFO)
+            val detail = currentOrderDetail
+            if (detail?.canContinuePayment == true) {
+                openDemoPayment(detail.orderId)
+            } else {
+                showUiMessage(R.string.customer_order_detail_support_message, UiMessageType.INFO)
+            }
         }
 
         btnRateOrder.setOnClickListener {

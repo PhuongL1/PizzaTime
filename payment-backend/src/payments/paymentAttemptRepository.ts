@@ -20,7 +20,7 @@ type CreateAttemptInput = {
   providerAmount: number;
   paymentProvider: PaymentProviderCode;
   paymentTokenHash: string;
-  paymentTokenSalt: string;
+  paymentTokenVersion: 1;
   createdAt: Date;
   expiresAt: Date;
 };
@@ -80,7 +80,7 @@ export class FirestorePaymentAttemptRepository {
       providerAmount: input.providerAmount,
       currency: "VND",
       paymentTokenHash: input.paymentTokenHash,
-      paymentTokenSalt: input.paymentTokenSalt,
+      paymentTokenVersion: input.paymentTokenVersion,
       createdAt: Timestamp.fromDate(input.createdAt),
       expiresAt: Timestamp.fromDate(input.expiresAt),
       updatedAt: Timestamp.fromDate(input.createdAt)
@@ -148,7 +148,7 @@ function toPaymentAttemptRecord(id: string, data: Record<string, unknown>): Paym
     providerAmount: parsed.providerAmount,
     currency: parsed.currency,
     paymentTokenHash: parsed.paymentTokenHash,
-    paymentTokenSalt: parsed.paymentTokenSalt,
+    paymentTokenVersion: parsed.paymentTokenVersion,
     createdAt: parsed.createdAt,
     expiresAt: parsed.expiresAt,
     updatedAt: parsed.updatedAt,

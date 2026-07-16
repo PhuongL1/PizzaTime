@@ -32,6 +32,7 @@ import com.devpro.pizzatime.feature.customer.order.OrderTypeFragment
 import com.devpro.pizzatime.feature.customer.orderdetail.CustomerOrderDetailFragment
 import com.devpro.pizzatime.feature.customer.orderhistory.CustomerOrderHistoryFragment
 import com.devpro.pizzatime.feature.customer.ordersuccess.OrderSuccessFragment
+import com.devpro.pizzatime.feature.customer.payment.DemoPaymentFragment
 import com.devpro.pizzatime.feature.customer.promos.CustomerPromoCodesFragment
 import com.devpro.pizzatime.feature.customer.support.SupportFaqFragment
 import com.devpro.pizzatime.feature.customer.tracking.OrderTrackingFragment
@@ -323,6 +324,12 @@ fun Fragment.openCheckoutScreen(addToBackStack: Boolean = true) {
     replaceStaffFlowFragment(
         fragment = CheckoutFragment(),
         addToBackStack = addToBackStack,
+    )
+}
+fun Fragment.openDemoPayment(orderId: String) {
+    replaceStaffFlowFragment(
+        fragment = DemoPaymentFragment.newInstance(orderId),
+        addToBackStack = true,
     )
 }
 fun Fragment.openCustomerPromoCodes(

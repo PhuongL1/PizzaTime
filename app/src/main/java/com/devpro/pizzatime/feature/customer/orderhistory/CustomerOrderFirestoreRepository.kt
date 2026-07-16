@@ -11,6 +11,8 @@ import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPolicy
 import com.devpro.pizzatime.feature.order.OrderTransitionRepository
+import com.devpro.pizzatime.feature.order.PaymentMethod
+import com.devpro.pizzatime.feature.order.PaymentStatus
 import com.google.firebase.Timestamp
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.firestore.DocumentSnapshot
@@ -189,6 +191,17 @@ object CustomerOrderFirestoreRepository {
             deliveryHandoffStatusValue = paymentSnapshot.deliveryHandoffStatus,
             statusHistory = rawStatusHistory.toStatusHistoryUiModels(),
             canCancel = statusStr == STATUS_PENDING,
+            canContinuePayment = paymentSnapshot.paymentMethod == PaymentMethod.DEMO &&
+                paymentSnapshot.paymentStatus in setOf(
+                    PaymentStatus.PENDING,
+                    PaymentStatus.FAILED,
+                    PaymentStatus.EXPIRED,
+                ) &&
+                statusStr != STATUS_CANCELLED,
+            continuePaymentRequiresNewAttempt = paymentSnapshot.paymentStatus in setOf(
+                PaymentStatus.FAILED,
+                PaymentStatus.EXPIRED,
+            ),
             canConfirmReceipt = OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(paymentSnapshot, customerId),
             shouldShowReceiptAction = OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(
                 paymentSnapshot,

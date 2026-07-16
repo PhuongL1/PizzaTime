@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
 
@@ -7,6 +9,30 @@ plugins {
 
     id("com.google.gms.google-services")
 }
+
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use(::load)
+    }
+}
+
+fun String.toBuildConfigString(): String {
+    return buildString(length + 2) {
+        append('"')
+        this@toBuildConfigString.forEach { character ->
+            when (character) {
+                '\\' -> append("\\\\")
+                '"' -> append("\\\"")
+                else -> append(character)
+            }
+        }
+        append('"')
+    }
+}
+
+val paymentBackendUrl =
+    localProperties.getProperty("PIZZATIME_PAYMENT_BACKEND_URL", "").trim()
 
 android {
     namespace = "com.devpro.pizzatime"
@@ -21,6 +47,11 @@ android {
 
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
         manifestPlaceholders["deliveryTrackingServiceEnabled"] = "false"
+        buildConfigField(
+            "String",
+            "PAYMENT_BACKEND_URL",
+            paymentBackendUrl.toBuildConfigString(),
+        )
     }
 
     flavorDimensions += "role"
@@ -151,6 +182,7 @@ android {
     }
 
     buildFeatures {
+        dataBinding = true
         viewBinding = true
         buildConfig = true
         resValues = true
@@ -160,8 +192,10 @@ android {
 dependencies {
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.appcompat)
+    implementation(libs.androidx.browser)
     implementation(libs.material)
     implementation(libs.osmdroid.android)
+    implementation(libs.zxing.core)
     implementation("androidx.lifecycle:lifecycle-process:2.8.4")
     implementation("androidx.work:work-runtime-ktx:2.9.1")
 
@@ -174,6 +208,7 @@ dependencies {
     implementation("com.github.bumptech.glide:glide:4.16.0")
 
     testImplementation(libs.junit)
+    testImplementation("org.robolectric:robolectric:4.16")
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }

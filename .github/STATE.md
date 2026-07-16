@@ -4,6 +4,17 @@ _updated: 2026-07-16_
 ## Active
 <!-- max 3 tasks. Agent overwrites this entire file each update. -->
 
+### task-20260702-81c
+task: "Implement automated demo qr payment flow and end-to-end QA"
+type: feat
+phase: DONE
+plan: "Resume from Task 81B, add one truthful Demo QR Payment checkout path with persistent request-id state, trusted backend session creation, QR/browser/deep-link support, Firestore-driven payment observation, exactly-once cart clearing and success navigation, then verify backend, rules, Android, and static security scans before one Task 81C commit"
+approach: "Keep Firestore order paymentStatus as the only payment truth, never let Android mark PAID or send a trusted amount, keep DEMO visibly labeled as simulated, reuse the Task 81B backend session/idempotency contract, persist only non-secret customer-scoped pending-payment state, and extend the existing notification/deep-link infrastructure instead of creating parallel systems"
+files: ".github/STATE.md, .github/audits/task-20260702-81c-demo-payment-android-audit.md, app/build.gradle.kts, gradle/libs.versions.toml, app/src/debug/AndroidManifest.xml, app/src/debug/res/xml/debug_network_security_config.xml, app/src/customer/AndroidManifest.xml, checkout/payment/order-detail/notification/navigation Kotlin files, payment-backend Android-integration files/tests, and Android unit tests for Demo payment config/contract/pending-store coverage"
+review: 3/3
+qa: 4/5
+note: "Branch feature/81-vnpay-handoff; base commit d7962c7 verified; Demo QR Payment checkout, persistent pending-payment recovery, return-to-app deep link routing, Continue Payment / Create New Payment, and exactly-once Payment received + cart-clear + Order Success flow are implemented. Backend lint/typecheck/unit/integration/build passed, rules tests passed, six-flavor debug unit tests passed, six debug assemblies passed, full Gradle build passed, and Toast/secret/logging/unsafe-URI scans passed. Honest remaining gap is local end-to-end device+tunnel QA because payment-backend/.env is absent, no public tunnel is active, and adb shows no attached device."
+
 ### task-20260702-81b
 task: "Implement provider-neutral demo payment backend"
 type: feat
@@ -25,14 +36,3 @@ files: ".github/audits/task-20260702-81a-payment-handoff-audit.md, order domain/
 review: 3/3
 qa: 3/3
 note: "Branch feature/81-vnpay-handoff; rules tests passed, firestore.rules deployed to pizzatime-de04c, six-flavor unit tests passed, six debug assemblies passed, full Gradle build passed, device QA pending because adb shows no attached target"
-
-### task-20260702-80
-task: "Implement billing-free OpenStreetMap delivery tracking"
-type: feat
-phase: DONE
-plan: "Deliver five gated phases: harden osmdroid; persist/show canonical destination; external navigation; assigned-Shipper foreground tracking; owning-Customer live map"
-approach: "Use osmdroid in PizzaTime, LocationManager for device fixes, deliveryLocation GeoPoint, one orders/{orderId}/tracking/current document, and external map apps for road routing/ETA"
-files: ".github/audits/task-20260702-80-google-maps-audit.md, shared location/map helpers, checkout/order mappers, Shipper detail/service, Customer tracking, manifests/resources, firestore.rules, isolated rules tests"
-review: 3/3
-qa: 5/5
-note: "80A 66fc4b3; 80B e91ccbb; 80C f1923da; 80D 39d416b with rules deployed to pizzatime-de04c; 80E ready to commit after six-flavor tests, six debug assemblies, full build, and final review; device QA pending because adb shows no attached target"

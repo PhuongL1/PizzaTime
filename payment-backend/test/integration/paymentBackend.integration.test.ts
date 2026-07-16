@@ -20,7 +20,8 @@ const env: AppEnv = {
   demoPaymentEnabled: true,
   demoPaymentTokenSecret: "demo-secret-demo-secret-demo-secret-1234",
   publicBaseUrl: "https://payments.example.test",
-  paymentSessionMinutes: 15
+  paymentSessionMinutes: 15,
+  appReturnDeepLinkBase: "pizzatime://payment-result"
 };
 
 const fakeAuthVerifier = {
@@ -185,6 +186,7 @@ describe("payment backend integration", () => {
     expect(page.text).toContain("For testing purposes only");
     expect(page.text).toContain("No real money will be transferred");
     expect(page.text).not.toContain("users/customer-a");
+    expect(page.text).not.toContain("Return to PizzaTime");
 
     const afterOrder = await getFirestore().doc("orders/de-3003").get();
     const afterAttempt = await getFirestore()
@@ -214,6 +216,12 @@ describe("payment backend integration", () => {
     const firstConfirm = await request(app).post(`/demo/pay/${token}/confirm`);
     expect(firstConfirm.status).toBe(200);
     expect(firstConfirm.text).toContain("Demo payment confirmed");
+    expect(firstConfirm.text).toContain("Return to PizzaTime");
+    expect(firstConfirm.text).toContain(
+      `pizzatime://payment-result?orderId=de-3004&amp;paymentAttemptId=${createBody.paymentAttemptId}`
+    );
+    expect(firstConfirm.text).not.toContain("status=");
+    expect(firstConfirm.text).not.toContain("amountVnd");
 
     const orderSnapshot = await getFirestore().doc("orders/de-3004").get();
     expect(orderSnapshot.data()?.paymentStatus).toBe("PAID");
@@ -258,6 +266,7 @@ describe("payment backend integration", () => {
     const cancelResponse = await request(app).post(`/demo/pay/${cancelledToken}/cancel`);
     expect(cancelResponse.status).toBe(200);
     expect(cancelResponse.text).toContain("Payment cancelled");
+    expect(cancelResponse.text).toContain("Return to PizzaTime");
 
     const cancelledOrder = await getFirestore().doc("orders/de-3005").get();
     expect(cancelledOrder.data()?.paymentStatus).toBe("FAILED");

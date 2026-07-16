@@ -17,7 +17,7 @@ export const paymentAttemptDocumentSchema = z
     providerAmount: z.int().positive(),
     currency: z.literal("VND"),
     paymentTokenHash: z.string().length(64),
-    paymentTokenSalt: z.string().min(1),
+    paymentTokenVersion: z.literal(1),
     createdAt: z.instanceof(Timestamp),
     expiresAt: z.instanceof(Timestamp),
     updatedAt: z.instanceof(Timestamp),
@@ -41,7 +41,7 @@ export type PaymentAttemptRecord = {
   providerAmount: number;
   currency: "VND";
   paymentTokenHash: string;
-  paymentTokenSalt: string;
+  paymentTokenVersion: 1;
   createdAt: Timestamp;
   expiresAt: Timestamp;
   updatedAt: Timestamp;

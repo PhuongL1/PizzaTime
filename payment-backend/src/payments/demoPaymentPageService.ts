@@ -2,6 +2,7 @@ import type { Firestore } from "firebase-admin/firestore";
 
 import type { Clock } from "../util/clock";
 import { sha256Hex } from "../util/hashing";
+import type { AppEnv } from "../config/env";
 import type { OrderRecord } from "../model/order";
 import type { PaymentAttemptRecord } from "../model/paymentAttempt";
 import type { FirestoreOrderRepository } from "../orders/orderRepository";
@@ -22,7 +23,8 @@ export class DemoPaymentPageService {
     private readonly paymentAttemptRepository: FirestorePaymentAttemptRepository,
     private readonly trustedOrderAmountService: TrustedOrderAmountService,
     private readonly clock: Clock,
-    private readonly logger: SafeLogger
+    private readonly logger: SafeLogger,
+    private readonly env: Pick<AppEnv, "appReturnDeepLinkBase">
   ) {}
 
   async renderPaymentPage(token: string): Promise<DemoPaymentPageResponse> {
@@ -41,13 +43,14 @@ export class DemoPaymentPageService {
       return renderUnavailablePage(404, "Payment link unavailable");
     }
 
-    return renderStatePage({
-      attempt,
-      order,
-      now: this.clock.now(),
-      token,
-      mode: "view"
-    });
+      return renderStatePage({
+        attempt,
+        order,
+        now: this.clock.now(),
+        token,
+        mode: "view",
+        appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
+      });
   }
 
   async confirmPayment(token: string): Promise<DemoPaymentPageResponse> {
@@ -81,7 +84,8 @@ export class DemoPaymentPageService {
           order,
           now: this.clock.now(),
           token,
-          mode: "confirm"
+          mode: "confirm",
+          appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
         });
       }
 
@@ -99,7 +103,8 @@ export class DemoPaymentPageService {
           order,
           now: this.clock.now(),
           token,
-          mode: "confirm"
+          mode: "confirm",
+          appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
         });
       }
 
@@ -117,7 +122,8 @@ export class DemoPaymentPageService {
           },
           now: this.clock.now(),
           token,
-          mode: "confirm"
+          mode: "confirm",
+          appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
         });
       }
 
@@ -146,7 +152,8 @@ export class DemoPaymentPageService {
         },
         now: this.clock.now(),
         token,
-        mode: "confirm"
+        mode: "confirm",
+        appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
       });
     });
   }
@@ -174,7 +181,8 @@ export class DemoPaymentPageService {
           order,
           now: this.clock.now(),
           token,
-          mode: "cancel"
+          mode: "cancel",
+          appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
         });
       }
 
@@ -188,7 +196,8 @@ export class DemoPaymentPageService {
           order,
           now: this.clock.now(),
           token,
-          mode: "cancel"
+          mode: "cancel",
+          appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
         });
       }
 
@@ -206,7 +215,8 @@ export class DemoPaymentPageService {
           },
           now: this.clock.now(),
           token,
-          mode: "cancel"
+          mode: "cancel",
+          appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
         });
       }
 
@@ -230,7 +240,8 @@ export class DemoPaymentPageService {
         },
         now: this.clock.now(),
         token,
-        mode: "cancel"
+        mode: "cancel",
+        appReturnDeepLinkBase: this.env.appReturnDeepLinkBase
       });
     });
   }
@@ -258,12 +269,18 @@ function renderStatePage(input: {
   now: Date;
   token: string;
   mode: "view" | "confirm" | "cancel";
+  appReturnDeepLinkBase: string | undefined;
 }): DemoPaymentPageResponse {
   const orderReference = normalizeOrderReference(input.order.orderCode, input.order.id);
   const amountLabel = formatVnd(input.attempt.amountVnd);
   const paymentReference = escapeHtml(input.attempt.transactionRef);
   const confirmAction = `/demo/pay/${encodeURIComponent(input.token)}/confirm`;
   const cancelAction = `/demo/pay/${encodeURIComponent(input.token)}/cancel`;
+  const returnToAppUrl = buildReturnToAppUrl(
+    input.appReturnDeepLinkBase,
+    input.order.id,
+    input.attempt.id
+  );
 
   let heading = "PizzaTime Demo Payment";
   let message = "For testing purposes only.";
@@ -313,6 +330,7 @@ function renderStatePage(input: {
     button { width: 100%; padding: 14px 16px; border: 0; border-radius: 12px; font-size: 16px; cursor: pointer; }
     .confirm { background: #1f6f3f; color: #fff; }
     .cancel { background: #efe1d7; color: #241a12; }
+    .return-link { display: inline-block; margin-top: 16px; color: #1f6f3f; font-weight: 700; text-decoration: none; }
   </style>
 </head>
 <body>
@@ -341,6 +359,11 @@ function renderStatePage(input: {
       <button class="cancel" type="submit">Cancel Payment</button>
     </form>`
         : ""
+    }
+    ${
+      returnToAppUrl === undefined || (input.mode === "view" && showButtons)
+        ? ""
+        : `<a class="return-link" href="${escapeHtml(returnToAppUrl)}">Return to PizzaTime</a>`
     }
   </main>
 </body>
@@ -391,4 +414,18 @@ function escapeHtml(input: string): string {
     .replaceAll(">", "&gt;")
     .replaceAll("\"", "&quot;")
     .replaceAll("'", "&#39;");
+}
+
+function buildReturnToAppUrl(
+  base: string | undefined,
+  orderId: string,
+  paymentAttemptId: string
+): string | undefined {
+  if (base === undefined) {
+    return undefined;
+  }
+  const url = new URL(base);
+  url.searchParams.set("orderId", orderId);
+  url.searchParams.set("paymentAttemptId", paymentAttemptId);
+  return url.toString();
 }

@@ -63,7 +63,8 @@ export function createApp(dependencies: AppDependencies = {}) {
     paymentAttemptRepository,
     trustedOrderAmountService,
     clock,
-    logger
+    logger,
+    env
   );
 
   const app = express();

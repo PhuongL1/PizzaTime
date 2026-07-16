@@ -18,6 +18,7 @@ data class AppNotification(
 )
 
 enum class NotificationType {
+    CUSTOMER_PAYMENT_RECEIVED,
     CUSTOMER_ORDER_CONFIRMED,
     CUSTOMER_ORDER_STATUS_UPDATED,
     CUSTOMER_ORDER_PREPARING,
@@ -67,6 +68,9 @@ data class OrderNotificationState(
     val status: String,
     val updatedAtMillis: Long,
     val latestHistoryAtMillis: Long,
+    val paymentStatus: String = "",
+    val paymentAttemptId: String = "",
+    val paidAtMillis: Long = 0L,
     val handoffStatus: String = "",
     val latestHandoffAtMillis: Long = 0L,
 )

@@ -45,7 +45,7 @@ export function loadEnv(rawEnv: Record<string, string | undefined> = process.env
   const deepLinkBase =
     parsed.APP_RETURN_DEEP_LINK_BASE.length === 0
       ? undefined
-      : parsed.APP_RETURN_DEEP_LINK_BASE;
+      : validateAppReturnDeepLinkBase(parsed.APP_RETURN_DEEP_LINK_BASE);
 
   return {
     nodeEnv: parsed.NODE_ENV,
@@ -58,6 +58,26 @@ export function loadEnv(rawEnv: Record<string, string | undefined> = process.env
     paymentSessionMinutes: parsed.PAYMENT_SESSION_MINUTES,
     ...(deepLinkBase === undefined ? {} : { appReturnDeepLinkBase: deepLinkBase })
   };
+}
+
+function validateAppReturnDeepLinkBase(value: string): string {
+  const url = new URL(value);
+  if (url.protocol !== "pizzatime:") {
+    throw new Error("APP_RETURN_DEEP_LINK_BASE must use the pizzatime scheme.");
+  }
+  if (url.hostname !== "payment-result") {
+    throw new Error("APP_RETURN_DEEP_LINK_BASE must target pizzatime://payment-result.");
+  }
+  if (url.username.length > 0 || url.password.length > 0) {
+    throw new Error("APP_RETURN_DEEP_LINK_BASE must not include credentials.");
+  }
+  if (url.pathname !== "" && url.pathname !== "/") {
+    throw new Error("APP_RETURN_DEEP_LINK_BASE must not include a path.");
+  }
+  if (url.search.length > 0 || url.hash.length > 0) {
+    throw new Error("APP_RETURN_DEEP_LINK_BASE must not include a query or fragment.");
+  }
+  return "pizzatime://payment-result";
 }
 
 export function toSafeEnvSummary(env: AppEnv): Record<string, string | number | boolean> {

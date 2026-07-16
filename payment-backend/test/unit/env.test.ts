@@ -53,4 +53,22 @@ describe("env", () => {
       paymentSessionMinutes: 15
     });
   });
+
+  it("accepts the exact payment-result deep link base", () => {
+    const env = loadEnv({
+      ...baseEnv,
+      APP_RETURN_DEEP_LINK_BASE: "pizzatime://payment-result"
+    });
+
+    expect(env.appReturnDeepLinkBase).toBe("pizzatime://payment-result");
+  });
+
+  it("rejects an invalid payment-result deep link base", () => {
+    expect(() =>
+      loadEnv({
+        ...baseEnv,
+        APP_RETURN_DEEP_LINK_BASE: "https://example.test/payment-result"
+      })
+    ).toThrow("APP_RETURN_DEEP_LINK_BASE must use the pizzatime scheme.");
+  });
 });

@@ -25,6 +25,7 @@ import com.devpro.pizzatime.databinding.ActivityMainBinding
 import com.devpro.pizzatime.feature.admin.dashboard.AdminDashboardFragment
 import com.devpro.pizzatime.feature.customer.cart.CartStore
 import com.devpro.pizzatime.feature.customer.home.CustomerHomeFragment
+import com.devpro.pizzatime.feature.customer.payment.DemoPaymentDeepLinkCoordinator
 import com.devpro.pizzatime.feature.kitchen.board.KitchenBoardFragment
 import com.devpro.pizzatime.feature.shipper.dashboard.ShipperDeliveryDashboardFragment
 import com.devpro.pizzatime.feature.shipper.tracking.DeliveryTrackingNotificationRouter
@@ -51,6 +52,10 @@ class MainActivity : AppCompatActivity() {
                 context = applicationContext,
                 fragmentManager = supportFragmentManager,
             )
+            DemoPaymentDeepLinkCoordinator.handlePendingRequest(
+                context = applicationContext,
+                fragmentManager = supportFragmentManager,
+            )
             DeliveryTrackingNotificationRouter.handlePending(supportFragmentManager)
         }
     }
@@ -68,6 +73,7 @@ class MainActivity : AppCompatActivity() {
         PizzaTimeNotificationManager.init(applicationContext)
         OrderNotificationMonitor.init(applicationContext)
         NotificationDeepLinkCoordinator.captureIntent(applicationContext, intent)
+        DemoPaymentDeepLinkCoordinator.captureIntent(applicationContext, intent)
         DeliveryTrackingNotificationRouter.captureIntent(intent)
         supportFragmentManager.registerFragmentLifecycleCallbacks(fragmentLifecycleCallbacks, false)
 
@@ -94,8 +100,13 @@ class MainActivity : AppCompatActivity() {
         super.onNewIntent(intent)
         setIntent(intent)
         NotificationDeepLinkCoordinator.captureIntent(applicationContext, intent)
+        DemoPaymentDeepLinkCoordinator.captureIntent(applicationContext, intent)
         DeliveryTrackingNotificationRouter.captureIntent(intent)
         NotificationDeepLinkCoordinator.handlePendingRequest(
+            context = applicationContext,
+            fragmentManager = supportFragmentManager,
+        )
+        DemoPaymentDeepLinkCoordinator.handlePendingRequest(
             context = applicationContext,
             fragmentManager = supportFragmentManager,
         )

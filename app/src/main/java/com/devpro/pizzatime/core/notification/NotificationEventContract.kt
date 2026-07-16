@@ -99,6 +99,13 @@ internal fun canonicalReviewNotificationDedupeKey(reviewId: String): String {
     return "review:$reviewId"
 }
 
+internal fun canonicalPaymentNotificationDedupeKey(
+    orderId: String,
+    paymentAttemptId: String,
+): String {
+    return "payment:$orderId:paid:$paymentAttemptId"
+}
+
 internal fun notificationHistoryEventsAfter(
     events: List<OrderHistoryEvent>,
     lastSeenMillis: Long,

@@ -7,7 +7,7 @@ export type CreatedPaymentSession = {
   qrPayload: string;
   providerAmount: number;
   paymentTokenHash: string;
-  paymentTokenSalt: string;
+  paymentTokenVersion: 1;
 };
 
 export type RebuiltPaymentSession = {
@@ -21,7 +21,10 @@ export interface PaymentProvider {
   readonly paymentMethod: PaymentProviderCode;
   createSession(input: {
     attemptId: string;
+    customerId: string;
+    orderId: string;
     amountVnd: number;
+    expiresAt: Date;
   }): CreatedPaymentSession;
   rebuildSession(attempt: PaymentAttemptRecord): RebuiltPaymentSession;
 }

@@ -13,12 +13,16 @@ import com.devpro.pizzatime.core.ui.message.UiMessageType
 import com.devpro.pizzatime.core.ui.message.showUiMessage
 import com.devpro.pizzatime.databinding.FragmentCheckoutBinding
 import com.devpro.pizzatime.databinding.ItemCheckoutOrderBinding
-import com.devpro.pizzatime.feature.auth.PendingAuthDestinationStore
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsRepository
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
+import com.devpro.pizzatime.feature.auth.PendingAuthDestinationStore
 import com.devpro.pizzatime.feature.customer.account.CustomerProfileFirestoreRepository
 import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.customer.cart.CartStore
+import com.devpro.pizzatime.feature.customer.payment.DemoPaymentBackendConfig
+import com.devpro.pizzatime.feature.customer.payment.DemoPaymentPendingStore
+import com.devpro.pizzatime.feature.order.PaymentMethod
+import com.devpro.pizzatime.feature.staff.navigation.openDemoPayment
 import com.devpro.pizzatime.feature.staff.navigation.openLoginRequiredScreen
 import com.devpro.pizzatime.feature.staff.navigation.openOrderSuccess
 import com.devpro.pizzatime.feature.staff.navigation.replaceForward
@@ -52,6 +56,7 @@ class CheckoutFragment : Fragment() {
     private var currentStoreSettings: StoreSettingsUiModel? = null
     private var currentDeliveryEstimate: DeliveryEstimate? = null
     private var isPlacingOrder = false
+    private var selectedPaymentMethod: PaymentMethod = PaymentMethod.COD
 
     override fun onCreateView(
         inflater: LayoutInflater,
@@ -67,6 +72,11 @@ class CheckoutFragment : Fragment() {
             return
         }
 
+        selectedPaymentMethod = savedInstanceState?.getString(STATE_PAYMENT_METHOD)
+            ?.let(OrderPaymentMethodSelection::fromName)
+            ?.paymentMethod
+            ?: pendingOrderPaymentMethod()
+
         orderItems = CartStore.items.map { it.toCheckoutItem() }
         appliedPromoCode = CartStore.selectedPromoCode
         appliedDiscount = CartStore.promoDiscountAmount
@@ -80,8 +90,14 @@ class CheckoutFragment : Fragment() {
         setupMapPickerResult()
         setupActions()
         renderPaymentMethods()
+        updatePlaceOrderLabel()
         loadCustomerDeliveryDetails()
         loadStoreSettings()
+    }
+
+    override fun onSaveInstanceState(outState: Bundle) {
+        super.onSaveInstanceState(outState)
+        outState.putString(STATE_PAYMENT_METHOD, selectedPaymentMethod.name)
     }
 
     private fun loadCustomerDeliveryDetails() {
@@ -145,20 +161,17 @@ class CheckoutFragment : Fragment() {
 
     private fun renderOrderItems(items: List<CheckoutOrderItemUiModel>) {
         binding.orderItemContainer.removeAllViews()
-
         items.forEach { item ->
             val itemBinding = ItemCheckoutOrderBinding.inflate(
                 layoutInflater,
                 binding.orderItemContainer,
-                false
+                false,
             )
-
             itemBinding.ivOrderItemImage.setImageResource(item.imageRes)
             itemBinding.ivOrderItemImage.contentDescription = item.name
             itemBinding.tvOrderItemName.text = item.name
             itemBinding.tvOrderItemMeta.text = item.optionText
             itemBinding.tvOrderItemPrice.text = formatMoney(item.price)
-
             binding.orderItemContainer.addView(itemBinding.root)
         }
     }
@@ -171,9 +184,8 @@ class CheckoutFragment : Fragment() {
         binding.tvSubtotal.text = formatMoney(subtotal)
         binding.rowDiscount.isVisible = appliedDiscount > 0.0
         binding.tvDiscount.text = "-${formatMoney(appliedDiscount)}"
-        binding.tvDeliveryDistance.text = currentDeliveryEstimate?.let {
-            formatDistance(it.distanceKm)
-        } ?: getString(R.string.common_not_provided)
+        binding.tvDeliveryDistance.text = currentDeliveryEstimate?.distanceKm?.let(::formatDistance)
+            ?: getString(R.string.common_not_provided)
         binding.tvDeliveryFee.text = formatMoney(deliveryFee)
         binding.tvTotal.text = formatMoney(total)
     }
@@ -188,37 +200,76 @@ class CheckoutFragment : Fragment() {
         }
     }
 
-    private fun setupActions() {
-        binding.btnBack.setOnClickListener {
+    private fun setupActions() = with(binding) {
+        btnBack.setOnClickListener {
             parentFragmentManager.popBackStack()
         }
-
-        binding.btnEditDelivery.setOnClickListener {
+        btnEditDelivery.setOnClickListener {
             openDeliveryMapPicker()
         }
-
-        binding.paymentCreditCard.setOnClickListener {
-            showCheckoutMessage(R.string.checkout_payment_method_coming_soon, UiMessageType.INFO)
+        paymentCash.setOnClickListener {
+            selectPaymentMethod(PaymentMethod.COD)
         }
-
-        binding.paymentApplePay.setOnClickListener {
-            showCheckoutMessage(R.string.checkout_payment_method_coming_soon, UiMessageType.INFO)
+        paymentDemo.setOnClickListener {
+            if (isDemoPaymentConfigured()) {
+                selectPaymentMethod(PaymentMethod.DEMO)
+            }
         }
-
-        binding.paymentCash.setOnClickListener {
-            renderPaymentMethods()
-        }
-
-        binding.btnPlaceOrder.setOnClickListener {
+        btnPlaceOrder.setOnClickListener {
             placeOrder()
         }
+    }
+
+    private fun selectPaymentMethod(paymentMethod: PaymentMethod) {
+        if (selectedPaymentMethod == paymentMethod) {
+            return
+        }
+        selectedPaymentMethod = paymentMethod
+        renderPaymentMethods()
+        updatePlaceOrderLabel()
+    }
+
+    private fun renderPaymentMethods() = with(binding) {
+        val demoConfigured = isDemoPaymentConfigured()
+        val cashSelected = selectedPaymentMethod == PaymentMethod.COD
+        val demoSelected = selectedPaymentMethod == PaymentMethod.DEMO && demoConfigured
+
+        paymentCash.setBackgroundResource(
+            if (cashSelected) R.drawable.bg_payment_selected else R.drawable.bg_payment_unselected,
+        )
+        paymentDemo.setBackgroundResource(
+            if (demoSelected) R.drawable.bg_payment_selected else R.drawable.bg_payment_unselected,
+        )
+        paymentCash.alpha = 1.0f
+        paymentDemo.alpha = if (demoConfigured) 1.0f else 0.55f
+        paymentCash.isEnabled = true
+        paymentDemo.isEnabled = demoConfigured
+        tvDemoPaymentConfigMessage.isVisible = !demoConfigured
+    }
+
+    private fun updatePlaceOrderLabel() {
+        val hasPendingPayment = activePendingDemoOrderId() != null
+        if (_binding == null) {
+            return
+        }
+        binding.btnPlaceOrder.text = getString(
+            when {
+                isPlacingOrder -> R.string.checkout_placing_order
+                hasPendingPayment -> R.string.checkout_continue_payment
+                else -> R.string.checkout_place_order
+            },
+        )
     }
 
     private fun placeOrder() {
         if (isPlacingOrder) {
             return
         }
-
+        val pendingOrderId = activePendingDemoOrderId()
+        if (pendingOrderId != null) {
+            openDemoPayment(pendingOrderId)
+            return
+        }
         if (orderItems.isEmpty()) {
             showCheckoutMessage(R.string.cart_empty_title, UiMessageType.INFO)
             return
@@ -226,6 +277,10 @@ class CheckoutFragment : Fragment() {
         val user = FirebaseAuth.getInstance().currentUser
         if (user == null) {
             blockCheckoutForGuest()
+            return
+        }
+        if (selectedPaymentMethod == PaymentMethod.DEMO && !isDemoPaymentConfigured()) {
+            showCheckoutMessage(R.string.checkout_demo_payment_not_configured, UiMessageType.INFO)
             return
         }
         if (selectedDeliveryLocation.address.isBlank()) {
@@ -384,8 +439,7 @@ class CheckoutFragment : Fragment() {
         }
         val itemsSubtotal = items.sumOf { it.price * it.quantity }
         val discountAmount = discount.coerceAtLeast(0.0)
-        val finalTotal = (itemsSubtotal - discountAmount).coerceAtLeast(0.0) +
-            deliveryEstimate.deliveryFee
+        val finalTotal = (itemsSubtotal - discountAmount).coerceAtLeast(0.0) + deliveryEstimate.deliveryFee
         FirebaseOrderRepository.createOrder(
             customerId = customerId,
             customerEmail = customerEmail,
@@ -400,15 +454,34 @@ class CheckoutFragment : Fragment() {
             customerName = customerName.ifBlank { customerEmail },
             customerPhone = customerPhone,
             storeSettings = storeSettings,
+            paymentMethod = selectedPaymentMethod,
             promoCode = promoCode,
             onResult = { result ->
                 if (_binding == null) return@createOrder
                 result
-                    .onSuccess { orderId ->
-                        CartStore.clear()
-                        openOrderSuccess(orderId = orderId, addToBackStack = false)
+                    .onSuccess { createdOrderId ->
+                        when (selectedPaymentMethod) {
+                            PaymentMethod.COD -> {
+                                CartStore.clear()
+                                openOrderSuccess(orderId = createdOrderId, addToBackStack = false)
+                            }
+
+                            PaymentMethod.DEMO -> {
+                                DemoPaymentPendingStore.createNewAttemptState(
+                                    context = requireContext().applicationContext,
+                                    userId = customerId,
+                                    orderId = createdOrderId,
+                                )
+                                openDemoPayment(createdOrderId)
+                            }
+
+                            else -> {
+                                CartStore.clear()
+                                openOrderSuccess(orderId = createdOrderId, addToBackStack = false)
+                            }
+                        }
                     }
-                    .onFailure { error ->
+                    .onFailure {
                         setPlaceOrderLoading(false)
                         showCheckoutMessage(R.string.checkout_place_order_failed)
                     }
@@ -416,24 +489,10 @@ class CheckoutFragment : Fragment() {
         )
     }
 
-    private fun renderPaymentMethods() = with(binding) {
-        paymentCash.setBackgroundResource(R.drawable.bg_payment_selected)
-        paymentCreditCard.setBackgroundResource(R.drawable.bg_payment_unselected)
-        paymentApplePay.setBackgroundResource(R.drawable.bg_payment_unselected)
-        paymentCash.alpha = 1.0f
-        paymentCreditCard.alpha = 0.55f
-        paymentApplePay.alpha = 0.55f
-        paymentCreditCard.isEnabled = true
-        paymentApplePay.isEnabled = true
-        paymentCash.isEnabled = true
-    }
-
     private fun setPlaceOrderLoading(loading: Boolean) {
         isPlacingOrder = loading
         binding.btnPlaceOrder.isEnabled = !loading
-        binding.btnPlaceOrder.text = getString(
-            if (loading) R.string.checkout_placing_order else R.string.checkout_place_order,
-        )
+        updatePlaceOrderLabel()
     }
 
     private fun showCheckoutMessage(
@@ -503,7 +562,7 @@ class CheckoutFragment : Fragment() {
                 initialAddress = selectedDeliveryLocation.address,
                 initialLat = selectedDeliveryLocation.coordinate?.latitude,
                 initialLng = selectedDeliveryLocation.coordinate?.longitude,
-            )
+            ),
         )
     }
 
@@ -560,13 +619,37 @@ class CheckoutFragment : Fragment() {
         )
     }
 
+    private fun isDemoPaymentConfigured(): Boolean {
+        return DemoPaymentBackendConfig.configured() != null
+    }
+
+    private fun activePendingDemoOrderId(): String? {
+        val userId = FirebaseAuth.getInstance().currentUser?.uid?.trim().orEmpty()
+        if (userId.isBlank()) {
+            return null
+        }
+        return DemoPaymentPendingStore.activeForUser(
+            context = requireContext().applicationContext,
+            userId = userId,
+        )?.orderId
+    }
+
+    private fun pendingOrderPaymentMethod(): PaymentMethod {
+        return if (activePendingDemoOrderId() != null) {
+            PaymentMethod.DEMO
+        } else {
+            PaymentMethod.COD
+        }
+    }
+
     override fun onDestroyView() {
         _binding = null
         super.onDestroyView()
     }
 
     private companion object {
-        const val TAG = "CheckoutFragment"
+        private const val TAG = "CheckoutFragment"
+        private const val STATE_PAYMENT_METHOD = "state_payment_method"
     }
 }
 
@@ -574,6 +657,17 @@ private data class DeliveryEstimate(
     val distanceKm: Double,
     val deliveryFee: Double,
 )
+
+private enum class OrderPaymentMethodSelection(val paymentMethod: PaymentMethod) {
+    COD(PaymentMethod.COD),
+    DEMO(PaymentMethod.DEMO);
+
+    companion object {
+        fun fromName(name: String): OrderPaymentMethodSelection {
+            return entries.firstOrNull { selection -> selection.name == name } ?: COD
+        }
+    }
+}
 
 private fun CartItemUiModel.toCheckoutItem(): CheckoutOrderItemUiModel {
     val customizationParts = buildList {

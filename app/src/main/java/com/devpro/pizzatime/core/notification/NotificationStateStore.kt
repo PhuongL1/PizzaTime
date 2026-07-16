@@ -138,6 +138,9 @@ object NotificationStateStore {
                             status = item.optString("status"),
                             updatedAtMillis = item.optLong("updatedAtMillis", 0L),
                             latestHistoryAtMillis = item.optLong("latestHistoryAtMillis", 0L),
+                            paymentStatus = item.optString("paymentStatus"),
+                            paymentAttemptId = item.optString("paymentAttemptId"),
+                            paidAtMillis = item.optLong("paidAtMillis", 0L),
                             handoffStatus = item.optString("handoffStatus"),
                             latestHandoffAtMillis = item.optLong("latestHandoffAtMillis", 0L),
                         ),
@@ -162,6 +165,9 @@ object NotificationStateStore {
                     put("status", state.status)
                     put("updatedAtMillis", state.updatedAtMillis)
                     put("latestHistoryAtMillis", state.latestHistoryAtMillis)
+                    put("paymentStatus", state.paymentStatus)
+                    put("paymentAttemptId", state.paymentAttemptId)
+                    put("paidAtMillis", state.paidAtMillis)
                     put("handoffStatus", state.handoffStatus)
                     put("latestHandoffAtMillis", state.latestHandoffAtMillis)
                 },

@@ -181,90 +181,16 @@
                 android:orientation="vertical">
 
                 <LinearLayout
-                    android:id="@+id/paymentCreditCard"
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:alpha="0.55"
-                    android:background="@drawable/bg_payment_unselected"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@string/checkout_credit_card"
-                        android:src="@drawable/ic_card" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:layout_weight="1"
-                        android:text="@string/checkout_credit_card"
-                        android:textColor="@color/pt_text_secondary"
-                        android:textSize="15sp"
-                        android:textStyle="bold" />
-
-                    <TextView
-                        android:id="@+id/tvCardLast4"
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/checkout_coming_soon"
-                        android:textColor="@color/pt_text_muted"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <LinearLayout
-                    android:id="@+id/paymentApplePay"
-                    android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="9dp"
-                    android:alpha="0.55"
-                    android:background="@drawable/bg_payment_unselected"
-                    android:gravity="center_vertical"
-                    android:orientation="horizontal"
-                    android:paddingStart="16dp"
-                    android:paddingEnd="16dp">
-
-                    <ImageView
-                        android:layout_width="24dp"
-                        android:layout_height="24dp"
-                        android:contentDescription="@string/checkout_apple_pay"
-                        android:src="@drawable/ic_apple_pay" />
-
-                    <TextView
-                        android:layout_width="0dp"
-                        android:layout_height="wrap_content"
-                        android:layout_marginStart="14dp"
-                        android:layout_weight="1"
-                        android:text="@string/checkout_apple_pay"
-                        android:textColor="@color/pt_text_secondary"
-                        android:textSize="15sp" />
-
-                    <TextView
-                        android:layout_width="wrap_content"
-                        android:layout_height="wrap_content"
-                        android:text="@string/checkout_coming_soon"
-                        android:textColor="@color/pt_text_muted"
-                        android:textSize="13sp"
-                        android:textStyle="bold" />
-
-                </LinearLayout>
-
-                <LinearLayout
                     android:id="@+id/paymentCash"
                     android:layout_width="match_parent"
-                    android:layout_height="54dp"
-                    android:layout_marginTop="9dp"
+                    android:layout_height="wrap_content"
                     android:background="@drawable/bg_payment_selected"
                     android:gravity="center_vertical"
                     android:orientation="horizontal"
                     android:paddingStart="16dp"
-                    android:paddingEnd="16dp">
+                    android:paddingTop="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="16dp">
 
                     <ImageView
                         android:layout_width="24dp"
@@ -272,13 +198,93 @@
                         android:contentDescription="@string/checkout_cash_on_delivery"
                         android:src="@drawable/ic_cash" />
 
-                    <TextView
-                        android:layout_width="match_parent"
+                    <LinearLayout
+                        android:layout_width="0dp"
                         android:layout_height="wrap_content"
                         android:layout_marginStart="14dp"
-                        android:text="@string/checkout_cash_on_delivery"
-                        android:textColor="@color/pt_text_primary"
-                        android:textSize="15sp" />
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/checkout_cash_on_delivery"
+                            android:textColor="@color/pt_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/checkout_cash_description"
+                            android:textColor="@color/pt_text_secondary"
+                            android:textSize="13sp" />
+                    </LinearLayout>
+
+                </LinearLayout>
+
+                <LinearLayout
+                    android:id="@+id/paymentDemo"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginTop="9dp"
+                    android:background="@drawable/bg_payment_unselected"
+                    android:gravity="center_vertical"
+                    android:orientation="horizontal"
+                    android:paddingStart="16dp"
+                    android:paddingTop="16dp"
+                    android:paddingEnd="16dp"
+                    android:paddingBottom="16dp">
+
+                    <ImageView
+                        android:layout_width="24dp"
+                        android:layout_height="24dp"
+                        android:contentDescription="@string/checkout_demo_payment_label"
+                        android:src="@drawable/customer_menu_icon_payment" />
+
+                    <LinearLayout
+                        android:layout_width="0dp"
+                        android:layout_height="wrap_content"
+                        android:layout_marginStart="14dp"
+                        android:layout_weight="1"
+                        android:orientation="vertical">
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:text="@string/checkout_demo_payment_label"
+                            android:textColor="@color/pt_text_primary"
+                            android:textSize="15sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="4dp"
+                            android:text="@string/checkout_demo_payment_description"
+                            android:textColor="@color/pt_text_secondary"
+                            android:textSize="13sp" />
+
+                        <TextView
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/checkout_demo_payment_disclaimer"
+                            android:textColor="@color/pt_copper"
+                            android:textSize="12sp"
+                            android:textStyle="bold" />
+
+                        <TextView
+                            android:id="@+id/tvDemoPaymentConfigMessage"
+                            android:layout_width="match_parent"
+                            android:layout_height="wrap_content"
+                            android:layout_marginTop="6dp"
+                            android:text="@string/checkout_demo_payment_not_configured"
+                            android:textColor="@color/pt_text_muted"
+                            android:textSize="12sp"
+                            android:visibility="gone" />
+                    </LinearLayout>
 
                 </LinearLayout>
 

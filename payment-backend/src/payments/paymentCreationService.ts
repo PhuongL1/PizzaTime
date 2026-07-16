@@ -95,7 +95,10 @@ export class PaymentCreationService {
       const requestIdHash = sha256Hex(`${input.customerId}|${input.orderId}|${input.requestId}`);
       const session = this.paymentProvider.createSession({
         attemptId,
-        amountVnd: trustedAmount.amountVnd
+        customerId: input.customerId,
+        orderId: input.orderId,
+        amountVnd: trustedAmount.amountVnd,
+        expiresAt
       });
 
       this.paymentAttemptRepository.createPendingAttempt(transaction, {
@@ -107,7 +110,7 @@ export class PaymentCreationService {
         providerAmount: session.providerAmount,
         paymentProvider: this.paymentProvider.code,
         paymentTokenHash: session.paymentTokenHash,
-        paymentTokenSalt: session.paymentTokenSalt,
+        paymentTokenVersion: session.paymentTokenVersion,
         createdAt: now,
         expiresAt
       });

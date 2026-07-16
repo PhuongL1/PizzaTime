@@ -6,6 +6,7 @@ import com.devpro.pizzatime.core.session.UserRole
 import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
+import com.devpro.pizzatime.feature.order.PaymentStatus
 import com.google.firebase.firestore.DocumentSnapshot
 
 data class OrderHistoryEvent(
@@ -174,6 +175,64 @@ object NotificationEventFactory {
                 )
             }
         }
+    }
+
+    fun createPaymentNotifications(
+        context: Context,
+        scope: NotificationScope,
+        document: DocumentSnapshot,
+        previousState: OrderNotificationState?,
+    ): List<AppNotification> {
+        if (scope.role != UserRole.CUSTOMER) {
+            return emptyList()
+        }
+        val paymentStatus = OrderPaymentHandoffParser.parsePaymentStatus(
+            method = OrderPaymentHandoffParser.parsePaymentMethod(
+                document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+            ),
+            value = document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+        )
+        if (paymentStatus != PaymentStatus.PAID) {
+            return emptyList()
+        }
+        val paymentAttemptId = document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_ATTEMPT_ID)
+            ?.trim()
+            .orEmpty()
+        if (paymentAttemptId.isBlank()) {
+            return emptyList()
+        }
+        val paidAtMillis = notificationEpochMillis(document.get(OrderPaymentHandoffParser.FIELD_PAID_AT))
+        if (paidAtMillis <= 0L) {
+            return emptyList()
+        }
+        if (
+            previousState?.paymentStatus == PaymentStatus.PAID.name &&
+            previousState.paymentAttemptId == paymentAttemptId
+        ) {
+            return emptyList()
+        }
+        val orderId = document.id
+        val orderCode = OrderCodeGenerator.displayOrderCode(
+            orderCode = document.getString("orderCode"),
+            orderId = orderId,
+        )
+        val dedupeKey = canonicalPaymentNotificationDedupeKey(orderId, paymentAttemptId)
+        return listOf(
+            AppNotification(
+                id = dedupeKey,
+                dedupeKey = dedupeKey,
+                recipientRole = scope.role,
+                recipientUserId = scope.userId,
+                type = NotificationType.CUSTOMER_PAYMENT_RECEIVED,
+                title = context.getString(R.string.notification_customer_payment_received_title),
+                body = context.getString(R.string.notification_customer_payment_received_body, orderCode),
+                orderId = orderId,
+                reviewId = null,
+                createdAtMillis = paidAtMillis,
+                isRead = false,
+                deepLinkType = NotificationDeepLink.CUSTOMER_ORDER_DETAIL,
+            ),
+        )
     }
 
     fun createProductReviewNotification(

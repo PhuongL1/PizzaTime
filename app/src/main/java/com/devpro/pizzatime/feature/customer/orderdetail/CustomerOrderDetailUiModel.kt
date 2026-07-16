@@ -29,6 +29,8 @@ data class CustomerOrderDetailUiModel(
     val deliveryHandoffStatusValue: DeliveryHandoffStatus = DeliveryHandoffStatus.NOT_REQUIRED,
     val statusHistory: List<CustomerOrderStatusHistoryUiModel> = emptyList(),
     val canCancel: Boolean = false,
+    val canContinuePayment: Boolean = false,
+    val continuePaymentRequiresNewAttempt: Boolean = false,
     val canConfirmReceipt: Boolean = false,
     val shouldShowReceiptAction: Boolean = false,
     val isReceiptConfirmed: Boolean = false,

@@ -16,30 +16,47 @@ const env: AppEnv = {
 };
 
 describe("DemoPaymentProvider", () => {
-  it("creates a random token-backed payment page url and never stores the raw token", () => {
+  it("creates a deterministic secret-derived payment page url and never stores the raw token", () => {
     const provider = new DemoPaymentProvider(env);
 
     const first = provider.createSession({
       attemptId: "PTDEMO1",
-      amountVnd: 123000
+      customerId: "customer-a",
+      orderId: "order-1",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
     });
     const second = provider.createSession({
       attemptId: "PTDEMO2",
-      amountVnd: 123000
+      customerId: "customer-a",
+      orderId: "order-1",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
+    });
+    const repeated = provider.createSession({
+      attemptId: "PTDEMO1",
+      customerId: "customer-a",
+      orderId: "order-1",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
     });
 
     expect(first.paymentPageUrl).toMatch(/^https:\/\/payments\.example\.test\/demo\/pay\/[A-Za-z0-9_-]+$/);
     expect(first.qrPayload).toBe(first.paymentPageUrl);
     expect(first.paymentTokenHash).toMatch(/^[a-f0-9]{64}$/);
-    expect(first.paymentTokenHash).not.toContain(first.paymentTokenSalt);
+    expect(first.paymentTokenVersion).toBe(1);
     expect(first.paymentPageUrl).not.toBe(second.paymentPageUrl);
+    expect(first.paymentPageUrl).toBe(repeated.paymentPageUrl);
   });
 
-  it("rebuilds the same payment page url from the stored salt and attempt id", () => {
+  it("rebuilds the same payment page url from persisted attempt fields", () => {
     const provider = new DemoPaymentProvider(env);
     const created = provider.createSession({
       attemptId: "PTDEMO3",
-      amountVnd: 123000
+      customerId: "customer-a",
+      orderId: "order-1",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
     });
 
     const rebuilt = provider.rebuildSession({
@@ -55,14 +72,44 @@ describe("DemoPaymentProvider", () => {
       providerAmount: 123000,
       currency: "VND",
       paymentTokenHash: created.paymentTokenHash,
-      paymentTokenSalt: created.paymentTokenSalt,
+      paymentTokenVersion: created.paymentTokenVersion,
       createdAt: {} as never,
-      expiresAt: {} as never,
+      expiresAt: {
+        toDate: () => new Date("2026-07-16T08:15:00.000Z")
+      } as never,
       updatedAt: {} as never
     });
 
     expect(rebuilt.paymentPageUrl).toBe(created.paymentPageUrl);
     expect(rebuilt.qrPayload).toBe(created.qrPayload);
+  });
+
+  it("changes the payment page url when identity inputs change", () => {
+    const provider = new DemoPaymentProvider(env);
+    const base = provider.createSession({
+      attemptId: "PTDEMO4",
+      customerId: "customer-a",
+      orderId: "order-1",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
+    });
+    const differentOrder = provider.createSession({
+      attemptId: "PTDEMO4B",
+      customerId: "customer-a",
+      orderId: "order-2",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
+    });
+    const differentUser = provider.createSession({
+      attemptId: "PTDEMO4C",
+      customerId: "customer-b",
+      orderId: "order-1",
+      amountVnd: 123000,
+      expiresAt: new Date("2026-07-16T08:15:00.000Z")
+    });
+
+    expect(base.paymentPageUrl).not.toBe(differentOrder.paymentPageUrl);
+    expect(base.paymentPageUrl).not.toBe(differentUser.paymentPageUrl);
   });
 
   it("constant-time compare helper safely rejects unequal lengths", () => {

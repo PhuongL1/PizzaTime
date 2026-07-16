@@ -4,11 +4,14 @@ import com.devpro.pizzatime.feature.customer.cart.CartItemUiModel
 import com.devpro.pizzatime.feature.admin.store.StoreSettingsUiModel
 import com.devpro.pizzatime.feature.order.OrderCodeGenerator
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
+import com.devpro.pizzatime.feature.order.PaymentMethod
 import com.devpro.pizzatime.shared.location.DeliveryCoordinate
 import com.devpro.pizzatime.shared.location.OrderDeliveryDestinationResolver
 import com.google.firebase.Timestamp
 import com.google.firebase.firestore.FieldValue
 import com.google.firebase.firestore.FirebaseFirestore
+import kotlin.math.abs
+import kotlin.math.roundToInt
 
 object FirebaseOrderRepository {
 
@@ -31,6 +34,7 @@ object FirebaseOrderRepository {
         customerName: String = "",
         customerPhone: String = "",
         storeSettings: StoreSettingsUiModel,
+        paymentMethod: PaymentMethod = PaymentMethod.COD,
         promoCode: String = "",
         onResult: (Result<String>) -> Unit,
     ) {
@@ -51,6 +55,17 @@ object FirebaseOrderRepository {
                 "selectedCrust" to item.selectedCrust,
                 "selectedToppings" to item.selectedToppings,
             )
+        }
+        val trustedPricingSnapshot = runCatching {
+            buildTrustedPricingSnapshot(
+                itemsSubtotal = itemsSubtotal,
+                discountAmount = discountAmount,
+                deliveryFee = deliveryFee,
+                finalTotal = finalTotal,
+            )
+        }.getOrElse { error ->
+            onResult(Result.failure(error))
+            return
         }
 
         val baseOrder = hashMapOf(
@@ -76,6 +91,7 @@ object FirebaseOrderRepository {
             "total" to finalTotal,
             "note" to "",
             "items" to orderItems,
+            "pricingSnapshotVnd" to trustedPricingSnapshot,
             "statusHistory" to listOf(
                 buildHistoryItem(
                     status = "PENDING",
@@ -87,7 +103,10 @@ object FirebaseOrderRepository {
             "createdAt" to FieldValue.serverTimestamp(),
             "updatedAt" to FieldValue.serverTimestamp(),
         )
-        baseOrder.putAll(OrderPaymentHandoffParser.codCreateFields())
+        baseOrder.putAll(createPaymentFields(paymentMethod))
+        if (paymentMethod == PaymentMethod.DEMO) {
+            baseOrder[OrderPaymentHandoffParser.FIELD_PAYMENT_PROVIDER] = PaymentMethod.DEMO.name
+        }
         baseOrder.putAll(
             OrderDeliveryDestinationResolver.canonicalFields(
                 address = deliveryAddress,
@@ -159,6 +178,47 @@ object FirebaseOrderRepository {
         )
     }
 
+    private fun createPaymentFields(paymentMethod: PaymentMethod): Map<String, Any> {
+        return when (paymentMethod) {
+            PaymentMethod.COD -> OrderPaymentHandoffParser.codCreateFields()
+            PaymentMethod.DEMO -> OrderPaymentHandoffParser.futureDemoCreateFields()
+            PaymentMethod.VNPAY -> OrderPaymentHandoffParser.futureVnpayCreateFields()
+            PaymentMethod.UNKNOWN -> OrderPaymentHandoffParser.codCreateFields()
+        }
+    }
+
+    private fun buildTrustedPricingSnapshot(
+        itemsSubtotal: Double,
+        discountAmount: Double,
+        deliveryFee: Double,
+        finalTotal: Double,
+    ): Map<String, Any> {
+        val itemsSubtotalVnd = toTrustedVnd(itemsSubtotal)
+        val discountVnd = toTrustedVnd(discountAmount)
+        val deliveryFeeVnd = toTrustedVnd(deliveryFee)
+        val totalVnd = toTrustedVnd(finalTotal)
+        if (itemsSubtotalVnd - discountVnd + deliveryFeeVnd != totalVnd) {
+            throw IllegalArgumentException("Trusted pricing snapshot does not reconcile.")
+        }
+        return mapOf(
+            "schemaVersion" to 1,
+            "currency" to "VND",
+            "itemsSubtotalVnd" to itemsSubtotalVnd,
+            "discountVnd" to discountVnd,
+            "deliveryFeeVnd" to deliveryFeeVnd,
+            "totalVnd" to totalVnd,
+        )
+    }
+
+    private fun toTrustedVnd(value: Double): Int {
+        val rounded = value.roundToInt()
+        if (abs(value - rounded) > TRUSTED_VND_EPSILON) {
+            throw IllegalArgumentException("Checkout total is not an integer-VND value.")
+        }
+        return rounded
+    }
+
     private class OrderCodeCollisionException : Exception()
+    private const val TRUSTED_VND_EPSILON = 0.001
 }
 

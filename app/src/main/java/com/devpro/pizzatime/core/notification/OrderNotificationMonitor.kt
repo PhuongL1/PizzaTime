@@ -3,6 +3,7 @@ package com.devpro.pizzatime.core.notification
 import android.content.Context
 import android.util.Log
 import com.devpro.pizzatime.core.session.UserRole
+import com.devpro.pizzatime.feature.order.OrderPaymentHandoffParser
 import com.google.firebase.firestore.DocumentChange
 import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
@@ -140,6 +141,16 @@ object OrderNotificationMonitor {
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                 updatedAtMillis = notificationEpochMillis(document.get("updatedAt")),
                 latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+                paymentStatus = OrderPaymentHandoffParser.parsePaymentStatus(
+                    method = OrderPaymentHandoffParser.parsePaymentMethod(
+                        document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+                    ),
+                    value = document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+                ).name,
+                paymentAttemptId = document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_ATTEMPT_ID)
+                    ?.trim()
+                    .orEmpty(),
+                paidAtMillis = notificationEpochMillis(document.get(OrderPaymentHandoffParser.FIELD_PAID_AT)),
                 handoffStatus = NotificationEventFactory.currentHandoffStatus(document),
                 latestHandoffAtMillis = NotificationEventFactory.latestHandoffAtMillis(document),
             )
@@ -180,6 +191,15 @@ object OrderNotificationMonitor {
             Log.d(TAG, "Handoff event detected role=${scope.role.name} type=${notification.type.name}")
             NotificationDispatcher.dispatch(appContext ?: return, notification, TAG)
         }
+        NotificationEventFactory.createPaymentNotifications(
+            context = appContext ?: return,
+            scope = scope,
+            document = document,
+            previousState = previousState,
+        ).forEach { notification ->
+            Log.d(TAG, "Payment event detected role=${scope.role.name} type=${notification.type.name}")
+            NotificationDispatcher.dispatch(appContext ?: return, notification, TAG)
+        }
 
         val updatedAt = notificationEpochMillis(document.get("updatedAt"))
         NotificationStateStore.putOrderState(
@@ -189,6 +209,16 @@ object OrderNotificationMonitor {
                 status = NotificationEventFactory.normalizeStatus(document.getString("status")),
                 updatedAtMillis = updatedAt,
                 latestHistoryAtMillis = NotificationEventFactory.latestHistoryAtMillis(document),
+                paymentStatus = OrderPaymentHandoffParser.parsePaymentStatus(
+                    method = OrderPaymentHandoffParser.parsePaymentMethod(
+                        document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_METHOD),
+                    ),
+                    value = document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_STATUS),
+                ).name,
+                paymentAttemptId = document.getString(OrderPaymentHandoffParser.FIELD_PAYMENT_ATTEMPT_ID)
+                    ?.trim()
+                    .orEmpty(),
+                paidAtMillis = notificationEpochMillis(document.get(OrderPaymentHandoffParser.FIELD_PAID_AT)),
                 handoffStatus = NotificationEventFactory.currentHandoffStatus(document),
                 latestHandoffAtMillis = NotificationEventFactory.latestHandoffAtMillis(document),
             ),
