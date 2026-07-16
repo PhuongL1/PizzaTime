@@ -1,8 +1,19 @@
 # STATE
-_updated: 2026-07-15_
+_updated: 2026-07-16_
 
 ## Active
 <!-- max 3 tasks. Agent overwrites this entire file each update. -->
+
+### task-20260702-81b
+task: "Implement provider-neutral demo payment backend"
+type: feat
+phase: DONE
+plan: "Preserve the reusable Task 81B backend foundation, swap the active provider from VNPay-specific callbacks to a provider-neutral DEMO flow, update prepaid domain/rules/tests honestly, then run backend QA, rules QA, Android regression, scans, and one Task 81B commit"
+approach: "Keep all trust decisions on the backend, require Firebase ID tokens plus Customer ownership, require a trusted integer-VND snapshot, store only token hashes, keep GET side-effect free, and treat DEMO like a prepaid method without pretending that real-provider money movement exists today"
+files: ".github/STATE.md, .github/audits/task-20260702-81b-vnpay-backend-audit.md, payment-backend/**, firestore.rules, payment-backend/firestore.rules, firebase-rules-tests/**, Task 81A payment-domain Kotlin files/tests/resources"
+review: 3/3
+qa: 5/5
+note: "Branch feature/81-vnpay-handoff; base commit cf6584f verified; provider-neutral DemoPaymentProvider is active; backend lint, typecheck, unit tests, emulator integration tests, rules tests, Firestore Rules deploy, six-flavor Android unit tests, six debug assemblies, full Gradle build, Toast scan, client PAID-write review, and secret/logging scans all passed. Honest remaining boundary is manual public-host/tunnel QA only; no real VNPay merchant flow is active."
 
 ### task-20260702-81a
 task: "Implement payment and prepaid delivery handoff foundation"
@@ -15,16 +26,6 @@ review: 3/3
 qa: 3/3
 note: "Branch feature/81-vnpay-handoff; rules tests passed, firestore.rules deployed to pizzatime-de04c, six-flavor unit tests passed, six debug assemblies passed, full Gradle build passed, device QA pending because adb shows no attached target"
 
-### task-20260602-1
-task: "Preserve fluid when changing grid size / dye resolution"
-type: fix
-phase: THINK_DONE
-plan: "Scale-blit dye content in C++ resize(); use nativeResize instead of destroy+init"
-files: "FluidSolver.cpp, FluidRenderer.kt"
-review: 0/3
-qa: 0/3
-note: "none"
-
 ### task-20260702-80
 task: "Implement billing-free OpenStreetMap delivery tracking"
 type: feat
@@ -35,14 +36,3 @@ files: ".github/audits/task-20260702-80-google-maps-audit.md, shared location/ma
 review: 3/3
 qa: 5/5
 note: "80A 66fc4b3; 80B e91ccbb; 80C f1923da; 80D 39d416b with rules deployed to pizzatime-de04c; 80E ready to commit after six-flavor tests, six debug assemblies, full build, and final review; device QA pending because adb shows no attached target"
-
-### task-20260605-1
-task: "Soạn giáo án Kotlin OOP 1 buổi cho người mới"
-type: docs
-phase: THINK_DONE
-plan: "Biên soạn giáo án 180 phút gồm lý thuyết, demo, bài tập, đáp án, rubric"
-approach: "Tập trung 4 trụ cột OOP, dạy theo nhịp Learn -> Code -> Review, có bài tập tăng dần và đáp án chuẩn"
-files: "oop.md"
-review: 0/3
-qa: 0/3
-note: "none"

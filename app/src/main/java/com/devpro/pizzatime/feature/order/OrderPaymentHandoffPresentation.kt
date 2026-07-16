@@ -9,6 +9,7 @@ object OrderPaymentHandoffPresentation {
     fun paymentMethodLabel(method: PaymentMethod): Int {
         return when (method) {
             PaymentMethod.COD -> R.string.payment_method_cash_on_delivery
+            PaymentMethod.DEMO -> R.string.payment_method_demo
             PaymentMethod.VNPAY -> R.string.payment_method_vnpay
             PaymentMethod.UNKNOWN -> R.string.payment_method_unavailable
         }

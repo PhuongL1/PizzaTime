@@ -8,7 +8,7 @@ object OrderPaymentHandoffPolicy {
         }
         return when (order.paymentMethod) {
             PaymentMethod.COD -> true
-            PaymentMethod.VNPAY -> order.paymentStatus == PaymentStatus.PAID
+            PaymentMethod.DEMO, PaymentMethod.VNPAY -> order.paymentStatus == PaymentStatus.PAID
             PaymentMethod.UNKNOWN -> false
         }
     }
@@ -28,7 +28,7 @@ object OrderPaymentHandoffPolicy {
         }
         return when (order.paymentMethod) {
             PaymentMethod.COD -> true
-            PaymentMethod.VNPAY -> order.paymentStatus == PaymentStatus.PAID
+            PaymentMethod.DEMO, PaymentMethod.VNPAY -> order.paymentStatus == PaymentStatus.PAID
             PaymentMethod.UNKNOWN -> false
         }
     }
@@ -39,7 +39,7 @@ object OrderPaymentHandoffPolicy {
     ): Boolean {
         return actingUid != null &&
             actingUid == order.shipperId &&
-            order.paymentMethod == PaymentMethod.VNPAY &&
+            order.paymentMethod.isPrepaid() &&
             order.paymentStatus == PaymentStatus.PAID &&
             order.orderStatus == OrderStatusValues.DELIVERING &&
             order.deliveryHandoffStatus == DeliveryHandoffStatus.LOCKED
@@ -51,7 +51,7 @@ object OrderPaymentHandoffPolicy {
     ): Boolean {
         return actingUid != null &&
             actingUid == order.customerId &&
-            order.paymentMethod == PaymentMethod.VNPAY &&
+            order.paymentMethod.isPrepaid() &&
             order.paymentStatus == PaymentStatus.PAID &&
             order.orderStatus == OrderStatusValues.DELIVERING &&
             order.deliveryHandoffStatus == DeliveryHandoffStatus.AWAITING_CUSTOMER
@@ -69,7 +69,7 @@ object OrderPaymentHandoffPolicy {
         }
         return when (order.paymentMethod) {
             PaymentMethod.COD -> true
-            PaymentMethod.VNPAY -> {
+            PaymentMethod.DEMO, PaymentMethod.VNPAY -> {
                 order.paymentStatus == PaymentStatus.PAID &&
                     order.deliveryHandoffStatus == DeliveryHandoffStatus.CUSTOMER_CONFIRMED
             }
@@ -78,7 +78,7 @@ object OrderPaymentHandoffPolicy {
     }
 
     fun requiresCustomerReceipt(order: OrderPaymentHandoffSnapshot): Boolean {
-        return order.paymentMethod == PaymentMethod.VNPAY && order.paymentStatus == PaymentStatus.PAID
+        return order.paymentMethod.isPrepaid() && order.paymentStatus == PaymentStatus.PAID
     }
 
     fun shouldShowCustomerReceiptAction(

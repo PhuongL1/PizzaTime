@@ -19,10 +19,10 @@ class OrderPaymentHandoffParserTest {
     }
 
     @Test
-    fun `VNPAY with missing status maps conservatively to PENDING`() {
+    fun `DEMO with missing status maps conservatively to PENDING`() {
         assertEquals(
             PaymentStatus.PENDING,
-            OrderPaymentHandoffParser.parsePaymentStatus(PaymentMethod.VNPAY, null),
+            OrderPaymentHandoffParser.parsePaymentStatus(PaymentMethod.DEMO, null),
         )
     }
 
@@ -51,10 +51,15 @@ class OrderPaymentHandoffParserTest {
     }
 
     @Test
-    fun `VNPAY missing handoff maps to LOCKED`() {
+    fun `DEMO missing handoff maps to LOCKED`() {
         assertEquals(
             DeliveryHandoffStatus.LOCKED,
-            OrderPaymentHandoffParser.parseDeliveryHandoffStatus(PaymentMethod.VNPAY, null),
+            OrderPaymentHandoffParser.parseDeliveryHandoffStatus(PaymentMethod.DEMO, null),
         )
+    }
+
+    @Test
+    fun `VNPAY still parses for future provider support`() {
+        assertEquals(PaymentMethod.VNPAY, OrderPaymentHandoffParser.parsePaymentMethod("VNPAY"))
     }
 }

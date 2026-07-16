@@ -30,6 +30,7 @@ import com.devpro.pizzatime.feature.order.DeliveryHandoffStatus
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPolicy
 import com.devpro.pizzatime.feature.order.OrderPaymentHandoffPresentation
 import com.devpro.pizzatime.feature.order.PaymentMethod
+import com.devpro.pizzatime.feature.order.isPrepaid
 import com.devpro.pizzatime.feature.admin.navigation.AdminBottomNavDestination
 import com.devpro.pizzatime.feature.admin.navigation.bindAdminBottomNav
 import com.devpro.pizzatime.feature.shipper.ShipperOrderFirestoreRepository
@@ -279,7 +280,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                 -> updateFirestoreStatus(detail.orderId, detail.displayOrderCode, "DELIVERING")
 
             "DELIVERING" -> {
-                if (detail.paymentMethodValue == PaymentMethod.VNPAY) {
+                if (detail.paymentMethodValue.isPrepaid()) {
                     if (detail.deliveryHandoffStatusValue == DeliveryHandoffStatus.CUSTOMER_CONFIRMED) {
                         showCompleteDeliveryDialog(detail)
                     }
@@ -339,7 +340,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         binding.btnArrivalStatus.isVisible = false
         renderCompletionButton(detail, paymentSnapshot, actingUid, canManage)
 
-        if (!canManage || detail.paymentMethodValue != PaymentMethod.VNPAY) {
+        if (!canManage || !detail.paymentMethodValue.isPrepaid()) {
             return
         }
         if (!OrderPaymentHandoffPolicy.shouldShowShipperArrivalAction(paymentSnapshot, actingUid)) {
@@ -402,7 +403,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
                     !isUpdatingStatus,
                 )
 
-            detail.paymentMethodValue == PaymentMethod.VNPAY && detail.orderStatus == "DELIVERING" ->
+            detail.paymentMethodValue.isPrepaid() && detail.orderStatus == "DELIVERING" ->
                 configureActionView(
                     this,
                     getString(R.string.shipper_detail_complete_delivery),
@@ -438,7 +439,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
     }
 
     private fun showCompleteDeliveryDialog(detail: ShipperDeliveryDetailUiModel) {
-        val messageRes = if (detail.paymentMethodValue == PaymentMethod.VNPAY) {
+        val messageRes = if (detail.paymentMethodValue.isPrepaid()) {
             R.string.shipper_complete_prepaid_delivery_message
         } else {
             R.string.shipper_complete_delivery_message_with_amount
@@ -446,7 +447,7 @@ class ShipperDeliveryDetailFragment : Fragment(R.layout.fragment_shipper_deliver
         MaterialAlertDialogBuilder(requireContext())
             .setTitle(R.string.shipper_complete_delivery_title)
             .setMessage(
-                if (detail.paymentMethodValue == PaymentMethod.VNPAY) {
+                if (detail.paymentMethodValue.isPrepaid()) {
                     getString(messageRes)
                 } else {
                     getString(messageRes, detail.paymentAmount)

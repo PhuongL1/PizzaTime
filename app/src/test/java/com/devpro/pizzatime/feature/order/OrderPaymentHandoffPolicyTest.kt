@@ -12,17 +12,17 @@ class OrderPaymentHandoffPolicyTest {
     }
 
     @Test
-    fun `VNPAY PENDING blocks Staff and VNPAY PAID allows Staff`() {
-        assertFalse(OrderPaymentHandoffPolicy.canStaffConfirmOrder(vnpayPending()))
-        assertTrue(OrderPaymentHandoffPolicy.canStaffConfirmOrder(vnpayPaidPending()))
+    fun `prepaid PENDING blocks Staff and prepaid PAID allows Staff`() {
+        assertFalse(OrderPaymentHandoffPolicy.canStaffConfirmOrder(prepaidPending()))
+        assertTrue(OrderPaymentHandoffPolicy.canStaffConfirmOrder(prepaidPaidPending()))
     }
 
     @Test
     fun `Assigned Shipper can mark arrived only in LOCKED`() {
-        assertTrue(OrderPaymentHandoffPolicy.canShipperMarkArrived(vnpayDeliveringLocked(), SHIPPER_ID))
+        assertTrue(OrderPaymentHandoffPolicy.canShipperMarkArrived(prepaidDeliveringLocked(), SHIPPER_ID))
         assertFalse(
             OrderPaymentHandoffPolicy.canShipperMarkArrived(
-                vnpayDeliveringLocked().copy(deliveryHandoffStatus = DeliveryHandoffStatus.AWAITING_CUSTOMER),
+                prepaidDeliveringLocked().copy(deliveryHandoffStatus = DeliveryHandoffStatus.AWAITING_CUSTOMER),
                 SHIPPER_ID,
             ),
         )
@@ -30,16 +30,16 @@ class OrderPaymentHandoffPolicyTest {
 
     @Test
     fun `Customer can confirm only in AWAITING_CUSTOMER and owner only`() {
-        assertTrue(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(vnpayAwaitingCustomer(), CUSTOMER_ID))
-        assertFalse(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(vnpayAwaitingCustomer(), "customer-b"))
-        assertFalse(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(vnpayDeliveringLocked(), CUSTOMER_ID))
+        assertTrue(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(prepaidAwaitingCustomer(), CUSTOMER_ID))
+        assertFalse(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(prepaidAwaitingCustomer(), "customer-b"))
+        assertFalse(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(prepaidDeliveringLocked(), CUSTOMER_ID))
     }
 
     @Test
     fun `Shipper cannot complete in LOCKED or AWAITING_CUSTOMER and can after CUSTOMER_CONFIRMED`() {
-        assertFalse(OrderPaymentHandoffPolicy.canShipperCompleteDelivery(vnpayDeliveringLocked(), SHIPPER_ID))
-        assertFalse(OrderPaymentHandoffPolicy.canShipperCompleteDelivery(vnpayAwaitingCustomer(), SHIPPER_ID))
-        assertTrue(OrderPaymentHandoffPolicy.canShipperCompleteDelivery(vnpayCustomerConfirmed(), SHIPPER_ID))
+        assertFalse(OrderPaymentHandoffPolicy.canShipperCompleteDelivery(prepaidDeliveringLocked(), SHIPPER_ID))
+        assertFalse(OrderPaymentHandoffPolicy.canShipperCompleteDelivery(prepaidAwaitingCustomer(), SHIPPER_ID))
+        assertTrue(OrderPaymentHandoffPolicy.canShipperCompleteDelivery(prepaidCustomerConfirmed(), SHIPPER_ID))
     }
 
     @Test
@@ -51,7 +51,7 @@ class OrderPaymentHandoffPolicyTest {
     @Test
     fun `cancelled and delivered disable every handoff action`() {
         listOf(OrderStatusValues.CANCELLED, OrderStatusValues.DELIVERED).forEach { terminal ->
-            val state = vnpayCustomerConfirmed().copy(orderStatus = terminal)
+            val state = prepaidCustomerConfirmed().copy(orderStatus = terminal)
             assertFalse(OrderPaymentHandoffPolicy.canStaffConfirmOrder(state))
             assertFalse(OrderPaymentHandoffPolicy.canShipperMarkArrived(state, SHIPPER_ID))
             assertFalse(OrderPaymentHandoffPolicy.canCustomerConfirmReceipt(state, CUSTOMER_ID))
@@ -62,11 +62,11 @@ class OrderPaymentHandoffPolicyTest {
     @Test
     fun `customer and shipper visibility policy remains scoped to eligible actor`() {
         assertFalse(OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(codDelivering(), CUSTOMER_ID))
-        assertTrue(OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(vnpayDeliveringLocked(), CUSTOMER_ID))
-        assertTrue(OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(vnpayCustomerConfirmed().copy(orderStatus = OrderStatusValues.DELIVERED), CUSTOMER_ID))
-        assertTrue(OrderPaymentHandoffPolicy.shouldShowShipperArrivalAction(vnpayDeliveringLocked(), SHIPPER_ID))
-        assertTrue(OrderPaymentHandoffPolicy.shouldShowShipperCompleteAction(vnpayCustomerConfirmed(), SHIPPER_ID))
-        assertFalse(OrderPaymentHandoffPolicy.shouldShowShipperCompleteAction(vnpayCustomerConfirmed(), "shipper-b"))
+        assertTrue(OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(prepaidDeliveringLocked(), CUSTOMER_ID))
+        assertTrue(OrderPaymentHandoffPolicy.shouldShowCustomerReceiptAction(prepaidCustomerConfirmed().copy(orderStatus = OrderStatusValues.DELIVERED), CUSTOMER_ID))
+        assertTrue(OrderPaymentHandoffPolicy.shouldShowShipperArrivalAction(prepaidDeliveringLocked(), SHIPPER_ID))
+        assertTrue(OrderPaymentHandoffPolicy.shouldShowShipperCompleteAction(prepaidCustomerConfirmed(), SHIPPER_ID))
+        assertFalse(OrderPaymentHandoffPolicy.shouldShowShipperCompleteAction(prepaidCustomerConfirmed(), "shipper-b"))
     }
 
     private fun codPending() = OrderPaymentHandoffSnapshot(
@@ -80,21 +80,21 @@ class OrderPaymentHandoffPolicyTest {
 
     private fun codDelivering() = codPending().copy(orderStatus = OrderStatusValues.DELIVERING)
 
-    private fun vnpayPending() = codPending().copy(
-        paymentMethod = PaymentMethod.VNPAY,
+    private fun prepaidPending() = codPending().copy(
+        paymentMethod = PaymentMethod.DEMO,
         paymentStatus = PaymentStatus.PENDING,
         deliveryHandoffStatus = DeliveryHandoffStatus.LOCKED,
     )
 
-    private fun vnpayPaidPending() = vnpayPending().copy(paymentStatus = PaymentStatus.PAID)
+    private fun prepaidPaidPending() = prepaidPending().copy(paymentStatus = PaymentStatus.PAID)
 
-    private fun vnpayDeliveringLocked() = vnpayPaidPending().copy(orderStatus = OrderStatusValues.DELIVERING)
+    private fun prepaidDeliveringLocked() = prepaidPaidPending().copy(orderStatus = OrderStatusValues.DELIVERING)
 
-    private fun vnpayAwaitingCustomer() = vnpayDeliveringLocked().copy(
+    private fun prepaidAwaitingCustomer() = prepaidDeliveringLocked().copy(
         deliveryHandoffStatus = DeliveryHandoffStatus.AWAITING_CUSTOMER,
     )
 
-    private fun vnpayCustomerConfirmed() = vnpayDeliveringLocked().copy(
+    private fun prepaidCustomerConfirmed() = prepaidDeliveringLocked().copy(
         deliveryHandoffStatus = DeliveryHandoffStatus.CUSTOMER_CONFIRMED,
     )
 

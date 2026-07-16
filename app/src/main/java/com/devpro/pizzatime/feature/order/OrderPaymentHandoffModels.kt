@@ -2,8 +2,13 @@ package com.devpro.pizzatime.feature.order
 
 enum class PaymentMethod {
     COD,
+    DEMO,
     VNPAY,
     UNKNOWN,
+}
+
+fun PaymentMethod.isPrepaid(): Boolean {
+    return this == PaymentMethod.DEMO || this == PaymentMethod.VNPAY
 }
 
 enum class PaymentStatus {

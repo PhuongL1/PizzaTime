@@ -56,7 +56,7 @@ object OrderTransitionRepository {
 
             val paymentSnapshot = order.paymentSnapshot()
             if (!OrderPaymentHandoffPolicy.canStaffConfirmOrder(paymentSnapshot)) {
-                throw if (paymentSnapshot.paymentMethod == PaymentMethod.VNPAY &&
+                throw if (paymentSnapshot.paymentMethod.isPrepaid() &&
                     paymentSnapshot.paymentStatus != PaymentStatus.PAID
                 ) {
                     paymentNotConfirmedException()
@@ -277,7 +277,7 @@ object OrderTransitionRepository {
             }
             if (!OrderPaymentHandoffPolicy.canShipperCompleteDelivery(paymentSnapshot, shipperId)) {
                 throw if (
-                    paymentSnapshot.paymentMethod == PaymentMethod.VNPAY &&
+                    paymentSnapshot.paymentMethod.isPrepaid() &&
                     paymentSnapshot.paymentStatus == PaymentStatus.PAID &&
                     paymentSnapshot.orderStatus == STATUS_DELIVERING &&
                     paymentSnapshot.deliveryHandoffStatus != DeliveryHandoffStatus.CUSTOMER_CONFIRMED
@@ -372,7 +372,7 @@ object OrderTransitionRepository {
             }
             val paymentSnapshot = order.paymentSnapshot()
             if (!OrderPaymentHandoffPolicy.canShipperStartDelivery(paymentSnapshot, shipperId)) {
-                throw if (paymentSnapshot.paymentMethod == PaymentMethod.VNPAY) {
+                throw if (paymentSnapshot.paymentMethod.isPrepaid()) {
                     paymentNotConfirmedException()
                 } else {
                     staleOrderException()
@@ -423,7 +423,7 @@ object OrderTransitionRepository {
             }
             val paymentSnapshot = order.paymentSnapshot()
             if (!OrderPaymentHandoffPolicy.canShipperStartDelivery(paymentSnapshot, shipperId)) {
-                throw if (paymentSnapshot.paymentMethod == PaymentMethod.VNPAY) {
+                throw if (paymentSnapshot.paymentMethod.isPrepaid()) {
                     paymentNotConfirmedException()
                 } else {
                     staleOrderException()
@@ -474,7 +474,7 @@ object OrderTransitionRepository {
             }
             val paymentSnapshot = order.paymentSnapshot()
             when (paymentSnapshot.paymentMethod) {
-                PaymentMethod.VNPAY -> {
+                PaymentMethod.DEMO, PaymentMethod.VNPAY -> {
                     if (paymentSnapshot.deliveryHandoffStatus == DeliveryHandoffStatus.COMPLETED &&
                         paymentSnapshot.orderStatus == STATUS_DELIVERED
                     ) {

@@ -39,6 +39,7 @@ object OrderPaymentHandoffParser {
     fun parsePaymentMethod(value: String?): PaymentMethod {
         return when (value.orEmpty().trim().uppercase(Locale.US)) {
             "", "CASH_ON_DELIVERY", "CASH", "COD" -> PaymentMethod.COD
+            "DEMO" -> PaymentMethod.DEMO
             "VNPAY" -> PaymentMethod.VNPAY
             else -> PaymentMethod.UNKNOWN
         }
@@ -52,8 +53,8 @@ object OrderPaymentHandoffParser {
             return PaymentStatus.NOT_REQUIRED
         }
         return when (value.orEmpty().trim().uppercase(Locale.US)) {
-            "" -> if (method == PaymentMethod.VNPAY) PaymentStatus.PENDING else PaymentStatus.UNKNOWN
-            "NOT_REQUIRED", "UNPAID" -> if (method == PaymentMethod.VNPAY) PaymentStatus.PENDING else PaymentStatus.NOT_REQUIRED
+            "" -> if (method.isPrepaid()) PaymentStatus.PENDING else PaymentStatus.UNKNOWN
+            "NOT_REQUIRED", "UNPAID" -> if (method.isPrepaid()) PaymentStatus.PENDING else PaymentStatus.NOT_REQUIRED
             "PENDING" -> PaymentStatus.PENDING
             "PAID" -> PaymentStatus.PAID
             "FAILED" -> PaymentStatus.FAILED
@@ -71,7 +72,7 @@ object OrderPaymentHandoffParser {
             return DeliveryHandoffStatus.NOT_REQUIRED
         }
         return when (value.orEmpty().trim().uppercase(Locale.US)) {
-            "" -> if (method == PaymentMethod.VNPAY) DeliveryHandoffStatus.LOCKED else DeliveryHandoffStatus.UNKNOWN
+            "" -> if (method.isPrepaid()) DeliveryHandoffStatus.LOCKED else DeliveryHandoffStatus.UNKNOWN
             "NOT_REQUIRED" -> DeliveryHandoffStatus.NOT_REQUIRED
             "LOCKED" -> DeliveryHandoffStatus.LOCKED
             "AWAITING_CUSTOMER" -> DeliveryHandoffStatus.AWAITING_CUSTOMER
@@ -93,6 +94,15 @@ object OrderPaymentHandoffParser {
     fun futureVnpayCreateFields(): Map<String, Any> {
         return mapOf(
             FIELD_PAYMENT_METHOD to PaymentMethod.VNPAY.name,
+            FIELD_PAYMENT_STATUS to PaymentStatus.PENDING.name,
+            FIELD_DELIVERY_HANDOFF_STATUS to DeliveryHandoffStatus.LOCKED.name,
+            "cashCollected" to false,
+        )
+    }
+
+    fun futureDemoCreateFields(): Map<String, Any> {
+        return mapOf(
+            FIELD_PAYMENT_METHOD to PaymentMethod.DEMO.name,
             FIELD_PAYMENT_STATUS to PaymentStatus.PENDING.name,
             FIELD_DELIVERY_HANDOFF_STATUS to DeliveryHandoffStatus.LOCKED.name,
             "cashCollected" to false,

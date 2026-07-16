@@ -1,0 +1,36 @@
+{
+  "name": "pizzatime-payment-backend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Provider-neutral demo payment backend for PizzaTime",
+  "engines": {
+    "node": ">=24.16.0 <25"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "build": "tsc -p tsconfig.json",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "lint": "eslint .",
+    "test": "vitest run --project unit",
+    "test:integration:direct": "vitest run --project integration",
+    "test:integration": "firebase emulators:exec --config .\\firebase.emulators.json --only firestore --project demo-pizzatime-payment \"npm run test:integration:direct\""
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "firebase-admin": "^13.0.0",
+    "helmet": "^8.1.0",
+    "zod": "^4.0.0"
+  },
+  "devDependencies": {
+    "@eslint/js": "^9.31.0",
+    "@types/express": "^5.0.3",
+    "@types/node": "^24.0.0",
+    "@types/supertest": "^6.0.3",
+    "eslint": "^9.31.0",
+    "supertest": "^7.1.4",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.3",
+    "typescript-eslint": "^8.37.0",
+    "vitest": "^3.2.4"
+  }
+}

@@ -1224,6 +1224,7 @@
     <string name="common_cancel">Cancel</string>
     <string name="common_confirm">Confirm</string>
     <string name="payment_method_cash_on_delivery">Cash on Delivery</string>
+    <string name="payment_method_demo">Demo Payment</string>
     <string name="payment_method_vnpay">VNPay</string>
     <string name="payment_method_unavailable">Payment unavailable</string>
     <string name="payment_status_unpaid">Unpaid</string>

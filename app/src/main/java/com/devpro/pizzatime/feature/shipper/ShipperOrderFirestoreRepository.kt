@@ -173,6 +173,7 @@ object ShipperOrderFirestoreRepository {
             buildDeliveredPaymentLabel(paymentSnapshot.paymentMethod)
         } else {
             when (paymentSnapshot.paymentMethod) {
+                com.devpro.pizzatime.feature.order.PaymentMethod.DEMO -> "DEMO"
                 com.devpro.pizzatime.feature.order.PaymentMethod.VNPAY -> "VNPAY"
                 else -> "COD"
             }
@@ -313,10 +314,10 @@ object ShipperOrderFirestoreRepository {
         paymentMethod: com.devpro.pizzatime.feature.order.PaymentMethod,
     ): String {
         val cashLabel = if (getBoolean("cashCollected") == true) "Cash collected" else "Cash pending"
-        return if (paymentMethod == com.devpro.pizzatime.feature.order.PaymentMethod.VNPAY) {
-            "VNPAY"
-        } else {
-            "COD • $cashLabel"
+        return when (paymentMethod) {
+            com.devpro.pizzatime.feature.order.PaymentMethod.DEMO -> "DEMO"
+            com.devpro.pizzatime.feature.order.PaymentMethod.VNPAY -> "VNPAY"
+            else -> "COD • $cashLabel"
         }
     }
 

@@ -24,7 +24,11 @@ const ASSIGNED_SHIPPER_ID = "shipper-assigned";
 const OTHER_SHIPPER_ID = "shipper-other";
 const STAFF_ID = "staff-user";
 const KITCHEN_ID = "kitchen-user";
+const ADMIN_ID = "admin-user";
 const ORDER_COD_PENDING = "co-1001";
+const ORDER_DEMO_PENDING = "de-1001";
+const ORDER_DEMO_PAID = "de-1002";
+const ORDER_DEMO_DELIVERING_LOCKED = "de-1003";
 const ORDER_VNPAY_PENDING = "vp-1001";
 const ORDER_VNPAY_PAID = "vp-1002";
 const ORDER_VNPAY_DELIVERING_LOCKED = "vp-1003";
@@ -46,6 +50,10 @@ function orderDoc(userId, orderId) {
 
 function trackingDoc(userId, orderId = ORDER_VNPAY_DELIVERING_LOCKED) {
   return doc(userContext(userId), `orders/${orderId}/tracking/current`);
+}
+
+function paymentAttemptDoc(userId, attemptId = "attempt-demo-1") {
+  return doc(userContext(userId), `paymentAttempts/${attemptId}`);
 }
 
 function history(status, actorRole, actorId) {
@@ -181,6 +189,7 @@ async function seedFixtureData() {
       [OTHER_SHIPPER_ID, "SHIPPER"],
       [STAFF_ID, "STAFF"],
       [KITCHEN_ID, "KITCHEN"],
+      [ADMIN_ID, "ADMIN"],
     ];
 
     for (const [userId, role] of users) {
@@ -202,6 +211,33 @@ async function seedFixtureData() {
       orderId: ORDER_COD_PENDING,
       orderCodeKey: ORDER_COD_PENDING,
       orderCode: `#${ORDER_COD_PENDING}`,
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_DEMO_PENDING}`), seededOrder({
+      orderId: ORDER_DEMO_PENDING,
+      orderCodeKey: ORDER_DEMO_PENDING,
+      orderCode: `#${ORDER_DEMO_PENDING}`,
+      paymentMethod: "DEMO",
+      paymentStatus: "PENDING",
+      deliveryHandoffStatus: "LOCKED",
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_DEMO_PAID}`), seededOrder({
+      orderId: ORDER_DEMO_PAID,
+      orderCodeKey: ORDER_DEMO_PAID,
+      orderCode: `#${ORDER_DEMO_PAID}`,
+      paymentMethod: "DEMO",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "LOCKED",
+    }));
+    await setDoc(doc(firestore, `orders/${ORDER_DEMO_DELIVERING_LOCKED}`), seededOrder({
+      orderId: ORDER_DEMO_DELIVERING_LOCKED,
+      orderCodeKey: ORDER_DEMO_DELIVERING_LOCKED,
+      orderCode: `#${ORDER_DEMO_DELIVERING_LOCKED}`,
+      status: "DELIVERING",
+      shipperId: ASSIGNED_SHIPPER_ID,
+      paymentMethod: "DEMO",
+      paymentStatus: "PAID",
+      deliveryHandoffStatus: "LOCKED",
+      statusHistory: history("DELIVERING", "SHIPPER", ASSIGNED_SHIPPER_ID),
     }));
     await setDoc(doc(firestore, `orders/${ORDER_VNPAY_PENDING}`), seededOrder({
       orderId: ORDER_VNPAY_PENDING,
@@ -280,6 +316,23 @@ async function seedFixtureData() {
       ...trackingPayload(),
       updatedAt: Timestamp.now(),
     });
+    await setDoc(doc(firestore, "paymentAttempts/attempt-demo-1"), {
+      schemaVersion: 1,
+      provider: "DEMO",
+      status: "PENDING",
+      orderId: ORDER_DEMO_PENDING,
+      customerId: OWNER_CUSTOMER_ID,
+      transactionRef: "attempt-demo-1",
+      requestIdHash: "hash-demo-1",
+      amountVnd: 123000,
+      providerAmount: 123000,
+      currency: "VND",
+      paymentTokenHash: "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef",
+      paymentTokenSalt: "salt-demo-1",
+      createdAt: Timestamp.now(),
+      expiresAt: Timestamp.now(),
+      updatedAt: Timestamp.now(),
+    });
   });
 }
 
@@ -330,6 +383,14 @@ describe("PizzaTime Firestore rules for payment handoff and tracking", () => {
   test("Customer can create future VNPAY order only as PENDING plus LOCKED", async () => {
     await assertOrderCreateSucceeds("vp-2001", baseCreateOrder("vp-2001", {
       paymentMethod: "VNPAY",
+      paymentStatus: "PENDING",
+      deliveryHandoffStatus: "LOCKED",
+    }));
+  });
+
+  test("Customer can create DEMO prepaid order only as PENDING plus LOCKED", async () => {
+    await assertOrderCreateSucceeds("de-2001", baseCreateOrder("de-2001", {
+      paymentMethod: "DEMO",
       paymentStatus: "PENDING",
       deliveryHandoffStatus: "LOCKED",
     }));
@@ -417,6 +478,22 @@ describe("PizzaTime Firestore rules for payment handoff and tracking", () => {
       status: "CONFIRMED",
       updatedAt: serverTimestamp(),
       statusHistory: history("CONFIRMED", "STAFF", STAFF_ID),
+    }));
+  });
+
+  test("Staff can confirm paid DEMO order", async () => {
+    await assertSucceeds(updateDoc(orderDoc(STAFF_ID, ORDER_DEMO_PAID), {
+      status: "CONFIRMED",
+      updatedAt: serverTimestamp(),
+      statusHistory: history("CONFIRMED", "STAFF", STAFF_ID),
+    }));
+  });
+
+  test("Assigned Shipper can mark DEMO LOCKED to AWAITING_CUSTOMER while DELIVERING", async () => {
+    await assertSucceeds(updateDoc(orderDoc(ASSIGNED_SHIPPER_ID, ORDER_DEMO_DELIVERING_LOCKED), {
+      deliveryHandoffStatus: "AWAITING_CUSTOMER",
+      shipperArrivedAt: serverTimestamp(),
+      updatedAt: serverTimestamp(),
     }));
   });
 
@@ -662,6 +739,28 @@ describe("PizzaTime Firestore rules for payment handoff and tracking", () => {
 
   test("Tracking delete is denied", async () => {
     await assertFails(deleteDoc(trackingDoc(ASSIGNED_SHIPPER_ID)));
+  });
+
+  test("Customer cannot read paymentAttempts", async () => {
+    await assertFails(getDoc(paymentAttemptDoc(OWNER_CUSTOMER_ID)));
+  });
+
+  test("Customer cannot write paymentAttempts", async () => {
+    await assertFails(setDoc(paymentAttemptDoc(OWNER_CUSTOMER_ID), {
+      status: "PAID",
+    }));
+  });
+
+  test("Staff cannot access paymentAttempts", async () => {
+    await assertFails(getDoc(paymentAttemptDoc(STAFF_ID)));
+  });
+
+  test("Shipper cannot access paymentAttempts", async () => {
+    await assertFails(getDoc(paymentAttemptDoc(ASSIGNED_SHIPPER_ID)));
+  });
+
+  test("Admin client cannot access paymentAttempts", async () => {
+    await assertFails(getDoc(paymentAttemptDoc(ADMIN_ID)));
   });
 
   test("fixture remains isolated from production Firebase", () => {
