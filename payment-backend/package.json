@@ -16,6 +16,7 @@
     "test:integration": "firebase emulators:exec --config .\\firebase.emulators.json --only firestore --project demo-pizzatime-payment \"npm run test:integration:direct\""
   },
   "dependencies": {
+    "dotenv": "^17.4.2",
     "express": "^5.1.0",
     "firebase-admin": "^13.0.0",
     "helmet": "^8.1.0",

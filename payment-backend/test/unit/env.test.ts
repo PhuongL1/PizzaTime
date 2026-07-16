@@ -23,6 +23,33 @@ describe("env", () => {
     expect(() => loadEnv({ ...baseEnv, PUBLIC_BASE_URL: "not-a-url" })).toThrow();
   });
 
+  it("ignores unrelated process environment variables", () => {
+    const env = loadEnv({
+      ...baseEnv,
+      PATH: "C:\\Windows\\System32",
+      APPDATA: "C:\\Users\\tester\\AppData\\Roaming",
+      USERNAME: "tester",
+      npm_config_cache: "C:\\Users\\tester\\AppData\\Local\\npm-cache"
+    });
+
+    expect(env.publicBaseUrl).toBe("https://payments.example.test");
+  });
+
+  it("does not treat GOOGLE_APPLICATION_CREDENTIALS as app config", () => {
+    const env = loadEnv({
+      ...baseEnv,
+      GOOGLE_APPLICATION_CREDENTIALS: "D:\\secrets\\serviceAccountKey.json"
+    });
+
+    expect(env.firebaseProjectId).toBe("demo-project");
+  });
+
+  it("rejects genuinely missing backend variables", () => {
+    expect(() => loadEnv({ ...baseEnv, FIREBASE_PROJECT_ID: undefined })).toThrow();
+    expect(() => loadEnv({ ...baseEnv, PUBLIC_BASE_URL: undefined })).toThrow();
+    expect(() => loadEnv({ ...baseEnv, DEMO_PAYMENT_TOKEN_SECRET: undefined })).toThrow();
+  });
+
   it("rejects http public base url outside test mode", () => {
     expect(() =>
       loadEnv({ ...baseEnv, NODE_ENV: "production", PUBLIC_BASE_URL: "http://example.test" })
@@ -43,7 +70,9 @@ describe("env", () => {
 
   it("omits secrets from safe summaries", () => {
     const env = loadEnv(baseEnv);
-    expect(toSafeEnvSummary(env)).toEqual({
+    const summary = toSafeEnvSummary(env);
+
+    expect(summary).toEqual({
       nodeEnv: "development",
       port: 8080,
       firebaseProjectId: "demo-project",
@@ -51,6 +80,20 @@ describe("env", () => {
       paymentProvider: "DEMO",
       demoPaymentEnabled: true,
       paymentSessionMinutes: 15
+    });
+    expect(summary).not.toHaveProperty("demoPaymentTokenSecret");
+  });
+
+  it("accepts test values through dependency injection", () => {
+    const env = loadEnv({
+      ...baseEnv,
+      NODE_ENV: "test",
+      PUBLIC_BASE_URL: "http://127.0.0.1:8080"
+    });
+
+    expect(env).toMatchObject({
+      nodeEnv: "test",
+      publicBaseUrl: "http://127.0.0.1:8080"
     });
   });
 

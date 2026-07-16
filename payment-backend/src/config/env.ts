@@ -2,6 +2,7 @@ import { z } from "zod";
 
 const nodeEnvSchema = z.enum(["development", "test", "production"]);
 const paymentProviderSchema = z.enum(["DEMO"]);
+type ProcessEnvLike = Record<string, string | undefined>;
 
 const rawEnvSchema = z
   .object({
@@ -29,8 +30,22 @@ export type AppEnv = {
   appReturnDeepLinkBase?: string;
 };
 
-export function loadEnv(rawEnv: Record<string, string | undefined> = process.env): AppEnv {
-  const parsed = rawEnvSchema.parse(rawEnv);
+function selectRawEnv(source: ProcessEnvLike) {
+  return {
+    NODE_ENV: source.NODE_ENV,
+    PORT: source.PORT,
+    FIREBASE_PROJECT_ID: source.FIREBASE_PROJECT_ID,
+    PUBLIC_BASE_URL: source.PUBLIC_BASE_URL,
+    PAYMENT_PROVIDER: source.PAYMENT_PROVIDER,
+    DEMO_PAYMENT_ENABLED: source.DEMO_PAYMENT_ENABLED,
+    DEMO_PAYMENT_TOKEN_SECRET: source.DEMO_PAYMENT_TOKEN_SECRET,
+    PAYMENT_SESSION_MINUTES: source.PAYMENT_SESSION_MINUTES,
+    APP_RETURN_DEEP_LINK_BASE: source.APP_RETURN_DEEP_LINK_BASE
+  };
+}
+
+export function loadEnv(source: ProcessEnvLike = process.env): AppEnv {
+  const parsed = rawEnvSchema.parse(selectRawEnv(source));
   const demoPaymentEnabled = parsed.DEMO_PAYMENT_ENABLED === "true";
   const publicBaseUrl = new URL(parsed.PUBLIC_BASE_URL);
   if (parsed.NODE_ENV !== "test" && publicBaseUrl.protocol !== "https:") {
